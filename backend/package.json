@@ -17,7 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "multer-s3": "^2.10.0",
-    "zod": "^3.24.4"
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.3",

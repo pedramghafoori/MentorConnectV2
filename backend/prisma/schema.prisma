@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(cuid())
+  email             String            @unique
+  password          String
+  firstName         String
+  lastName          String
+  avatarUrl         String?
+  role              Role              @default(MENTEE)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  mentorProfile     MentorProfile?
+  menteeProfile     MenteeProfile?
+  sentRequests      MentorshipRequest[] @relation("SentRequests")
+  receivedRequests  MentorshipRequest[] @relation("ReceivedRequests")
+  mentorConnections MentorConnection[] @relation("Mentor")
+  menteeConnections MentorConnection[] @relation("Mentee")
+}
+
+model MentorProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  bio         String
+  expertise   String[]
+  availability String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MenteeProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  bio         String
+  goals       String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MentorshipRequest {
+  id          String   @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  status      RequestStatus @default(PENDING)
+  message     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  mentor      User     @relation("ReceivedRequests", fields: [mentorId], references: [id])
+  mentee      User     @relation("SentRequests", fields: [menteeId], references: [id])
+}
+
+model MentorConnection {
+  id          String   @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  status      ConnectionStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  mentor      User     @relation("Mentor", fields: [mentorId], references: [id])
+  mentee      User     @relation("Mentee", fields: [menteeId], references: [id])
+}
+
+enum Role {
+  MENTOR
+  MENTEE
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  INACTIVE
+} 

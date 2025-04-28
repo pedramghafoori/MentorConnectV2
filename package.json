@@ -1,0 +1,12 @@
+{
+  "name": "mentor-match-clean",
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "dev": "concurrently -k -n BACK,FRONT -c green,cyan \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "build": "pnpm -r run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.3.0"
+  }
+} 

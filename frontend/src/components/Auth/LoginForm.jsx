@@ -1,79 +1,69 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
 
-const LoginForm = ({ onClose, onSwitchToRegister }) => {
+export default function LoginForm({ onClose, onSwitchToRegister }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setLoading(true);
+    setError(null);
     try {
-      await login({ email, password });
-      onClose();
-      navigate('/dashboard');
+      await login({ email, password }, () => {
+        onClose && onClose();
+        navigate('/dashboard');
+      });
     } catch (err) {
-      setError('Invalid email or password');
+      setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const inputClasses = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e63946] focus:border-transparent outline-none transition-all";
-  const labelClasses = "font-semibold mb-1 block text-gray-700";
-
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-6">Welcome back</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email" className={labelClasses}>Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className={labelClasses}>Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        {error && <p className="text-red-600 mt-2">{error}</p>}
-        
-        <button 
-          type="submit"
-          className="w-full py-3 px-4 bg-[#e63946] text-white text-base rounded-lg hover:brightness-110 transition-all cursor-pointer"
-        >
-          Sign In
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          id="email"
+          type="email"
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d33] focus:border-transparent outline-none transition-all"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+      </div>
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+        <input
+          id="password"
+          type="password"
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d33] focus:border-transparent outline-none transition-all"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+      </div>
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <button
+        type="submit"
+        className="w-full bg-[#d33] text-white py-2 rounded-[9999px] font-semibold hover:bg-[#b22] transition-colors"
+        disabled={loading}
+      >
+        {loading ? 'Logging in...' : 'Login'}
+      </button>
+      <div className="text-center text-sm mt-2">
+        Don't have an account?{' '}
+        <button type="button" className="text-[#d33] underline" onClick={onSwitchToRegister}>
+          Register
         </button>
-
-        <p className="text-center text-gray-600 mt-4">
-          Don't have an account?{' '}
-          <button
-            type="button"
-            onClick={onSwitchToRegister}
-            className="text-[#e63946] hover:underline focus:outline-none"
-          >
-            Sign up
-          </button>
-        </p>
-      </form>
-    </div>
+      </div>
+    </form>
   );
-};
-
-export default LoginForm; 
+} 

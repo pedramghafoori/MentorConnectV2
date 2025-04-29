@@ -22,11 +22,12 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
-  const login = async (credentials) => {
+  const login = async (credentials, onSuccess) => {
     try {
       await api.post('/auth/login', credentials);
       const response = await api.get('/auth/me');
       setUser(response.data);
+      if (onSuccess) onSuccess();
     } catch (error) {
       throw error;
     }

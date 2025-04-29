@@ -1,0 +1,179 @@
+/* ---------- HomePage hero split ---------- */
+.home-hero-wrapper {
+  position: relative;          /* allows absolute-pos card */
+  max-width: 1280px;
+  margin: 2.5rem auto;
+  display: flex;
+  justify-content: flex-end;   /* shove image to the right */
+  padding: 0 1rem;
+}
+
+/* big hero image on the right */
+.hero-image {
+  flex: 0 1 75%;
+}
+
+.hero-image img {
+  width: 1%;
+  height: auto;
+  border-radius: 20px;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* floating card that overlaps image */
+.search-card {
+  position: absolute;
+  top: 50%;            /* vertically centre */
+  left: 1%;            /* overlap into the image */
+  transform: translateY(-50%);
+  width: 330px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 1.6rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0rem;       /* tighter spacing between rows */
+  z-index: 2;
+}
+
+/* Vertical search form layout */
+.search-form-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.search-form-vertical fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-form-vertical label,
+.search-form-vertical legend {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.city-select {
+  flex: 1;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.locate-btn {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.locate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.locate-btn:hover:not(:disabled) {
+  background: #f2f2f2;
+}
+
+/* ---- pill‑style multi‑select buttons ---- */
+.radio-pills {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* exactly two buttons per row */
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.radio-pill input {
+  display: none;                 /* hide native checkbox */
+}
+
+/* stretch each label to full column width */
+.radio-pill {
+  width: 100%;
+}
+
+.radio-pill span {
+  display: inline-block;
+  padding: 0.55rem 0.5rem;
+  border: 1px solid #adafb0;     /* outline button style */
+  border-radius: 8px;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  font-size: 0.9rem;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  outline: none;
+}
+
+.radio-pill span:hover {
+  background: rgba(108, 117, 125, 0.1);
+}
+
+.radio-pill input:focus + span {
+  box-shadow: 0 0 0 2px #6c757d;
+}
+
+.radio-pill input:checked + span {
+  border-color: #96a4b1;
+  background: rgba(230, 57, 70, 0.08);
+  color: #e63946;
+}
+
+.search-section-header {
+  font-size: 1.13rem;
+  font-weight: 700;
+  margin-bottom: 0.1rem;
+  color: #222;
+  letter-spacing: -0.01em;
+}
+
+.search-form-vertical fieldset .search-section-header {
+  margin-top: 0.7rem;
+}
+
+.location-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0rem;
+}
+
+/* Target icon for location */
+.target-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: url('data:image/svg+xml;utf8,<svg fill="none" stroke="gray" stroke-width="2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>') no-repeat center/contain;
+}
+
+.cta-btn {
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #c52f52, #e14454);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+} 

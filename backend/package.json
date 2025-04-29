@@ -4,8 +4,9 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc"
+    "dev": "NODE_ENV=development node --loader ts-node/esm src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.530.0",
@@ -20,6 +21,9 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.11.24",
     "nodemon": "^3.0.3",
     "prisma": "^5.15.0",
     "ts-node": "^10.9.2",

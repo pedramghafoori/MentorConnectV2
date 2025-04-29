@@ -44,6 +44,13 @@ mongoose.connect(mongoUri)
 app.use('/api', router);
 app.use('/api/auth', authRoutes);
 
+console.log('Registering /api/upload route');
+app.use('/api/upload', (req, res, next) => {
+  console.log(`[UPLOAD] ${req.method} ${req.originalUrl}`);
+  next();
+});
+app.use('/api/upload', uploadRoutes);
+
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
 const PORT = process.env.PORT || 4000;

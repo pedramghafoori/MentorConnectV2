@@ -35,17 +35,13 @@ if (!mongoUri) {
 // Connect to MongoDB
 mongoose.connect(mongoUri)
   .then(() => {
-    console.log('Connected to MongoDB');
   })
   .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err);
     process.exit(1);
   });
 
 app.use('/api', router);
 app.use('/api/auth', authRoutes);
-
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
 const PORT = process.env.PORT || 4000;
 

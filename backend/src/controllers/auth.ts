@@ -11,8 +11,6 @@ if (!JWT_SECRET) {
 }
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key';
 
-console.log('JWT_SECRET in login controller:', JWT_SECRET); // Debug log
-
 // Register a new user
 export const register = async (req: Request, res: Response) => {
     try {
@@ -48,7 +46,6 @@ export const register = async (req: Request, res: Response) => {
             refreshToken
         });
     } catch (error) {
-        console.error('Error in register:', error);
         res.status(500).json({ message: 'Error registering user', error });
     }
 };
@@ -84,7 +81,6 @@ export const login = async (req: Request, res: Response) => {
 
         res.json({ user: { id: user._id, email: user.email, role: user.role } });
     } catch (error) {
-        console.error('Error in login:', error);
         res.status(500).json({ message: 'Error logging in', error });
     }
 };
@@ -108,7 +104,6 @@ export const refreshToken = async (req: Request, res: Response) => {
         const accessToken = generateAccessToken(user);
         res.json({ accessToken });
     } catch (error) {
-        console.error('Error in refreshToken:', error);
         res.status(401).json({ message: 'Invalid refresh token' });
     }
 };
@@ -147,7 +142,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
         res.json({ message: 'Password reset email sent' });
     } catch (error) {
-        console.error('Error in forgotPassword:', error);
         res.status(500).json({ message: 'Error processing forgot password request', error });
     }
 };
@@ -172,7 +166,6 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         res.json({ message: 'Password reset successful' });
     } catch (error) {
-        console.error('Error in resetPassword:', error);
         res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 };

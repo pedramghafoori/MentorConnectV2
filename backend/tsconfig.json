@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "types": ["node", "dotenv", "mongoose"]
   },
   "ts-node": {
     "esm": true

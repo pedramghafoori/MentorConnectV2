@@ -1,101 +1,172 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { User } from '../models/user.js';
+import { sendEmail } from '../utils/email.js';
 
-const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key';
 
+// Register a new user
 export const register = async (req: Request, res: Response) => {
-  try {
-    const { email, password, firstName, lastName, role } = req.body;
+    try {
+        const { email, password, role } = req.body;
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
 
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, '10');
+
+        // Create new user
+        const user = new User({
+            email,
+            password: hashedPassword,
+            role
+        });
+
+        await user.save();
+
+        // Generate tokens
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            accessToken,
+            refreshToken
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error registering user', error });
     }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        role
-      }
-    });
-
-    // Create token
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
-    );
-
-    res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: 'Error creating user' });
-  }
 };
 
+// Login user
 export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+        // Find user
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
 
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+        // Check password
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate tokens
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        res.json({
+            message: 'Login successful',
+            accessToken,
+            refreshToken
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error logging in', error });
     }
+};
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+// Refresh access token
+export const refreshToken = async (req: Request, res: Response) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(401).json({ message: 'Refresh token required' });
+        }
+
+        const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { userId: string };
+        const user = await User.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid refresh token' });
+        }
+
+        const accessToken = generateAccessToken(user);
+        res.json({ accessToken });
+    } catch (error) {
+        res.status(401).json({ message: 'Invalid refresh token' });
     }
+};
 
-    // Create token
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+// Logout user
+export const logout = async (req: Request, res: Response) => {
+    // In a real application, you might want to blacklist the refresh token
+    res.json({ message: 'Logout successful' });
+};
+
+// Forgot password
+export const forgotPassword = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Generate reset token
+        const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+
+        // Send reset email
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        await sendEmail({
+            to: email,
+            subject: 'Password Reset',
+            text: `Click this link to reset your password: ${resetUrl}`
+        });
+
+        res.json({ message: 'Password reset email sent' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error processing forgot password request', error });
+    }
+};
+
+// Reset password
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        const user = await User.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, '10');
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ message: 'Password reset successful' });
+    } catch (error) {
+        res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+};
+
+// Helper functions
+const generateAccessToken = (user: any) => {
+    return jwt.sign(
+        { userId: user._id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '15m' }
     );
+};
 
-    res.json({
-      message: 'Logged in successfully',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Error logging in' });
-  }
+const generateRefreshToken = (user: any) => {
+    return jwt.sign(
+        { userId: user._id },
+        REFRESH_TOKEN_SECRET,
+        { expiresIn: '7d' }
+    );
 }; 

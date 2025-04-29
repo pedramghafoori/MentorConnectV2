@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { uploadPicture } from './uploadPicture';
+import api from '../../lib/api';
 
 export default function AvatarUpload({ src }) {
   const [previewUrl, setPreviewUrl] = useState(src);
@@ -20,7 +21,12 @@ export default function AvatarUpload({ src }) {
 
     try {
       setIsUploading(true);
+      console.log('Uploading file:', file);
       const newUrl = await uploadPicture(file);
+      console.log('Upload response URL:', newUrl);
+      // Persist the new avatar URL to the user's profile
+      const patchRes = await api.patch('/users/me', { avatarUrl: newUrl });
+      console.log('PATCH /users/me response:', patchRes.data);
       setPreviewUrl(newUrl);
     } catch (error) {
       console.error('Failed to upload avatar:', error);

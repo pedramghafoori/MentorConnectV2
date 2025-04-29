@@ -22,6 +22,24 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
+// PATCH /api/users/me - Update current user's profile (e.g., avatarUrl)
+router.patch('/me', authenticateToken, async (req, res) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  try {
+    const updates = req.body;
+    const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
 // GET /api/users/:userId/reviews - Get paginated reviews for a user
 router.get('/:userId/reviews', authenticateToken, async (req, res) => {
   const { userId } = req.params;

@@ -8,6 +8,7 @@ export interface IUser extends Document {
   lastName?: string;
   createdAt: Date;
   updatedAt: Date;
+  avatarUrl?: string;
 }
 
 const userSchema = new Schema<IUser>({
@@ -35,6 +36,11 @@ const userSchema = new Schema<IUser>({
   lastName: {
     type: String,
     trim: true
+  },
+  avatarUrl: {
+    type: String,
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true

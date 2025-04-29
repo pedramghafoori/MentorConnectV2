@@ -1,0 +1,48 @@
+:root {
+  --brand-red: #d33;
+  --card-radius: 1rem;
+  --card-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+
+.profile-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+  font-family: Inter, sans-serif;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.header-meta h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: .75rem;
+}
+
+button {
+  background: var(--brand-red);
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: .5rem 1.25rem;
+  cursor: pointer;
+} 

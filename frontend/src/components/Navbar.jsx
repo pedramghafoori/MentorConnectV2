@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import LoginForm from './Auth/LoginForm';
 import RegisterForm from './Auth/RegisterForm';
@@ -11,8 +11,8 @@ const Navbar = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 
@@ -33,34 +33,28 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center px-12 py-6 bg-white shadow-sm border-b border-gray-100">
-        <Link to="/" className="text-2xl font-bold text-[#ff385c] tracking-tight font-inter">
+      <header className="flex justify-between items-center px-12 py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
+        <Link to="/" className="text-2xl font-bold text-[#d33] tracking-tight font-['Inter',system-ui,sans-serif]">
           MentorConnect
         </Link>
-        <nav className="flex gap-8">
+        <nav className="flex gap-4">
           {user ? (
             <>
               <Link 
-                to="/mentors" 
-                className="text-gray-800 font-semibold text-lg hover:text-[#ff385c] hover:bg-gray-50 px-2 py-1 rounded-md transition-colors"
+                to="/dashboard" 
+                className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
               >
-                Connect
-              </Link>
-              <Link 
-                to="/bookings" 
-                className="text-gray-800 font-semibold text-lg hover:text-[#ff385c] hover:bg-gray-50 px-2 py-1 rounded-md transition-colors"
-              >
-                Bookings
+                Find Mentors
               </Link>
               <Link 
                 to="/profile" 
-                className="text-gray-800 font-semibold text-lg hover:text-[#ff385c] hover:bg-gray-50 px-2 py-1 rounded-md transition-colors"
+                className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
               >
                 Profile
               </Link>
               <button 
                 onClick={handleLogout} 
-                className="text-gray-800 font-semibold text-lg hover:text-[#ff385c] hover:bg-gray-50 px-2 py-1 rounded-md transition-colors font-inherit"
+                className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors font-inherit"
               >
                 Logout
               </button>
@@ -69,13 +63,13 @@ const Navbar = () => {
             <>
               <button 
                 onClick={handleOpenLogin}
-                className="text-gray-800 font-semibold text-lg hover:text-[#ff385c] hover:bg-gray-50 px-2 py-1 rounded-md transition-colors"
+                className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
               >
                 Login
               </button>
               <button 
                 onClick={handleOpenRegister}
-                className="text-gray-800 font-semibold text-lg hover:text-[#ff385c] hover:bg-gray-50 px-2 py-1 rounded-md transition-colors"
+                className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
               >
                 Register
               </button>

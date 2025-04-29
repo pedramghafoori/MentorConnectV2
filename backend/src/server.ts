@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.js';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import uploadRoutes from './routes/upload.js';
+import lssRoutes from './lss/lssRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -50,6 +51,9 @@ app.use('/api/upload', (req, res, next) => {
   next();
 });
 app.use('/api/upload', uploadRoutes);
+
+console.log('Registering /api/lss route');
+app.use('/api/lss', lssRoutes);
 
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
 

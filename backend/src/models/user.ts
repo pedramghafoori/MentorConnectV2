@@ -9,6 +9,11 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   avatarUrl?: string;
+  city?: string;
+  province?: string;
+  aboutMe?: string;
+  lssId?: string;
+  certifications?: string[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -41,6 +46,29 @@ const userSchema = new Schema<IUser>({
     type: String,
     trim: true,
     default: ''
+  },
+  city: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  province: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  aboutMe: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  lssId: {
+    type: String,
+    trim: true
+  },
+  certifications: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

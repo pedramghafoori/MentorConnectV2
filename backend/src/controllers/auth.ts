@@ -14,7 +14,7 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-s
 // Register a new user
 export const register = async (req: Request, res: Response) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role, city, province, aboutMe, lssId, firstName, lastName } = req.body;
         const userRole = role || 'MENTEE';
 
         // Check if user already exists
@@ -31,7 +31,13 @@ export const register = async (req: Request, res: Response) => {
         const user = new User({
             email,
             password: hashedPassword,
-            role: userRole
+            role: userRole,
+            city,
+            province,
+            aboutMe,
+            lssId,
+            firstName,
+            lastName
         });
 
         await user.save();

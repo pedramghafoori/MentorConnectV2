@@ -14,6 +14,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [location, setLocation] = useState('Toronto, ON');
 
   const isStrongPassword = (pw) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
@@ -46,6 +47,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         password,
         phone,
         heardAbout: heardAbout.join(','),
+        city: location.split(',')[0].trim(),
+        province: location.split(',')[1].trim(),
       });
       onClose();
       navigate('/dashboard');
@@ -119,6 +122,23 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             required
             className={inputClasses}
           />
+        </div>
+
+        <div>
+          <label htmlFor="location" className={labelClasses}>Location</label>
+          <p className="text-sm text-gray-500 mt-1">
+            Please select the city you're based out of. We're looking forward to expand to more cities soon.
+          </p>
+          <select
+            id="location"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            required
+            className={inputClasses}
+          >
+            <option value="Toronto, ON">Toronto, ON</option>
+            <option value="Ottawa, ON">Ottawa, ON</option>
+          </select>
         </div>
 
         <div>

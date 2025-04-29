@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import router from './routes/index.js';
 import authRoutes from './routes/auth.js';
+import mongoose from 'mongoose';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,6 +21,21 @@ app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 }
+
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error('MONGODB_URI is not defined in environment variables');
+}
+
+// Connect to MongoDB
+mongoose.connect(mongoUri)
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+    process.exit(1);
+  });
 
 app.use('/api', router);
 app.use('/api/auth', authRoutes);

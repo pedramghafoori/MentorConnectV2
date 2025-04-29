@@ -78,7 +78,7 @@ export default function ProfilePage() {
         </section>
       </main>
 
-      <ReviewsSection userId={data.id} />
+      <ReviewsSection userId={data._id} />
     </div>
   );
 } 

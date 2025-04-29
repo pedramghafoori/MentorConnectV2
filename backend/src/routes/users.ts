@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import { User } from '../models/user.js';
+import { Review } from '../models/review.js';
 
 const router = Router();
 
@@ -18,6 +19,30 @@ router.get('/me', authenticateToken, async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// GET /api/users/:userId/reviews - Get paginated reviews for a user
+router.get('/:userId/reviews', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = 10;
+
+  try {
+    const reviews = await Review.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const total = await Review.countDocuments({ user: userId });
+    const nextPage = page * limit < total ? page + 1 : null;
+
+    res.json({
+      reviews,
+      nextPage,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching reviews', error });
   }
 });
 

@@ -10,6 +10,7 @@ import router from './routes/index.js';
 import authRoutes from './routes/auth.js';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
+import uploadRoutes from './routes/upload.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,9 +24,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-if (process.env.NODE_ENV === 'development') {
-  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-}
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 const mongoUri = process.env.MONGODB_URI;
 if (!mongoUri) {
@@ -35,13 +34,17 @@ if (!mongoUri) {
 // Connect to MongoDB
 mongoose.connect(mongoUri)
   .then(() => {
+    console.log('Connected to MongoDB');
   })
   .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
     process.exit(1);
   });
 
 app.use('/api', router);
 app.use('/api/auth', authRoutes);
+
+console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
 const PORT = process.env.PORT || 4000;
 

@@ -2,7 +2,7 @@ import api from '../../lib/api';
 
 export const uploadPicture = async (file) => {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('avatar', file);
 
   const response = await api.post('/upload', formData, {
     headers: {

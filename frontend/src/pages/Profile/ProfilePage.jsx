@@ -9,11 +9,15 @@ import '../../styles/profile.css';
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery(['me'], getProfile);
-  const mutation = useMutation(updateProfile, {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['me'],
+    queryFn: getProfile,
+  });
+  const mutation = useMutation({
+    mutationFn: updateProfile,
     onSuccess: () => {
-      queryClient.invalidateQueries(['me']);
-    }
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
   });
 
   const [about, setAbout] = useState('');
@@ -24,6 +28,10 @@ export default function ProfilePage() {
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d33]"></div>
       </div>
     );
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center mt-8">Error loading profile: {error.message}</div>;
   }
 
   const { firstName, lastName, location, avatarUrl, certifications } = data;

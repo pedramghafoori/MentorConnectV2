@@ -24,18 +24,187 @@
 /* floating card that overlaps image */
 .search-card {
   position: absolute;
-  top: 50%;            /* vertically centre */
-  left: 1%;            /* overlap into the image */
-  transform: translateY(-50%);
-  width: 330px;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  padding: 1.6rem 1.8rem;
+  z-index: 10;
+  left: 1rem;
+  top: 9rem;
+  max-width: 425px;
+}
+
+@media (min-width: 768px) {
+  .search-card {
+    left: 3rem;
+  }
+}
+
+.search-card-inner {
+  background-color: rgb(255, 255, 255);
+  border-radius: 32px;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.search-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: rgb(17, 24, 39);
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+}
+
+.search-description {
+  color: rgb(75, 85, 99);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-form {
   display: flex;
   flex-direction: column;
-  gap: 0rem;       /* tighter spacing between rows */
-  z-index: 2;
+  gap: 1.25rem;
+}
+
+/* Form sections */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  color: rgb(17, 24, 39);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Streams grid */
+.streams-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.stream-option {
+  position: relative;
+}
+
+.stream-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.stream-option span {
+  display: block;
+  width: 100%;
+  padding: 0.625rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgb(75, 85, 99);
+  background-color: white;
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.stream-option span:hover {
+  border-color: rgb(209, 213, 219);
+}
+
+.stream-option input:checked + span {
+  border-color: #e63946;
+  background-color: #fef2f2;
+  color: #e63946;
+}
+
+/* Location section */
+.location-row {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.locate-button {
+  padding: 0.625rem;
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 9999px;
+  transition: border-color 0.15s;
+}
+
+.locate-button:hover {
+  border-color: rgb(209, 213, 219);
+}
+
+.locate-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgb(75, 85, 99);
+}
+
+.location-select {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  color: rgb(75, 85, 99);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.location-select:focus {
+  border-color: #e63946;
+}
+
+/* Search button */
+.search-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #e63946;
+  color: white;
+  font-weight: 500;
+  border-radius: 30px;
+  transition: opacity 0.15s;
+}
+
+.search-button:hover {
+  opacity: 0.9;
+}
+
+/* Hero Image */
+.hero-image-container {
+  margin-left: auto;
+  width: 85%;
+  height: 700px;
+  border-radius: 32px;
+  overflow: hidden;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Main container */
+.home-container {
+  min-height: 100vh;
+  background-color: rgb(249, 250, 251);
+  position: relative;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  position: relative;
 }
 
 /* Vertical search form layout */
@@ -56,101 +225,6 @@
   font-size: 0.95rem;
   font-weight: 500;
   margin-bottom: 0.3rem;
-}
-
-.location-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.city-select {
-  flex: 1;
-  padding: 0.55rem 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.locate-btn {
-  background: none;
-  border: none;
-  padding: 0.3rem 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-.locate-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.locate-btn:hover:not(:disabled) {
-  background: #f2f2f2;
-}
-
-/* ---- pill‑style multi‑select buttons ---- */
-.radio-pills {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* exactly two buttons per row */
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.radio-pill input {
-  display: none;                 /* hide native checkbox */
-}
-
-/* stretch each label to full column width */
-.radio-pill {
-  width: 100%;
-}
-
-.radio-pill span {
-  display: inline-block;
-  padding: 0.55rem 0.5rem;
-  border: 1px solid #adafb0;     /* outline button style */
-  border-radius: 8px;
-  background: transparent;
-  color: #6c757d;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-  font-size: 0.9rem;
-  width: 100%;
-  display: block;
-  box-sizing: border-box;
-  text-align: center;
-  outline: none;
-}
-
-.radio-pill span:hover {
-  background: rgba(108, 117, 125, 0.1);
-}
-
-.radio-pill input:focus + span {
-  box-shadow: 0 0 0 2px #6c757d;
-}
-
-.radio-pill input:checked + span {
-  border-color: #96a4b1;
-  background: rgba(230, 57, 70, 0.08);
-  color: #e63946;
-}
-
-.search-section-header {
-  font-size: 1.13rem;
-  font-weight: 700;
-  margin-bottom: 0.1rem;
-  color: #222;
-  letter-spacing: -0.01em;
-}
-
-.search-form-vertical fieldset .search-section-header {
-  margin-top: 0.7rem;
 }
 
 .location-label {

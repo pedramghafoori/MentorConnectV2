@@ -1,7 +1,30 @@
 import useUserStore from '../stores/userStore';
+import * as api from '../services/api';
 
 const useAuth = () => {
   const { token, user, setToken, setUser } = useUserStore();
+
+  const register = async (userData) => {
+    try {
+      const { token: newToken, user: newUser } = await api.register(userData);
+      setToken(newToken);
+      setUser(newUser);
+      return { token: newToken, user: newUser };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Unable to register');
+    }
+  };
+
+  const login = async (credentials) => {
+    try {
+      const { token: newToken, user: newUser } = await api.login(credentials);
+      setToken(newToken);
+      setUser(newUser);
+      return { token: newToken, user: newUser };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Unable to login');
+    }
+  };
 
   const logout = () => {
     setToken(null);
@@ -11,6 +34,8 @@ const useAuth = () => {
   return {
     user,
     token,
+    register,
+    login,
     logout,
     isAuthenticated: !!token,
   };

@@ -5,8 +5,13 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/user.js';
 import { sendEmail } from '../utils/email.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+}
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key';
+
+console.log('JWT_SECRET in login controller:', JWT_SECRET); // Debug log
 
 // Register a new user
 export const register = async (req: Request, res: Response) => {
@@ -69,11 +74,15 @@ export const login = async (req: Request, res: Response) => {
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
 
-        res.json({
-            message: 'Login successful',
-            accessToken,
-            refreshToken
+        // Set cookie
+        res.cookie('token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
+
+        res.json({ user: { id: user._id, email: user.email, role: user.role } });
     } catch (error) {
         console.error('Error in login:', error);
         res.status(500).json({ message: 'Error logging in', error });
@@ -107,7 +116,12 @@ export const refreshToken = async (req: Request, res: Response) => {
 // Logout user
 export const logout = async (req: Request, res: Response) => {
     // In a real application, you might want to blacklist the refresh token
-    res.json({ message: 'Logout successful' });
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    });
+    res.json({ message: 'Logged out' });
 };
 
 // Forgot password
@@ -168,7 +182,7 @@ const generateAccessToken = (user: any) => {
     return jwt.sign(
         { userId: user._id, role: user.role },
         JWT_SECRET,
-        { expiresIn: '15m' }
+        { expiresIn: '1d' }
     );
 };
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -10,9 +10,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/auth/me', {
-          withCredentials: true
-        });
+        const response = await api.get('/auth/me');
         setUser(response.data);
       } catch (error) {
         setUser(null);
@@ -26,9 +24,7 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     try {
-      const response = await axios.post('/api/auth/login', credentials, {
-        withCredentials: true
-      });
+      const response = await api.post('/auth/login', credentials);
       setUser(response.data.user);
     } catch (error) {
       throw error;
@@ -37,9 +33,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axios.post('/api/auth/logout', {}, {
-        withCredentials: true
-      });
+      await api.post('/auth/logout', {});
       setUser(null);
     } catch (error) {
       throw error;

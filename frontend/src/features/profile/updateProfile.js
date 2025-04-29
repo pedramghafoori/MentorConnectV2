@@ -1,8 +1,6 @@
-import axios from 'axios';
+import api from '../../lib/api';
 
 export const updateProfile = async (profileData) => {
-  const response = await axios.patch('/api/users/me', profileData, {
-    withCredentials: true
-  });
+  const response = await api.patch('/users/me', profileData);
   return response.data;
 }; 

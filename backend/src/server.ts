@@ -9,14 +9,19 @@ import { dirname } from 'path';
 import router from './routes/index.js';
 import authRoutes from './routes/auth.js';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Update this to your frontend URL in production
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 if (process.env.NODE_ENV === 'development') {
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -39,6 +44,8 @@ mongoose.connect(mongoUri)
 
 app.use('/api', router);
 app.use('/api/auth', authRoutes);
+
+console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
 const PORT = process.env.PORT || 4000;
 

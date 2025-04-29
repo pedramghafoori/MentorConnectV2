@@ -16,8 +16,8 @@ declare global {
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = req.cookies?.token;
+  console.log('Auth middleware - token:', token); // Debug log
 
   if (!token) {
     return res.status(401).json({ message: 'Access token is required' });
@@ -28,6 +28,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     req.user = decoded;
     next();
   } catch (error) {
+    console.error('JWT verification error:', error); // Debug log
     return res.status(403).json({ message: 'Invalid or expired token' });
   }
 }; 

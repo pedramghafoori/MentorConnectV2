@@ -1,11 +1,9 @@
 import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../../lib/api';
 
 const fetchReviews = async ({ pageParam = 1, userId }) => {
-  const response = await axios.get(`/api/users/${userId}/reviews?page=${pageParam}`, {
-    withCredentials: true
-  });
+  const response = await api.get(`/users/${userId}/reviews?page=${pageParam}`);
   return response.data;
 };
 

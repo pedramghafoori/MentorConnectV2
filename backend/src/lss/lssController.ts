@@ -13,8 +13,13 @@ export const getCertifications = async (req: Request, res: Response) => {
     if (!result) {
       return res.status(404).json({ error: 'No certifications found or failed to fetch.' });
     }
-    res.json(result);
+    // Transform the awards into a simple array of certification names
+    const certifications = result.awards
+      .map(award => award.name)
+      .filter((name): name is string => name !== null);
+    res.json(certifications);
   } catch (error) {
+    console.error('Error in getCertifications:', error);
     res.status(500).json({ error: 'Error fetching certifications', details: error });
   } finally {
     if (driver) await driver.quit();

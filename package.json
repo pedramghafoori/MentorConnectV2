@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": ["backend", "frontend"],
   "scripts": {
-    "dev": "concurrently -k -n BACK,FRONT -c green,cyan \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "dev": "concurrently -k -n BACK,FRONT -c green,cyan \"cd backend && pnpm run dev\" \"cd frontend && pnpm run dev\"",
     "build": "pnpm -r run build",
     "start": "node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"

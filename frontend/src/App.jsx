@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import useUserStore from './stores/userStore';
+import { useAuth } from './context/AuthContext';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DashboardRouter from './pages/Dashboard/DashboardRouter';
 import HomePage from './pages/Home/HomePage';
 import Navbar from './components/Navbar';
 
 const App = () => {
-  const { token } = useUserStore();
+  const { user, loading } = useAuth();
+
+  if (loading) return null; // Optionally show a spinner here
 
   return (
     <BrowserRouter>
@@ -15,8 +17,8 @@ const App = () => {
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={token ? <ProfilePage /> : <Navigate to="/" />} />
-            <Route path="/dashboard/*" element={token ? <DashboardRouter /> : <Navigate to="/" />} />
+            <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
+            <Route path="/dashboard/*" element={user ? <DashboardRouter /> : <Navigate to="/" />} />
           </Routes>
         </main>
       </div>

@@ -21,12 +21,19 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
+    "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.11.24",
     "nodemon": "^3.0.3",
     "prisma": "^5.15.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
-  }
-} 
+  },
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

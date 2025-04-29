@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "Bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -11,11 +11,11 @@
     "rootDir": "src",
     "resolveJsonModule": true,
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "ts-node": {
-    "esm": true,
-    "experimentalSpecifiers": true
+    "esm": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

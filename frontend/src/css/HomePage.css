@@ -250,4 +250,28 @@
   font-weight: 600;
   cursor: pointer;
   width: 100%;
+}
+
+.cert-section {
+  margin-top: 0.75rem; /* or any value you want */
+  margin-bottom: -1rem; /* Reduce space below each section */
+}
+
+.cert-separator {
+  width: 90%;
+  margin: 0.5rem auto 0.5rem auto; /* Reduce vertical space above/below the line */
+  border-top: 1px solid #e5e7eb;
+}
+
+.location-section {
+  margin-top: 1rem; /* or any value you want */
+}
+
+.examiner-section {
+  margin-bottom: -0.5rem;
+}
+
+.it-section {
+  margin-top: -0.5rem; /* or any value you want */
+  margin-bottom: -0.5rem;
 } 

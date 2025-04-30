@@ -7,6 +7,18 @@ import RegisterForm from '../../components/Auth/RegisterForm';
 import "../../css/HomePage.css";
 import mentorHero from "../../assets/mentor-hero.png";
 
+// Define new certification sections and mapping
+const EXAMINER_CERTS = [
+  { label: 'First Aid', value: 'EXAMINER_FIRST_AID' },
+  { label: 'Bronze', value: 'EXAMINER_BRONZE' },
+  { label: 'National Lifeguard', value: 'EXAMINER_NL' },
+];
+const IT_CERTS = [
+  { label: 'First Aid', value: 'INSTRUCTOR_TRAINER_FIRST_AID' },
+  { label: 'Lifesaving', value: 'INSTRUCTOR_TRAINER_LIFESAVING' },
+  { label: 'National Lifeguard', value: 'INSTRUCTOR_TRAINER_NL' },
+];
+
 const HomePage = () => {
   const [streams, setStreams] = useState([]);
   const [city, setCity] = useState("Toronto");
@@ -15,6 +27,7 @@ const HomePage = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [selectedCertifications, setSelectedCertifications] = useState([]);
 
   const toggleStream = (option) => {
     setStreams(prev =>
@@ -53,7 +66,9 @@ const HomePage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Add your search logic here
+    if (selectedCertifications.length === 0) return;
+    const certObjects = selectedCertifications.map(certValue => ({ type: certValue }));
+    navigate(`/dashboard/search?certifications=${encodeURIComponent(JSON.stringify(certObjects))}&city=${encodeURIComponent(city)}`);
   };
 
   return (
@@ -70,26 +85,46 @@ const HomePage = () => {
             </p>
 
             <form onSubmit={handleSearch} className="search-form">
-              {/* Streams Section */}
-              <div className="form-section">
-                <label className="form-label">Streams</label>
-                <div className="streams-grid">
-                  {["Bronze", "First Aid", "NL", "Instructor Trainer"].map(option => (
-                    <label key={option} className="stream-option">
-                      <input
-                        type="checkbox"
-                        value={option}
-                        checked={streams.includes(option)}
-                        onChange={() => toggleStream(option)}
-                      />
-                      <span>{option}</span>
-                    </label>
+              {/* Examiners Section */}
+              <div className="form-section cert-section examiner-section">
+                <label className="form-label mb-2">Examiner Mentors</label>
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {EXAMINER_CERTS.map(cert => (
+                    <button
+                      key={cert.value}
+                      type="button"
+                      className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                      onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
+                        ? selectedCertifications.filter(c => c !== cert.value)
+                        : [...selectedCertifications, cert.value])}
+                    >
+                      {cert.label}
+                    </button>
                   ))}
                 </div>
               </div>
-
+              {/* Separator */}
+              <div className="cert-separator" />
+              {/* Instructor Trainers Section */}
+              <div className="form-section cert-section it-section">
+                <label className="form-label mb-2">Instructor Trainers</label>
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {IT_CERTS.map(cert => (
+                    <button
+                      key={cert.value}
+                      type="button"
+                      className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                      onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
+                        ? selectedCertifications.filter(c => c !== cert.value)
+                        : [...selectedCertifications, cert.value])}
+                    >
+                      {cert.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {/* Location Section */}
-              <div className="form-section">
+              <div className="form-section location-section">
                 <label className="form-label">Location</label>
                 <div className="location-row">
                   <button
@@ -114,11 +149,10 @@ const HomePage = () => {
                   </select>
                 </div>
               </div>
-
               {/* Search Button */}
               <button
                 type="submit"
-                className="search-button"
+                className="search-button mt-4"
               >
                 Search
               </button>

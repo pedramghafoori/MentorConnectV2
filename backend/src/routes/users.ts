@@ -3,8 +3,66 @@ import { authenticateToken } from '../middleware/auth.js';
 import { User } from '../models/user.js';
 import { Review } from '../models/review.js';
 import mongoose from 'mongoose';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const router = Router();
+
+// Configure multer for profile picture upload
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../../uploads/'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
+
+// POST /api/users/me/profile-picture - Upload new profile picture
+router.post('/me/profile-picture', authenticateToken, upload.single('file'), async (req, res) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Get the current user to find the old profile picture
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete the old profile picture if it exists
+    if (user.avatarUrl) {
+      const oldFilePath = path.join(__dirname, '../../uploads', path.basename(user.avatarUrl));
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
+    }
+
+    // Update user with new profile picture URL
+    const newAvatarUrl = `/uploads/${file.filename}`;
+    user.avatarUrl = newAvatarUrl;
+    await user.save();
+
+    res.json({ url: newAvatarUrl });
+  } catch (error) {
+    console.error('Error uploading profile picture:', error);
+    res.status(500).json({ message: 'Error uploading profile picture', error });
+  }
+});
 
 // GET /api/users/me - Get current user's profile
 router.get('/me', authenticateToken, async (req, res) => {

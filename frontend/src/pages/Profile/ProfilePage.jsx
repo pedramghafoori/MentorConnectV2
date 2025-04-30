@@ -212,7 +212,6 @@ export default function ProfilePage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       setSelectedImage(e.target.result);
-      setShowProfileEditor(true);
     };
     reader.readAsDataURL(file);
   };
@@ -245,11 +244,19 @@ export default function ProfilePage() {
       <div className="profile-header">
         <div className="avatar-section">
           {isOwnProfile ? (
-            <AvatarUpload
-              src={data?.profilePicture || data?.avatarUrl}
-              isMentor={data?.isMentor}
-              onImageSelect={handleImageSelect}
-            />
+            <div 
+              className="cursor-pointer transition-transform hover:scale-105"
+              onClick={() => {
+                setSelectedImage(data?.profilePicture || data?.avatarUrl);
+                setShowProfileEditor(true);
+              }}
+            >
+              <img
+                src={data?.profilePicture || data?.avatarUrl}
+                alt="Profile"
+                className="w-40 h-40 rounded-full object-cover"
+              />
+            </div>
           ) : (
             <div 
               className="cursor-pointer transition-transform hover:scale-105"
@@ -478,6 +485,7 @@ export default function ProfilePage() {
             setShowProfileEditor(false);
             setSelectedImage(null);
           }}
+          onChangePicture={(newImage) => setSelectedImage(newImage)}
         />
       )}
     </div>

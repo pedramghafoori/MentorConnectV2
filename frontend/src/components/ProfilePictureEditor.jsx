@@ -3,13 +3,14 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { canvasPreview } from './utils/canvasPreview';
 
-const ProfilePictureEditor = ({ image, onSave, onCancel }) => {
+const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture }) => {
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState();
   const [scale, setScale] = useState(1);
   const [rotate, setRotate] = useState(0);
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   function onImageLoad(e) {
     const { width, height } = e.currentTarget;
@@ -28,6 +29,19 @@ const ProfilePictureEditor = ({ image, onSave, onCancel }) => {
     );
     setCrop(crop);
   }
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (onChangePicture) {
+        onChangePicture(e.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   async function onDownloadCropClick() {
     const image = imgRef.current;
@@ -121,20 +135,36 @@ const ProfilePictureEditor = ({ image, onSave, onCancel }) => {
           </ReactCrop>
         </div>
 
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-between items-center">
           <button
-            onClick={onCancel}
+            onClick={() => fileInputRef.current?.click()}
             className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            Change Picture
           </button>
-          <button
-            onClick={onDownloadCropClick}
-            className="px-4 py-2 text-white bg-[#d33] rounded-lg hover:bg-[#c22] transition-colors"
-          >
-            Save
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onDownloadCropClick}
+              className="px-4 py-2 text-white bg-[#d33] rounded-lg hover:bg-[#c22] transition-colors"
+            >
+              Save
+            </button>
+          </div>
         </div>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          className="hidden"
+        />
 
         <canvas
           ref={previewCanvasRef}

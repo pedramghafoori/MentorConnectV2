@@ -1,10 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { uploadPicture } from './uploadPicture';
-import api from '../../lib/api';
 
 export default function AvatarUpload({ src, isMentor, onImageSelect }) {
   const [previewUrl, setPreviewUrl] = useState(src);
-  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleClick = () => {
@@ -15,29 +12,13 @@ export default function AvatarUpload({ src, isMentor, onImageSelect }) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (onImageSelect) {
-      onImageSelect(file);
-      return;
-    }
-
-    // Create preview URL
+    // Create preview URL for immediate feedback
     const preview = URL.createObjectURL(file);
     setPreviewUrl(preview);
 
-    try {
-      setIsUploading(true);
-      console.log('Uploading file:', file);
-      const newUrl = await uploadPicture(file);
-      console.log('Upload response URL:', newUrl);
-      // Persist the new avatar URL to the user's profile
-      const patchRes = await api.patch('/users/me', { avatarUrl: newUrl });
-      console.log('PATCH /users/me response:', patchRes.data);
-      setPreviewUrl(newUrl);
-    } catch (error) {
-      console.error('Failed to upload avatar:', error);
-      setPreviewUrl(src); // Revert to original on error
-    } finally {
-      setIsUploading(false);
+    // Pass the file to the parent component
+    if (onImageSelect) {
+      onImageSelect(file);
     }
   };
 
@@ -57,11 +38,6 @@ export default function AvatarUpload({ src, isMentor, onImageSelect }) {
             Change
           </span>
         </div>
-        {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
-          </div>
-        )}
       </div>
       <input
         type="file"

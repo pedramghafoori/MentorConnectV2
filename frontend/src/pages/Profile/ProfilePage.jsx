@@ -10,6 +10,7 @@ import ImageModal from '../../components/ImageModal';
 import ProfilePictureEditor from '../../components/ProfilePictureEditor';
 import '../../styles/profile.css';
 import { useParams } from 'react-router-dom';
+import { uploadPicture } from '../../features/profile/uploadPicture';
 
 const formatCertificationName = (name) => {
   // Handle Instructor Trainer certifications
@@ -219,11 +220,15 @@ export default function ProfilePage() {
   const handleSaveProfilePicture = async (blob) => {
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('profilePicture', blob, 'profile-picture.jpg');
+      // Convert blob to File object
+      const file = new File([blob], 'profile-picture.jpg', { type: 'image/jpeg' });
       
+      // First upload the image
+      const imageUrl = await uploadPicture(file);
+      
+      // Then update the profile with the new image URL
       await mutation.mutateAsync({
-        profilePicture: formData,
+        avatarUrl: imageUrl
       });
       
       setShowProfileEditor(false);

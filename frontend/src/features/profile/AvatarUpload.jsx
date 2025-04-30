@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { uploadPicture } from './uploadPicture';
 import api from '../../lib/api';
 
-export default function AvatarUpload({ src }) {
+export default function AvatarUpload({ src, isMentor }) {
   const [previewUrl, setPreviewUrl] = useState(src);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -39,7 +39,7 @@ export default function AvatarUpload({ src }) {
   return (
     <div className="relative group">
       <div 
-        className="w-24 h-24 rounded-full overflow-hidden cursor-pointer relative"
+        className="w-40 h-40 rounded-full overflow-hidden cursor-pointer relative"
         onClick={handleClick}
       >
         <img

@@ -46,6 +46,7 @@ export default function ProfilePage() {
   const [isFetchingCerts, setIsFetchingCerts] = useState(false);
   const [lssId, setLssId] = useState('');
   const [isEditingLssId, setIsEditingLssId] = useState(false);
+  const [showLocationSelect, setShowLocationSelect] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -69,6 +70,11 @@ export default function ProfilePage() {
   if (error) {
     return <div className="text-red-500 text-center mt-8">Error loading profile: {error.message}</div>;
   }
+
+  // Log profile data for debugging
+  console.log('Profile data:', data);
+  console.log('firstName:', data.firstName);
+  console.log('lastName:', data.lastName);
 
   const { firstName, lastName, location: oldLocation, avatarUrl, certifications } = data;
 
@@ -122,91 +128,128 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-container">
-      <header className="card">
-        <div className="flex items-center space-x-6">
-          <AvatarUpload src={avatarUrl} />
-          <section className="header-meta">
-            <h1>{firstName} {lastName}</h1>
-            <div className="space-y-2">
-              <p className="text-gray-600">
-                <span>Location: </span>
+      <div className="profile-header">
+        <div className="avatar-section">
+          <AvatarUpload src={avatarUrl} isMentor={data.role === 'MENTOR'} />
+        </div>
+        <div className="profile-main-info">
+          <h1 className="profile-name">{firstName} {lastName}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', height: '2.1rem' }}>
+            {data.role === 'MENTOR' && (
+              <div className="mentor-label" style={{ height: '2rem', display: 'flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}>
+                Certified Mentor
+              </div>
+            )}
+            {/* Location display */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '2rem' }}>
+              {!showLocationSelect ? (
+                <button
+                  className="flex items-center gap-0 px-1 py-0 bg-transparent border-none shadow-none hover:bg-transparent transition cursor-pointer align-middle"
+                  style={{ fontWeight: 100, fontSize: '0.95rem', color: '#6b7280', outline: 'none', verticalAlign: 'middle', lineHeight: 1.2, height: '2rem', padding: 0, margin: 0, marginTop: '-15px' }}
+                  onClick={() => setShowLocationSelect(true)}
+                >
+                  {/* Classic location pin SVG */}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-gray-400" style={{ display: 'inline', verticalAlign: 'middle', margin: 0, padding: 0 }}>
+                    <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="#9ca3af" strokeWidth="1.5" fill="none"/>
+                    <circle cx="12" cy="10" r="2.9" fill="#9ca3af" />
+                  </svg>
+                  <span style={{ color: '#6b7280', fontSize: '0.95rem', verticalAlign: 'middle', lineHeight: 10.2, margin: 0, padding: 0 }}>
+                    {location.split(',')[0]}
+                  </span>
+                </button>
+              ) : (
                 <select
                   value={location}
                   onChange={e => setLocation(e.target.value)}
-                  className="ml-2 border rounded px-2 py-1"
+                  onBlur={() => { handleSaveLocation(); setShowLocationSelect(false); }}
+                  autoFocus
+                  className="form-select"
+                  style={{ minWidth: 140 }}
                 >
                   <option value="Toronto, ON">Toronto, ON</option>
                   <option value="Ottawa, ON">Ottawa, ON</option>
                 </select>
-                <button onClick={handleSaveLocation} className="ml-2 px-2 py-1 bg-[#e63946] text-white rounded">Save</button>
-              </p>
-              <p className="text-gray-600">
-                <span>LSS ID: </span>
-                {data.lssId ? (
-                  <span className="ml-2">{data.lssId}</span>
-                ) : (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={lssId}
-                      onChange={(e) => setLssId(e.target.value)}
-                      placeholder="Enter your LSS ID"
-                      className="ml-2 border rounded px-2 py-1"
-                    />
-                    <button 
-                      onClick={handleSaveLssId}
-                      className="ml-2 px-2 py-1 bg-[#e63946] text-white rounded"
-                    >
-                      Save
-                    </button>
-                  </div>
-                )}
-              </p>
+              )}
             </div>
+          </div>
+          <div className="profile-meta-row">
+            <div className="meta-item">
+              <span className="meta-label">LSS ID:</span>
+              {data.lssId ? (
+                <span>{data.lssId}</span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={lssId}
+                    onChange={(e) => setLssId(e.target.value)}
+                    placeholder="Enter your LSS ID"
+                    className="form-select"
+                  />
+                  <button 
+                    onClick={handleSaveLssId}
+                    className="btn btn-secondary"
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="profile-content">
+        <div className="main-content">
+          <section className="section-card about-section">
+            <div className="section-header">
+              <h2 className="section-title">About Me</h2>
+              <button onClick={handleSaveAbout} className="btn btn-primary">Save</button>
+            </div>
+            <textarea
+              defaultValue={data.about}
+              onChange={(e) => setAbout(e.target.value)}
+              placeholder="Tell us about yourself..."
+            />
+          </section>
+
+          <section className="section-card">
+            <div className="section-header">
+              <h2 className="section-title">Reviews</h2>
+            </div>
+            <ReviewsSection userId={data._id} />
           </section>
         </div>
-      </header>
 
-      <main className="grid">
-        <aside className="certifications-section">
-          <div className="certifications-header">
-            <h2>Certifications</h2>
-            <button 
-              onClick={handleFetchCertifications}
-              disabled={isFetchingCerts}
-              className="fetch-certifications-btn"
-            >
-              {isFetchingCerts ? 'Fetching...' : 'Fetch Certifications'}
-            </button>
-          </div>
-          <div className="certifications-grid">
-            {certifications?.map((cert, index) => {
-              const [name, years] = cert.split(': ');
-              return (
-                <div key={index} className="certification-pill">
-                  <span className="certification-name">{formatCertificationName(name)}</span>
-                  <span className="certification-years">{years}</span>
-                </div>
-              );
-            })}
-            {certifications?.length === 0 && (
-              <p className="text-gray-500 text-center py-4">No certifications found. Click 'Fetch Certifications' to load your certifications.</p>
-            )}
-          </div>
+        <aside>
+          <section className="section-card">
+            <div className="section-header">
+              <h2 className="section-title">Certifications</h2>
+              <button 
+                onClick={handleFetchCertifications}
+                disabled={isFetchingCerts}
+                className="btn btn-primary"
+              >
+                {isFetchingCerts ? 'Fetching...' : 'Fetch'}
+              </button>
+            </div>
+            <div className="certifications-grid">
+              {certifications?.map((cert, index) => {
+                const [name, years] = cert.split(': ');
+                return (
+                  <div key={index} className="certification-pill">
+                    <span className="certification-name">{formatCertificationName(name)}</span>
+                    <span className="certification-years">{years}</span>
+                  </div>
+                );
+              })}
+              {certifications?.length === 0 && (
+                <p className="text-gray-500 text-center py-4">No certifications found. Click 'Fetch' to load your certifications.</p>
+              )}
+            </div>
+          </section>
         </aside>
-
-        <section className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">About Me</h2>
-          <textarea
-            defaultValue={data.about}
-            onChange={(e) => setAbout(e.target.value)}
-            placeholder="Tell us about yourself..."
-          />
-          <button onClick={handleSaveAbout}>Save</button>
-        </section>
-      </main>
-
-      <ReviewsSection userId={data._id} />
+      </div>
     </div>
   );
 } 

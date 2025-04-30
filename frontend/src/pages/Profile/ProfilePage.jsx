@@ -8,6 +8,26 @@ import AvatarUpload from '../../features/profile/AvatarUpload';
 import ReviewsSection from '../../features/profile/ReviewsSection';
 import '../../styles/profile.css';
 
+const formatCertificationName = (name) => {
+  // Handle Instructor Trainer certifications
+  if (name.includes('INSTRUCTOR_TRAINER')) {
+    if (name.includes('FIRST_AID')) return 'First Aid IT';
+    if (name.includes('NL')) return 'NL IT';
+    if (name.includes('LIFESAVING')) return 'Lifesaving IT';
+    return 'IT';
+  }
+  
+  // Handle other certifications
+  return name
+    .replace('FIRST_AID_INSTRUCTOR', 'First Aid Instructor')
+    .replace('LIFESAVING_INSTRUCTOR', 'Lifesaving Instructor')
+    .replace('NL_INSTRUCTOR', 'NL Instructor')
+    .replace('EXAMINER_FIRST_AID', 'First Aid Examiner')
+    .replace('EXAMINER_NL', 'NL Examiner')
+    .replace('EXAMINER_BRONZE', 'Bronze Examiner')
+    .replace(/_/g, ' ');
+};
+
 export default function ProfilePage() {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
@@ -164,7 +184,7 @@ export default function ProfilePage() {
               const [name, years] = cert.split(': ');
               return (
                 <div key={index} className="certification-pill">
-                  <span className="certification-name">{name.replace(/_/g, ' ')}</span>
+                  <span className="certification-name">{formatCertificationName(name)}</span>
                   <span className="certification-years">{years}</span>
                 </div>
               );

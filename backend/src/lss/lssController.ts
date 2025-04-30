@@ -72,7 +72,7 @@ export const getCertifications = async (req: Request, res: Response) => {
 
     // Process each certification category
     const processedCertifications: Record<string, ProcessedCertification> = {};
-    const certificationStrings: string[] = [];
+    const certificationObjects: { type: string; years: number }[] = [];
     
     console.log('\n=== Processing Categories ===');
     for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
@@ -115,8 +115,8 @@ export const getCertifications = async (req: Request, res: Response) => {
           earliestDate: earliestAward.issueDate.toISOString()
         };
 
-        // Add to string array for database storage
-        certificationStrings.push(`${category}: ${yearsOfExperience} years`);
+        // Add to object array for database storage
+        certificationObjects.push({ type: category, years: yearsOfExperience });
       } else {
         console.log(`No relevant awards found for ${category}`);
         processedCertifications[category] = {
@@ -135,11 +135,11 @@ export const getCertifications = async (req: Request, res: Response) => {
     if (isMentor) {
       await User.findByIdAndUpdate(userId, { 
         role: 'MENTOR',
-        certifications: certificationStrings
+        certifications: certificationObjects
       });
     } else {
       await User.findByIdAndUpdate(userId, { 
-        certifications: certificationStrings
+        certifications: certificationObjects
       });
     }
 

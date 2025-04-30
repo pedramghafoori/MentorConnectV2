@@ -167,12 +167,15 @@ export default function ProfilePage() {
       setIsFetchingCerts(true);
       const newCerts = await getCertifications(lssId);
       
-      // Transform certifications into an array of strings
-      const certificationStrings = Object.entries(newCerts.certifications)
+      // Transform certifications into array of objects
+      const certificationObjects = Object.entries(newCerts.certifications)
         .filter(([_, cert]) => cert.hasCredential)
-        .map(([category, cert]) => `${category}: ${cert.yearsOfExperience} years`);
+        .map(([category, cert]) => ({
+          type: category,
+          years: cert.yearsOfExperience
+        }));
       
-      await mutation.mutateAsync({ certifications: certificationStrings });
+      await mutation.mutateAsync({ certifications: certificationObjects });
     } catch (error) {
       console.error('Failed to fetch certifications:', error);
       alert('Failed to fetch certifications. Please try again later.');
@@ -503,15 +506,12 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="certifications-grid">
-              {certifications?.map((cert, index) => {
-                const [name, years] = cert.split(': ');
-                return (
-                  <div key={index} className="certification-pill">
-                    <span className="certification-name">{formatCertificationName(name)}</span>
-                    <span className="certification-years">{years}</span>
-                  </div>
-                );
-              })}
+              {certifications?.map((cert, index) => (
+                <div key={index} className="certification-pill">
+                  <span className="certification-name">{formatCertificationName(cert.type)}</span>
+                  <span className="certification-years">{cert.years} years</span>
+                </div>
+              ))}
               {certifications?.length === 0 && (
                 <p className="text-gray-500 text-center py-4">No certifications found. {isOwnProfile && "Click 'Fetch' to load your certifications."}</p>
               )}

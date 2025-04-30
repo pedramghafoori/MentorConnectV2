@@ -13,12 +13,17 @@ export interface IUser extends Document {
   province?: string;
   aboutMe?: string;
   lssId?: string;
-  certifications?: string[];
+  certifications?: { type: string; years: number }[];
   connections: mongoose.Types.ObjectId[];
   connectionRequests: mongoose.Types.ObjectId[];
   showLssId?: boolean;
   showConnections?: boolean;
 }
+
+const certificationSchema = new Schema({
+  type: { type: String, required: true },
+  years: { type: Number, required: true }
+}, { _id: false });
 
 const userSchema = new Schema<IUser>({
   email: {
@@ -71,7 +76,7 @@ const userSchema = new Schema<IUser>({
     trim: true
   },
   certifications: {
-    type: [String],
+    type: [certificationSchema],
     default: []
   },
   connections: [{

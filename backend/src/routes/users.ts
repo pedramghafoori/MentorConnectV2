@@ -131,25 +131,25 @@ router.get('/search', authenticateToken, async (req, res) => {
     ? req.query.certifications.toString().split(',').map(s => s.trim()).filter(Boolean)
     : [];
 
+  // If neither query nor certs, return empty
   if (!query && certs.length === 0) return res.json([]);
   try {
-    const certsFilter = certs.length
-      ? { certifications: { $all: certs } }
-      : {};
-    const users = await User.find({
-      $and: [
-        {
-          $or: [
-            { firstName: { $regex: query || '', $options: 'i' } },
-            { lastName: { $regex: query || '', $options: 'i' } },
-            { lssId: { $regex: query || '', $options: 'i' } },
-            { certifications: { $elemMatch: { $regex: query || '', $options: 'i' } } }
-          ]
-        },
-        certsFilter,
-        { _id: { $ne: currentUserId } }
-      ]
-    }).select('firstName lastName avatarUrl lssId role certifications');
+    let searchFilter: any = { $and: [{ _id: { $ne: currentUserId } }] };
+    if (query) {
+      searchFilter.$and.unshift({
+        $or: [
+          { firstName: { $regex: query, $options: 'i' } },
+          { lastName: { $regex: query, $options: 'i' } },
+          { lssId: { $regex: query, $options: 'i' } },
+          { 'certifications.type': { $regex: query, $options: 'i' } }
+        ]
+      });
+    } else if (certs.length > 0) {
+      searchFilter.$and.unshift({
+        'certifications.type': { $in: certs }
+      });
+    }
+    const users = await User.find(searchFilter).select('firstName lastName avatarUrl lssId role certifications');
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error searching users', error });

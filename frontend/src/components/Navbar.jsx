@@ -44,6 +44,7 @@ const Navbar = () => {
   const queryClient = useQueryClient();
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [selectedCertifications, setSelectedCertifications] = useState([]);
+  const [searchMode, setSearchMode] = useState('name'); // 'name' or 'certs'
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -83,32 +84,46 @@ const Navbar = () => {
     setShowRegisterModal(false);
   };
 
+  const handleSearch = async () => {
+    if (!searchValue.trim() && selectedCertifications.length === 0) return;
+    
+    setSearchLoading(true);
+    setSearchError('');
+    
+    try {
+      const params = new URLSearchParams();
+      if (searchMode === 'name') {
+        params.append('query', searchValue.trim());
+      } else if (searchMode === 'certs') {
+        // Convert selected certifications to the new format
+        const certObjects = selectedCertifications.map(cert => ({
+          type: cert.toUpperCase().replace(/ /g, '_'),
+          years: 1 // Default to 1 year for search
+        }));
+        params.append('certifications', JSON.stringify(certObjects));
+      }
+      
+      const { data } = await axios.get(`/api/users/search?${params.toString()}`);
+      setSearchResults(data);
+    } catch (err) {
+      setSearchError('Error searching users');
+      console.error('Search error:', err);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (!showSearch || (searchValue.trim() === '' && selectedCertifications.length === 0)) {
+    if (!showSearch || (searchMode === 'name' && searchValue.trim() === '') || (searchMode === 'certs' && selectedCertifications.length === 0)) {
       setSearchResults([]);
       setSearchLoading(false);
       setSearchError('');
       return;
     }
-    setSearchLoading(true);
-    setSearchError('');
-    const handler = setTimeout(async () => {
-      try {
-        const params = new URLSearchParams();
-        params.append('query', searchValue.trim());
-        if (selectedCertifications.length > 0) {
-          params.append('certifications', selectedCertifications.join(','));
-        }
-        const { data } = await axios.get(`/api/users/search?${params.toString()}`);
-        setSearchResults(data);
-        setSearchLoading(false);
-      } catch (err) {
-        setSearchError('Error searching users');
-        setSearchLoading(false);
-      }
-    }, 300);
+    
+    const handler = setTimeout(handleSearch, 300);
     return () => clearTimeout(handler);
-  }, [searchValue, showSearch, selectedCertifications]);
+  }, [searchValue, showSearch, selectedCertifications, searchMode]);
 
   // Click-away listener
   useEffect(() => {
@@ -255,10 +270,33 @@ const Navbar = () => {
                     transition: 'width 0.3s, opacity 0.3s',
                   }}
                   autoFocus={showSearch}
+                  disabled={showAdvancedSearch && searchMode === 'certs'}
                 />
                 {/* Advanced Search Panel (compact, below search bar) */}
                 {showAdvancedSearch && (
                   <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 z-50 p-4">
+                    <div className="flex gap-4 mb-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="searchMode"
+                          value="name"
+                          checked={searchMode === 'name'}
+                          onChange={() => setSearchMode('name')}
+                        />
+                        <span className="text-sm">Name/ID</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="searchMode"
+                          value="certs"
+                          checked={searchMode === 'certs'}
+                          onChange={() => setSearchMode('certs')}
+                        />
+                        <span className="text-sm">Certifications</span>
+                      </label>
+                    </div>
                     <div className="mb-2 font-semibold text-sm">Filter by Certifications</div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {ALL_CERTIFICATIONS.map(cert => (
@@ -269,6 +307,7 @@ const Navbar = () => {
                             ? selectedCertifications.filter(c => c !== cert)
                             : [...selectedCertifications, cert])}
                           type="button"
+                          disabled={searchMode !== 'certs'}
                         >
                           {cert}
                         </button>
@@ -283,7 +322,7 @@ const Navbar = () => {
                         className="px-4 py-2 rounded bg-[#d33] text-white hover:bg-[#c22]"
                         onClick={() => {
                           setShowAdvancedSearch(false);
-                          if (searchValue.trim() === '' && selectedCertifications.length > 0) {
+                          if (searchMode === 'certs' && searchValue.trim() === '' && selectedCertifications.length > 0) {
                             setSearchValue(' ');
                           }
                         }}
@@ -292,7 +331,10 @@ const Navbar = () => {
                   </div>
                 )}
                 {/* Search results dropdown (only show if not showing advanced search) */}
-                {!showAdvancedSearch && (searchValue.trim() !== '' || selectedCertifications.length > 0) && (
+                {!showAdvancedSearch && (
+                  (searchMode === 'name' && searchValue.trim() !== '') ||
+                  (searchMode === 'certs' && selectedCertifications.length > 0)
+                ) && (
                   <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
                     {searchLoading && (
                       <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>

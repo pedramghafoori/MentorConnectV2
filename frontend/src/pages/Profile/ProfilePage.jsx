@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus, removeConnection } from '../../features/profile/getProfile';
+import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus, removeConnection, getMyConnections } from '../../features/profile/getProfile';
 import { updateProfile } from '../../features/profile/updateProfile';
 import { getCertifications } from '../../features/profile/getCertifications';
 import AvatarUpload from '../../features/profile/AvatarUpload';
@@ -9,7 +9,7 @@ import ReviewsSection from '../../features/profile/ReviewsSection';
 import ImageModal from '../../components/ImageModal';
 import ProfilePictureEditor from '../../components/ProfilePictureEditor';
 import '../../styles/profile.css';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { uploadPicture } from '../../features/profile/uploadPicture';
 
 const formatCertificationName = (name) => {
@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { userId } = useParams();
+  const navigate = useNavigate();
 
   // Determine if this is own profile or public profile
   const isOwnProfile = !userId || user?._id === userId;
@@ -56,6 +57,13 @@ export default function ProfilePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me'] });
     },
+  });
+
+  // Add new query for connections
+  const { data: connections, isLoading: isLoadingConnections } = useQuery({
+    queryKey: ['connections'],
+    queryFn: getMyConnections,
+    enabled: isOwnProfile,
   });
 
   const [about, setAbout] = useState('');
@@ -411,8 +419,8 @@ export default function ProfilePage() {
       </div>
 
       <div className="profile-content">
-        <div className="main-content">
-          <section className="section-card about-section">
+        <main>
+          <section className="section-card about-section mb-6">
             <div className="section-header">
               <h2 className="section-title">About Me</h2>
               {isOwnProfile && <button onClick={handleSaveAbout} className="btn btn-primary">Save</button>}
@@ -428,13 +436,55 @@ export default function ProfilePage() {
             )}
           </section>
 
-          <section className="section-card">
+          {/* Connections Section - moved here, styled as pills, clickable */}
+          {isOwnProfile && (
+            <section className="section-card mb-6">
+              <div className="section-header">
+                <h2 className="section-title">Connections</h2>
+              </div>
+              {isLoadingConnections ? (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#d33]"></div>
+                </div>
+              ) : connections?.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {connections.map((connection) => (
+                    <button
+                      key={connection._id}
+                      onClick={() => navigate(`/profile/${connection._id}`)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm cursor-pointer border border-gray-200"
+                      style={{ minWidth: 0 }}
+                    >
+                      <img
+                        src={connection.avatarUrl || '/default-avatar.png'}
+                        alt={`${connection.firstName} ${connection.lastName}'s profile`}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <div className="flex flex-col items-start min-w-0">
+                        <span className="font-medium text-gray-900 truncate text-sm">
+                          {connection.firstName} {connection.lastName}
+                        </span>
+                        <span className="text-xs text-gray-500 truncate">{connection.lssId}</span>
+                        {connection.role === 'MENTOR' && (
+                          <span className="text-xs text-[#d33] font-medium">Mentor</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No connections yet.</p>
+              )}
+            </section>
+          )}
+
+          <section className="section-card mb-6">
             <div className="section-header">
               <h2 className="section-title">Reviews</h2>
             </div>
             <ReviewsSection userId={data._id} />
           </section>
-        </div>
+        </main>
 
         <aside>
           <section className="section-card">

@@ -7,6 +7,7 @@ import { getCertifications } from '../../features/profile/getCertifications';
 import AvatarUpload from '../../features/profile/AvatarUpload';
 import ReviewsSection from '../../features/profile/ReviewsSection';
 import ImageModal from '../../components/ImageModal';
+import ProfilePictureEditor from '../../components/ProfilePictureEditor';
 import '../../styles/profile.css';
 import { useParams } from 'react-router-dom';
 
@@ -69,6 +70,9 @@ export default function ProfilePage() {
   const [showRemoveDropdown, setShowRemoveDropdown] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -203,20 +207,52 @@ export default function ProfilePage() {
     }
   };
 
+  const handleImageSelect = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target.result);
+      setShowProfileEditor(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfilePicture = async (blob) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', blob, 'profile-picture.jpg');
+      
+      await mutation.mutateAsync({
+        profilePicture: formData,
+      });
+      
+      setShowProfileEditor(false);
+      setSelectedImage(null);
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="profile-container">
       <div className="profile-header">
         <div className="avatar-section">
           {isOwnProfile ? (
-            <AvatarUpload src={avatarUrl} isMentor={data.role === 'MENTOR'} />
+            <AvatarUpload
+              src={data?.profilePicture || data?.avatarUrl}
+              isMentor={data?.isMentor}
+              onImageSelect={handleImageSelect}
+            />
           ) : (
             <div 
               className="cursor-pointer transition-transform hover:scale-105"
               onClick={() => setShowImageModal(true)}
             >
               <img
-                src={avatarUrl}
-                alt={`${firstName} ${lastName}'s profile`}
+                src={data?.profilePicture || data?.avatarUrl}
+                alt={`${data?.firstName} ${data?.lastName}'s profile`}
                 className="w-40 h-40 rounded-full object-cover"
               />
             </div>
@@ -420,13 +456,25 @@ export default function ProfilePage() {
         </aside>
       </div>
 
-      {/* Image Modal */}
+      {/* Image Modal for viewing other users' profile pictures */}
       <ImageModal
         isOpen={showImageModal}
         onClose={() => setShowImageModal(false)}
-        imageUrl={avatarUrl}
-        altText={`${firstName} ${lastName}'s profile picture`}
+        imageUrl={data?.profilePicture || data?.avatarUrl}
+        altText={`${data?.firstName} ${data?.lastName}'s profile picture`}
       />
+
+      {/* Profile Picture Editor for editing own profile picture */}
+      {showProfileEditor && (
+        <ProfilePictureEditor
+          image={selectedImage}
+          onSave={handleSaveProfilePicture}
+          onCancel={() => {
+            setShowProfileEditor(false);
+            setSelectedImage(null);
+          }}
+        />
+      )}
     </div>
   );
 } 

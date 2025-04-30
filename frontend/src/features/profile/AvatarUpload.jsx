@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { uploadPicture } from './uploadPicture';
 import api from '../../lib/api';
 
-export default function AvatarUpload({ src, isMentor }) {
+export default function AvatarUpload({ src, isMentor, onImageSelect }) {
   const [previewUrl, setPreviewUrl] = useState(src);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -14,6 +14,11 @@ export default function AvatarUpload({ src, isMentor }) {
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    if (onImageSelect) {
+      onImageSelect(file);
+      return;
+    }
 
     // Create preview URL
     const preview = URL.createObjectURL(file);

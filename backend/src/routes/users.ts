@@ -64,4 +64,22 @@ router.get('/:userId/reviews', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/users/search - Search users by name or LSS ID
+router.get('/search', async (req, res) => {
+  const query = req.query.query?.toString().trim();
+  if (!query) return res.json([]);
+  try {
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: query, $options: 'i' } },
+        { lastName: { $regex: query, $options: 'i' } },
+        { lssId: { $regex: query, $options: 'i' } }
+      ]
+    }).select('firstName lastName avatarUrl lssId role');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching users', error });
+  }
+});
+
 export default router; 

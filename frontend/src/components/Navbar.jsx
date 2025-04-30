@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import LoginForm from './Auth/LoginForm';
 import RegisterForm from './Auth/RegisterForm';
+import axios from 'axios';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -12,6 +13,9 @@ const Navbar = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   const handleLogout = async () => {
     await logout();
@@ -32,6 +36,31 @@ const Navbar = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
   };
+
+  useEffect(() => {
+    if (!showSearch || !searchValue.trim()) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchError('');
+      return;
+    }
+    setSearchLoading(true);
+    setSearchError('');
+    const handler = setTimeout(async () => {
+      console.log('Searching for:', searchValue.trim());
+      try {
+        const { data } = await axios.get(`/api/users/search?query=${encodeURIComponent(searchValue.trim())}`);
+        console.log('Search response:', data);
+        setSearchResults(data);
+        setSearchLoading(false);
+      } catch (err) {
+        console.error('Search error:', err);
+        setSearchError('Error searching users');
+        setSearchLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchValue, showSearch]);
 
   return (
     <>

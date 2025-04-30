@@ -14,6 +14,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [location, setLocation] = useState('Toronto, ON');
 
   const isStrongPassword = (pw) =>
@@ -30,6 +31,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     if (!isStrongPassword(password)) {
       setError('Password must be at least 8 characters and include uppercase, lowercase, and a number.');
       return;
@@ -39,7 +41,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       return;
     }
     try {
-      await register({
+      const res = await register({
         lssId,
         firstName,
         lastName,
@@ -50,10 +52,13 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         city: location.split(',')[0].trim(),
         province: location.split(',')[1].trim(),
       });
-      onClose();
-      navigate('/dashboard');
+      setSuccess(res.message || 'Registration successful!');
+      setTimeout(() => {
+        onClose();
+        navigate('/dashboard');
+      }, 1200);
     } catch (err) {
-      setError('Unable to register');
+      setError(err.message || 'Unable to register');
     }
   };
 
@@ -187,6 +192,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         </div>
 
         {error && <p className="text-red-600 mt-2">{error}</p>}
+        {success && <p className="text-green-600 mt-2">{success}</p>}
         
         <button 
           type="submit"

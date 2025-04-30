@@ -2,6 +2,7 @@
   --brand-red: #d33;
   --card-radius: 1rem;
   --card-shadow: 0 4px 12px rgba(0,0,0,.06);
+  --primary-blue: #4a90e2;
 }
 
 .profile-container {
@@ -45,4 +46,74 @@ button {
   border-radius: 9999px;
   padding: .5rem 1.25rem;
   cursor: pointer;
+}
+
+/* New Certification Styles */
+.certifications-section {
+  background: #fff;
+  border-radius: var(--card-radius);
+  padding: 1.5rem;
+}
+
+.certifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.certifications-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.certifications-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.certification-pill {
+  background: #EBF5FF;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.certification-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.certification-name {
+  color: #2B6CB0;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.certification-years {
+  background: #4299E1;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.fetch-certifications-btn {
+  background: var(--primary-blue);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.fetch-certifications-btn:hover {
+  background: #357ABD;
 } 

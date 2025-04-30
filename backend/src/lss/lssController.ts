@@ -50,6 +50,7 @@ export const getCertifications = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'No certifications found or failed to fetch.' });
     }
 
+    console.log('\n=== Processing Certifications ===');
     // Process awards into a more useful format with dates
     const processedAwards = result.awards
       .filter(award => award.name && award.issued)
@@ -57,31 +58,55 @@ export const getCertifications = async (req: Request, res: Response) => {
         name: award.name!,
         issueDate: new Date(award.issued!)
       }));
+    
+    console.log('\nAll Valid Awards:');
+    processedAwards.forEach(award => {
+      console.log(`- ${award.name} (Issued: ${award.issueDate.toISOString()})`);
+    });
 
     // Check for mentor status
     const isMentor = processedAwards.some(award => 
       award.name.includes(MENTOR_CERTIFICATION)
     );
+    console.log(`\nMentor Status: ${isMentor ? 'Yes' : 'No'}`);
 
     // Process each certification category
     const processedCertifications: Record<string, ProcessedCertification> = {};
     const certificationStrings: string[] = [];
     
+    console.log('\n=== Processing Categories ===');
     for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
+      console.log(`\nCategory: ${category}`);
+      console.log(`Valid Awards for this category: ${validAwards.join(', ')}`);
+      
       const relevantAwards = processedAwards.filter(award => 
         validAwards.some(validAward => award.name.includes(validAward))
       );
+      
+      console.log(`Found ${relevantAwards.length} relevant awards:`);
+      relevantAwards.forEach(award => {
+        console.log(`- ${award.name} (Issued: ${award.issueDate.toISOString()})`);
+      });
 
       if (relevantAwards.length > 0) {
         // Find earliest certification date for this category
         const earliestAward = relevantAwards.reduce((earliest, current) => 
           current.issueDate < earliest.issueDate ? current : earliest
         );
+        
+        console.log(`\nEarliest Award for ${category}:`);
+        console.log(`- Name: ${earliestAward.name}`);
+        console.log(`- Issue Date: ${earliestAward.issueDate.toISOString()}`);
 
         // Calculate years of experience
         const currentYear = new Date().getFullYear();
         const issueYear = earliestAward.issueDate.getFullYear();
         const yearsOfExperience = currentYear - issueYear;
+        
+        console.log(`Years Calculation:`);
+        console.log(`- Current Year: ${currentYear}`);
+        console.log(`- Issue Year: ${issueYear}`);
+        console.log(`- Years of Experience: ${yearsOfExperience}`);
 
         processedCertifications[category] = {
           category,
@@ -93,6 +118,7 @@ export const getCertifications = async (req: Request, res: Response) => {
         // Add to string array for database storage
         certificationStrings.push(`${category}: ${yearsOfExperience} years`);
       } else {
+        console.log(`No relevant awards found for ${category}`);
         processedCertifications[category] = {
           category,
           hasCredential: false,
@@ -101,6 +127,9 @@ export const getCertifications = async (req: Request, res: Response) => {
         };
       }
     }
+
+    console.log('\n=== Final Processed Certifications ===');
+    console.log(JSON.stringify(processedCertifications, null, 2));
 
     // If user is a mentor, update their role in the database
     if (isMentor) {

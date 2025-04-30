@@ -103,7 +103,7 @@ export default function ProfilePage() {
   return (
     <div className="profile-container">
       <header className="card">
-        <div className="flex items-start space-x-6">
+        <div className="flex items-center space-x-6">
           <AvatarUpload src={avatarUrl} />
           <section className="header-meta">
             <h1>{firstName} {lastName}</h1>
@@ -148,22 +148,31 @@ export default function ProfilePage() {
       </header>
 
       <main className="grid">
-        <aside className="card">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Certifications</h2>
+        <aside className="certifications-section">
+          <div className="certifications-header">
+            <h2>Certifications</h2>
             <button 
               onClick={handleFetchCertifications}
               disabled={isFetchingCerts}
-              className="px-3 py-1 bg-[#e63946] text-white rounded hover:bg-[#d33] disabled:opacity-50"
+              className="fetch-certifications-btn"
             >
               {isFetchingCerts ? 'Fetching...' : 'Fetch Certifications'}
             </button>
           </div>
-          <ul className="space-y-2">
-            {certifications?.map((cert, index) => (
-              <li key={index} className="text-gray-600">{cert}</li>
-            ))}
-          </ul>
+          <div className="certifications-grid">
+            {certifications?.map((cert, index) => {
+              const [name, years] = cert.split(': ');
+              return (
+                <div key={index} className="certification-pill">
+                  <span className="certification-name">{name.replace(/_/g, ' ')}</span>
+                  <span className="certification-years">{years}</span>
+                </div>
+              );
+            })}
+            {certifications?.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No certifications found. Click 'Fetch Certifications' to load your certifications.</p>
+            )}
+          </div>
         </aside>
 
         <section className="card">

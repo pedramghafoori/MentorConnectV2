@@ -13,6 +13,7 @@
     "@prisma/client": "^5.15.0",
     "@types/mongoose": "^5.11.97",
     "bcryptjs": "^2.4.3",
+    "chromedriver": "^135.0.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
+    "@types/chromedriver": "^81.0.5",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.3",

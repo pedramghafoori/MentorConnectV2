@@ -2,8 +2,8 @@
 
 /* container & title */
 .featured-carousel-container {
-    max-width: 90%;
-    
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 6rem 0 1.5rem;
     background: none;
   }
@@ -178,9 +178,9 @@
     
     /* Adjust card positions for more consistent spacing */
     .carousel-far-left  { --pos: translateX(-0%) scale(.72) skewY(2deg); }
-    .carousel-left      { --pos: translateX(-10%) scale(.92) skewY(1deg); }
+    .carousel-left      { --pos: translateX(-1%) scale(.92) skewY(1deg); }
     .carousel-center    { --pos: translateX(0) scale(1.12) translateY(-40px); }
-    .carousel-right     { --pos: translateX(10%) scale(.92) skewY(-1deg); }
+    .carousel-right     { --pos: translateX(1%) scale(.92) skewY(-1deg); }
     .carousel-far-right { --pos: translateX(0%) scale(.72) skewY(-2deg); }
   }
 

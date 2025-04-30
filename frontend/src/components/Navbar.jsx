@@ -7,6 +7,7 @@ import RegisterForm from './Auth/RegisterForm';
 import axios from 'axios';
 import { getMyConnectionRequests, respondToConnectionRequest, getProfile } from '../features/profile/getProfile';
 import { useQuery } from '@tanstack/react-query';
+import { updateProfile } from '../features/profile/updateProfile';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -26,9 +27,10 @@ const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
   const profileDropdownRef = useRef();
+  const [dropdownPanel, setDropdownPanel] = useState('main');
 
   // Use React Query to fetch user data
-  const { data: fullUserData } = useQuery({
+  const { data: fullUserData, refetch } = useQuery({
     queryKey: ['me'],
     queryFn: getProfile,
     enabled: !!user?._id,
@@ -166,6 +168,12 @@ const Navbar = () => {
         </div>
       </>
     );
+  };
+
+  // Settings toggles handlers
+  const handleToggle = async (field, value) => {
+    await updateProfile({ [field]: value });
+    refetch();
   };
 
   return (
@@ -328,39 +336,73 @@ const Navbar = () => {
                   <ProfileDisplay />
                 </button>
                 {showProfileDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
-                      onClick={() => setShowProfileDropdown(false)}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
-                      <span>Profile</span>
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
-                      onClick={() => setShowProfileDropdown(false)}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                      </svg>
-                      <span>Settings</span>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        handleLogout();
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                      </svg>
-                      <span>Logout</span>
-                    </button>
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50 transition-all duration-300" style={{ minHeight: 220 }}>
+                    {/* Sliding panels */}
+                    <div className="relative w-full h-full" style={{ minHeight: 220 }}>
+                      {/* Main panel */}
+                      <div className={`absolute inset-0 transition-transform duration-300 ${dropdownPanel === 'main' ? 'translate-x-0' : '-translate-x-full'} bg-white`}>
+                        <Link
+                          to="/profile"
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
+                          onClick={() => setShowProfileDropdown(false)}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                          <span>Profile</span>
+                        </Link>
+                        <button
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
+                          onClick={() => setDropdownPanel('settings')}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                          </svg>
+                          <span>Settings</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowProfileDropdown(false);
+                            handleLogout();
+                          }}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                          </svg>
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                      {/* Settings panel */}
+                      <div className={`absolute inset-0 transition-transform duration-300 ${dropdownPanel === 'settings' ? 'translate-x-0' : 'translate-x-full'} bg-white`}>
+                        <div className="flex items-center gap-2 px-4 py-3 border-b">
+                          <button onClick={() => setDropdownPanel('main')} className="text-gray-500 hover:text-[#d33]">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                          </button>
+                          <span className="font-semibold text-lg">Settings & Privacy</span>
+                        </div>
+                        <div className="px-4 py-4 flex flex-col gap-4">
+                          <div className="flex items-center justify-between">
+                            <span>Show LSS ID</span>
+                            <button
+                              className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${fullUserData?.showLssId ? 'bg-[#d33]' : 'bg-gray-300'}`}
+                              onClick={() => handleToggle('showLssId', !fullUserData?.showLssId)}
+                            >
+                              <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${fullUserData?.showLssId ? 'translate-x-4' : ''}`}></span>
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Show Connections</span>
+                            <button
+                              className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${fullUserData?.showConnections ? 'bg-[#d33]' : 'bg-gray-300'}`}
+                              onClick={() => handleToggle('showConnections', !fullUserData?.showConnections)}
+                            >
+                              <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${fullUserData?.showConnections ? 'translate-x-4' : ''}`}></span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

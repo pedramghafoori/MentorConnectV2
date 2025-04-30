@@ -16,6 +16,8 @@ export interface IUser extends Document {
   certifications?: string[];
   connections: mongoose.Types.ObjectId[];
   connectionRequests: mongoose.Types.ObjectId[];
+  showLssId?: boolean;
+  showConnections?: boolean;
 }
 
 const userSchema = new Schema<IUser>({
@@ -81,7 +83,15 @@ const userSchema = new Schema<IUser>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     default: []
-  }]
+  }],
+  showLssId: {
+    type: Boolean,
+    default: true
+  },
+  showConnections: {
+    type: Boolean,
+    default: true
+  }
 }, {
   timestamps: true
 });

@@ -131,7 +131,7 @@ export default function ProfilePage() {
   console.log('firstName:', data.firstName);
   console.log('lastName:', data.lastName);
 
-  const { firstName, lastName, location: oldLocation, avatarUrl, certifications } = data;
+  const { firstName, lastName, location: oldLocation, avatarUrl, certifications, showLssId = true, showConnections = true } = data;
 
   const handleSaveAbout = async () => {
     try {
@@ -411,7 +411,7 @@ export default function ProfilePage() {
                   </div>
                 )
               ) : (
-                <span>{data.lssId}</span>
+                showLssId ? <span>{data.lssId}</span> : <span className="text-gray-400 italic">Hidden</span>
               )}
             </div>
           </div>
@@ -437,7 +437,7 @@ export default function ProfilePage() {
           </section>
 
           {/* Connections Section - moved here, styled as pills, clickable */}
-          {isOwnProfile && (
+          {(isOwnProfile || showConnections) && (
             <section className="section-card mb-6">
               <div className="section-header">
                 <h2 className="section-title">Connections</h2>

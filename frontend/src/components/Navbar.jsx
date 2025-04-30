@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
@@ -16,6 +16,7 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const searchRef = useRef();
 
   const handleLogout = async () => {
     await logout();
@@ -62,6 +63,18 @@ const Navbar = () => {
     return () => clearTimeout(handler);
   }, [searchValue, showSearch]);
 
+  // Click-away listener
+  useEffect(() => {
+    if (!showSearch) return;
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearch(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSearch]);
+
   return (
     <>
       <header className="flex justify-between items-center px-12 py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
@@ -70,7 +83,7 @@ const Navbar = () => {
         </Link>
         <nav className="flex gap-4 items-center">
           {/* Search Icon and Animated Search Box */}
-          <div className="relative flex items-center">
+          <div className="relative flex items-center" ref={searchRef}>
             <button
               className="p-2 rounded-full hover:bg-gray-100 transition"
               onClick={() => setShowSearch((v) => !v)}
@@ -81,21 +94,59 @@ const Navbar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
               </svg>
             </button>
-            <div
-              className={`absolute right-0 top-1/2 -translate-y-1/2 transition-all duration-300 ${showSearch ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'} z-50`}
-              style={{ minWidth: 260 }}
-            >
-              <input
-                type="text"
-                value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                placeholder="Search by name or LSS ID..."
-                className="rounded-full px-5 py-2 border border-gray-300 shadow bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
-                style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-                autoFocus={showSearch}
-                onBlur={() => setShowSearch(false)}
-              />
-            </div>
+            {showSearch && (
+              <div
+                className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 transition-all duration-300 opacity-100 scale-100 pointer-events-auto z-50`}
+                style={{ minWidth: 320, width: 320 }}
+              >
+                <input
+                  type="text"
+                  value={searchValue}
+                  onChange={e => setSearchValue(e.target.value)}
+                  placeholder="Search by name or LSS ID"
+                  className="rounded-full px-5 py-2 border border-gray-300 shadow bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
+                  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                  autoFocus={showSearch}
+                />
+                {searchValue.trim() !== '' && (
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mt-2 max-h-80 overflow-y-auto">
+                    {searchLoading && (
+                      <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
+                    )}
+                    {searchError && (
+                      <div className="px-4 py-3 text-center text-red-400 text-sm">{searchError}</div>
+                    )}
+                    {!searchLoading && !searchError && searchResults.length === 0 && (
+                      <div className="px-4 py-6 text-center text-gray-400 text-sm">No users found.</div>
+                    )}
+                    {!searchLoading && !searchError && searchResults.map(user => (
+                      <div
+                        key={user._id}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition rounded-lg cursor-pointer"
+                        onMouseDown={() => {
+                          setShowSearch(false);
+                          navigate(`/profile/${user._id}`);
+                        }}
+                      >
+                        <img
+                          src={user.avatarUrl || '/default-avatar.png'}
+                          alt={user.firstName}
+                          className="w-9 h-9 rounded-full object-cover bg-gray-200"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 truncate">
+                            {user.firstName} {user.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {user.lssId}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           {user ? (
             <>

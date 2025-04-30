@@ -10,16 +10,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '../features/profile/updateProfile';
 
 const ALL_CERTIFICATIONS = [
-  'First Aid Instructor',
-  'Lifesaving Instructor',
-  'NL Instructor',
-  'First Aid Examiner',
-  'NL Examiner',
-  'Bronze Examiner',
-  'First Aid IT',
-  'NL IT',
-  'Lifesaving IT',
-  'IT',
+  { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
+  { label: 'Lifesaving Instructor', value: 'LIFESAVING_INSTRUCTOR' },
+  { label: 'NL Instructor', value: 'NL_INSTRUCTOR' },
+  { label: 'First Aid Examiner', value: 'EXAMINER_FIRST_AID' },
+  { label: 'NL Examiner', value: 'EXAMINER_NL' },
+  { label: 'Bronze Examiner', value: 'EXAMINER_BRONZE' },
+  { label: 'First Aid IT', value: 'INSTRUCTOR_TRAINER_FIRST_AID' },
+  { label: 'NL IT', value: 'INSTRUCTOR_TRAINER_NL' },
+  { label: 'Lifesaving IT', value: 'INSTRUCTOR_TRAINER_LIFESAVING' },
 ];
 
 const Navbar = () => {
@@ -95,19 +94,21 @@ const Navbar = () => {
       if (searchMode === 'name') {
         params.append('query', searchValue.trim());
       } else if (searchMode === 'certs') {
-        // Convert selected certifications to the new format
-        const certObjects = selectedCertifications.map(cert => ({
-          type: cert.toUpperCase().replace(/ /g, '_'),
-          years: 1 // Default to 1 year for search
+        // Use the value property for searching
+        const certObjects = selectedCertifications.map(certValue => ({
+          type: certValue
         }));
+        console.log('Searching with certifications:', certObjects);
         params.append('certifications', JSON.stringify(certObjects));
       }
       
+      console.log('Search params:', params.toString());
       const { data } = await axios.get(`/api/users/search?${params.toString()}`);
+      console.log('Search results:', data);
       setSearchResults(data);
     } catch (err) {
+      console.error('Search error details:', err);
       setSearchError('Error searching users');
-      console.error('Search error:', err);
     } finally {
       setSearchLoading(false);
     }
@@ -121,6 +122,8 @@ const Navbar = () => {
       return;
     }
     
+    console.log('Search mode:', searchMode);
+    console.log('Selected certifications:', selectedCertifications);
     const handler = setTimeout(handleSearch, 300);
     return () => clearTimeout(handler);
   }, [searchValue, showSearch, selectedCertifications, searchMode]);
@@ -301,15 +304,15 @@ const Navbar = () => {
                     <div className="flex flex-wrap gap-2 mb-4">
                       {ALL_CERTIFICATIONS.map(cert => (
                         <button
-                          key={cert}
-                          className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
-                          onClick={() => setSelectedCertifications(selectedCertifications.includes(cert)
-                            ? selectedCertifications.filter(c => c !== cert)
-                            : [...selectedCertifications, cert])}
+                          key={cert.value}
+                          className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                          onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
+                            ? selectedCertifications.filter(c => c !== cert.value)
+                            : [...selectedCertifications, cert.value])}
                           type="button"
                           disabled={searchMode !== 'certs'}
                         >
-                          {cert}
+                          {cert.label}
                         </button>
                       ))}
                     </div>

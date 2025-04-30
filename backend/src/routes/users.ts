@@ -128,13 +128,17 @@ router.get('/search', authenticateToken, async (req, res) => {
   const query = req.query.query?.toString().trim();
   const currentUserId = req.user?.userId;
   const certs = req.query.certifications
-    ? req.query.certifications.toString().split(',').map(s => s.trim()).filter(Boolean)
+    ? JSON.parse(req.query.certifications.toString()) as { type: string; years: number }[]
     : [];
 
+  console.log('Search request:', { query, certs });
+
   // If neither query nor certs, return empty
-  if (!query && certs.length === 0) return res.json([]);
+  if (!query && (!certs || certs.length === 0)) return res.json([]);
+  
   try {
     let searchFilter: any = { $and: [{ _id: { $ne: currentUserId } }] };
+    
     if (query) {
       searchFilter.$and.unshift({
         $or: [
@@ -144,14 +148,19 @@ router.get('/search', authenticateToken, async (req, res) => {
           { 'certifications.type': { $regex: query, $options: 'i' } }
         ]
       });
-    } else if (certs.length > 0) {
+    } else if (certs && certs.length > 0) {
+      // Search for users who have any of the specified certifications
       searchFilter.$and.unshift({
-        'certifications.type': { $in: certs }
+        'certifications.type': { $in: certs.map(cert => cert.type) }
       });
     }
+
+    console.log('Search filter:', JSON.stringify(searchFilter, null, 2));
     const users = await User.find(searchFilter).select('firstName lastName avatarUrl lssId role certifications');
+    console.log('Found users:', users.length);
     res.json(users);
   } catch (error) {
+    console.error('Search error:', error);
     res.status(500).json({ message: 'Error searching users', error });
   }
 });

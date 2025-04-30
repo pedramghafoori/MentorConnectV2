@@ -84,17 +84,27 @@ const Navbar = () => {
         <nav className="flex gap-4 items-center">
           {/* Search Icon and Animated Search Box */}
           <div className="relative flex items-center" ref={searchRef}>
-            <div className="flex items-center">
-              {/* Search bar, expands to the left */}
-              <div
-                className={`absolute right-10 top-1/2 -translate-y-1/2 transition-all duration-300 z-50`}
-                style={{
-                  width: showSearch ? 320 : 0,
-                  opacity: showSearch ? 1 : 0,
-                  pointerEvents: showSearch ? 'auto' : 'none',
-                  overflow: 'visible',
-                }}
-              >
+            {/* Search icon */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 transition mr-2"
+              onClick={() => setShowSearch((v) => !v)}
+              aria-label="Search users"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
+              </svg>
+            </button>
+            {/* Search bar and dropdown */}
+            <div
+              className={`transition-all duration-300 z-50`}
+              style={{
+                width: showSearch ? 320 : 0,
+                opacity: showSearch ? 1 : 0,
+                pointerEvents: showSearch ? 'auto' : 'none',
+                marginLeft: showSearch ? 12 : 0,
+              }}
+            >
+              <div className="relative w-full">
                 <input
                   type="text"
                   value={searchValue}
@@ -109,7 +119,7 @@ const Navbar = () => {
                   autoFocus={showSearch}
                 />
                 {searchValue.trim() !== '' && (
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mt-2 max-h-80 overflow-y-auto">
+                  <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
                     {searchLoading && (
                       <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
                     )}
@@ -146,16 +156,6 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-              {/* Search icon */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition ml-2"
-                onClick={() => setShowSearch((v) => !v)}
-                aria-label="Search users"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
-                </svg>
-              </button>
             </div>
           </div>
           {user ? (

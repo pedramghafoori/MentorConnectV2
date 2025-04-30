@@ -3,8 +3,8 @@
 /* container & title */
 .featured-carousel-container {
     max-width: 90%;
-    margin: 3rem auto 0;
-    padding: 2rem 0 1.5rem;
+    
+    padding: 6rem 0 1.5rem;
     background: none;
   }
   .featured-carousel-title {
@@ -73,20 +73,12 @@
   
   /* content area */
   .carousel-profile-content{ flex:1; display:flex; flex-direction:column; padding:1.2rem; }
-  .carousel-profile-header{ display:flex; align-items:center; gap:.7rem; margin-bottom:.7rem; }
-  .carousel-profile-name{ font-size:2rem; font-weight:700; color:#22223b; line-height:1.1; }
-  .mentor-badge.profile-badge {
-    background: #1a365d;
-    color: #ffd900;
-    font-size: 0.8rem;
-    padding: 0.12em 0.7em 0.12em 0.6em;
-    border-radius: 1em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3em;
-    border: 0px solid rgba(255,215,0,.18);
-    box-shadow: 0 1px 2px rgba(0,0,0,.08);
-    line-height: 1;
+  .carousel-profile-header{ display:flex; align-items:center; gap:0.7rem; margin-bottom:0.7rem; justify-content:space-between; }
+  .carousel-profile-name{ font-size:1.6rem; font-weight:700; color:#22223b; line-height:1.1; }
+  .featured-card .mentor-badge.profile-badge {
+    font-size: 0.56rem;
+    padding: 0.084em 0.40em 0.084em 0.42em;
+    border-radius: 5em;
   }
   .profile-badge::before{ content:'\2605'; color:#ffd900; margin-right:.3em; }
   .invisible-badge{ opacity:0!important; pointer-events:none; }
@@ -133,8 +125,37 @@
     }
   }
   @media (max-width:700px){
-    .featured-card{ width:160px; height:280px; }
-    .carousel-profile-name{ font-size:1.4rem; }
+    .featured-card{ width:160px; height:280px; padding:0; }
+    .carousel-profile-img-wrapper {
+      height: 120px;
+      width: 100%;
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .carousel-profile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+    }
+    .carousel-profile-name { font-size: 1.1rem; }
+    .carousel-category-text, .carousel-category-text-list { font-size: 0.85rem; }
+    .featured-card .mentor-badge.profile-badge {
+      font-size: 0.45rem;
+      padding: 0.07em 0.5em 0.07em 0.5em;
+    }
+    .carousel-profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.2rem;
+    }
+    .carousel-profile-content {
+      padding: 0.8rem;
+    }
     .featured-carousel-title{ font-size:3rem; }
   }
 

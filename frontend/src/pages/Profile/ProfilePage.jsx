@@ -28,7 +28,7 @@ const formatCertificationName = (name) => {
     .replace(/_/g, ' ');
 };
 
-export default function ProfilePage() {
+export default function ProfilePage({ profileId }) {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['me'],
@@ -40,6 +40,9 @@ export default function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
+
+  const { user } = useAuth();
+  const isOwnProfile = !profileId || user?._id === profileId;
 
   const [about, setAbout] = useState('');
   const [location, setLocation] = useState('Toronto, ON');
@@ -130,7 +133,15 @@ export default function ProfilePage() {
     <div className="profile-container">
       <div className="profile-header">
         <div className="avatar-section">
-          <AvatarUpload src={avatarUrl} isMentor={data.role === 'MENTOR'} />
+          {isOwnProfile ? (
+            <AvatarUpload src={avatarUrl} isMentor={data.role === 'MENTOR'} />
+          ) : (
+            <img
+              src={avatarUrl}
+              alt="Profile"
+              className="w-40 h-40 rounded-full object-cover"
+            />
+          )}
         </div>
         <div className="profile-main-info">
           <h1 className="profile-name">{firstName} {lastName}</h1>
@@ -146,53 +157,60 @@ export default function ProfilePage() {
                 <button
                   className="flex items-center gap-0 px-1 py-0 bg-transparent border-none shadow-none hover:bg-transparent transition cursor-pointer align-middle"
                   style={{ fontWeight: 100, fontSize: '0.95rem', color: '#6b7280', outline: 'none', verticalAlign: 'middle', lineHeight: 1.2, height: '2rem', padding: 0, margin: 0, marginTop: '-15px' }}
-                  onClick={() => setShowLocationSelect(true)}
+                  onClick={() => isOwnProfile && setShowLocationSelect(true)}
+                  disabled={!isOwnProfile}
                 >
                   {/* Classic location pin SVG */}
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-gray-400" style={{ display: 'inline', verticalAlign: 'middle', margin: 0, padding: 0 }}>
                     <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="#9ca3af" strokeWidth="1.5" fill="none"/>
                     <circle cx="12" cy="10" r="2.9" fill="#9ca3af" />
                   </svg>
-                  <span style={{ color: '#6b7280', fontSize: '0.95rem', verticalAlign: 'middle', lineHeight: 10.2, margin: 0, padding: 0 }}>
+                  <span style={{ color: '#6b7280', fontSize: '0.95rem', verticalAlign: 'middle', lineHeight: 1.2, margin: 0, padding: 0 }}>
                     {location.split(',')[0]}
                   </span>
                 </button>
               ) : (
-                <select
-                  value={location}
-                  onChange={e => setLocation(e.target.value)}
-                  onBlur={() => { handleSaveLocation(); setShowLocationSelect(false); }}
-                  autoFocus
-                  className="form-select"
-                  style={{ minWidth: 140 }}
-                >
-                  <option value="Toronto, ON">Toronto, ON</option>
-                  <option value="Ottawa, ON">Ottawa, ON</option>
-                </select>
+                isOwnProfile && (
+                  <select
+                    value={location}
+                    onChange={e => setLocation(e.target.value)}
+                    onBlur={() => { handleSaveLocation(); setShowLocationSelect(false); }}
+                    autoFocus
+                    className="form-select"
+                    style={{ minWidth: 140 }}
+                  >
+                    <option value="Toronto, ON">Toronto, ON</option>
+                    <option value="Ottawa, ON">Ottawa, ON</option>
+                  </select>
+                )
               )}
             </div>
           </div>
           <div className="profile-meta-row">
             <div className="meta-item">
               <span className="meta-label">LSS ID:</span>
-              {data.lssId ? (
-                <span>{data.lssId}</span>
+              {isOwnProfile ? (
+                data.lssId ? (
+                  <span>{data.lssId}</span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={lssId}
+                      onChange={(e) => setLssId(e.target.value)}
+                      placeholder="Enter your LSS ID"
+                      className="form-select"
+                    />
+                    <button 
+                      onClick={handleSaveLssId}
+                      className="btn btn-secondary"
+                    >
+                      Save
+                    </button>
+                  </div>
+                )
               ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={lssId}
-                    onChange={(e) => setLssId(e.target.value)}
-                    placeholder="Enter your LSS ID"
-                    className="form-select"
-                  />
-                  <button 
-                    onClick={handleSaveLssId}
-                    className="btn btn-secondary"
-                  >
-                    Save
-                  </button>
-                </div>
+                <span>{data.lssId}</span>
               )}
             </div>
           </div>
@@ -204,13 +222,17 @@ export default function ProfilePage() {
           <section className="section-card about-section">
             <div className="section-header">
               <h2 className="section-title">About Me</h2>
-              <button onClick={handleSaveAbout} className="btn btn-primary">Save</button>
+              {isOwnProfile && <button onClick={handleSaveAbout} className="btn btn-primary">Save</button>}
             </div>
-            <textarea
-              defaultValue={data.about}
-              onChange={(e) => setAbout(e.target.value)}
-              placeholder="Tell us about yourself..."
-            />
+            {isOwnProfile ? (
+              <textarea
+                defaultValue={data.about}
+                onChange={(e) => setAbout(e.target.value)}
+                placeholder="Tell us about yourself..."
+              />
+            ) : (
+              <div style={{ minHeight: 80, color: '#4a5568', fontSize: '1rem' }}>{data.about || <span className="text-gray-400">No bio provided.</span>}</div>
+            )}
           </section>
 
           <section className="section-card">
@@ -225,13 +247,15 @@ export default function ProfilePage() {
           <section className="section-card">
             <div className="section-header">
               <h2 className="section-title">Certifications</h2>
-              <button 
-                onClick={handleFetchCertifications}
-                disabled={isFetchingCerts}
-                className="btn btn-primary"
-              >
-                {isFetchingCerts ? 'Fetching...' : 'Fetch'}
-              </button>
+              {isOwnProfile && (
+                <button 
+                  onClick={handleFetchCertifications}
+                  disabled={isFetchingCerts}
+                  className="btn btn-primary"
+                >
+                  {isFetchingCerts ? 'Fetching...' : 'Fetch'}
+                </button>
+              )}
             </div>
             <div className="certifications-grid">
               {certifications?.map((cert, index) => {
@@ -244,7 +268,7 @@ export default function ProfilePage() {
                 );
               })}
               {certifications?.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No certifications found. Click 'Fetch' to load your certifications.</p>
+                <p className="text-gray-500 text-center py-4">No certifications found. {isOwnProfile && "Click 'Fetch' to load your certifications."}</p>
               )}
             </div>
           </section>

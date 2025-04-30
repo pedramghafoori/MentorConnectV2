@@ -16,6 +16,11 @@
   font-family: Inter, system-ui, sans-serif;
   background: var(--bg-light);
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 .profile-header {
@@ -236,17 +241,13 @@
   height: 2rem;
   display: flex;
   align-items: center;
-  padding-top: 0;
-  padding-bottom: 0;
-  background: #1a365d;
-  color: #ffd903;
   padding: 0.25rem 0.75rem;
+  background: #1a365d;
+  color: #ffd900;
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1rem;
-  margin-top: 0;
   border: 1px solid rgba(255, 215, 0, 0.18);
   width: auto;
   min-width: 0;
@@ -258,33 +259,21 @@
   color: #ffd900;
   font-size: 0.95em;
   margin-right: 0.3rem;
-  animation: twinkle 1.5s ease-in-out infinite;
 }
 
 .mentor-badge::after {
   content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.4));
-  border-radius: 50%;
-  z-index: -1;
-  animation: glow 2s ease-in-out infinite;
+  display: none;
 }
 
 @keyframes pulse {
   0% {
-    transform: scale(1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
   50% {
-    transform: scale(1.1);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
   }
   100% {
-    transform: scale(1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 }
@@ -301,26 +290,21 @@
 @keyframes glow {
   0% {
     opacity: 0.4;
-    transform: scale(1);
   }
   50% {
     opacity: 0.6;
-    transform: scale(1.1);
   }
   100% {
     opacity: 0.4;
-    transform: scale(1);
   }
 }
 
 @keyframes twinkle {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
     opacity: 0.7;
-    transform: scale(1.1);
   }
 }
 
@@ -419,4 +403,32 @@
   position: relative;
   top: -.30rem;
   transition: background-color 0.2s;
+}
+
+.location-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 2rem;
+  
+}
+
+.location-text {
+  color: #6b7280;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 0.1rem;
+}
+
+.location-text svg {
+  width: 1rem;
+  height: 1rem;
+  color: #9ca3af;
+  transform: translateY(-1px);
 } 

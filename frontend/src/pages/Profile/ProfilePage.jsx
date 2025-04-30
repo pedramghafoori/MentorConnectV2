@@ -292,20 +292,18 @@ export default function ProfilePage() {
               </div>
             )}
             {/* Location display */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '2rem' }}>
+            <div className="location-wrapper">
               {!showLocationSelect ? (
                 <button
-                  className="flex items-center gap-0 px-1 py-0 bg-transparent border-none shadow-none hover:bg-transparent transition cursor-pointer align-middle"
-                  style={{ fontWeight: 100, fontSize: '0.95rem', color: '#6b7280', outline: 'none', verticalAlign: 'middle', lineHeight: 1.2, height: '2rem', padding: 0, margin: 0, marginTop: '-15px' }}
+                  className="location-text"
                   onClick={() => isOwnProfile && setShowLocationSelect(true)}
                   disabled={!isOwnProfile}
                 >
-                  {/* Classic location pin SVG */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-gray-400" style={{ display: 'inline', verticalAlign: 'middle', margin: 0, padding: 0 }}>
-                    <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="#9ca3af" strokeWidth="1.5" fill="none"/>
-                    <circle cx="12" cy="10" r="2.9" fill="#9ca3af" />
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <circle cx="12" cy="10" r="2.9" fill="currentColor" />
                   </svg>
-                  <span style={{ color: '#6b7280', fontSize: '0.95rem', verticalAlign: 'middle', lineHeight: 1.2, margin: 0, padding: 0 }}>
+                  <span>
                     {location.split(',')[0]}
                   </span>
                 </button>

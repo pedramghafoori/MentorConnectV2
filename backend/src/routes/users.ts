@@ -66,15 +66,22 @@ router.get('/:userId/reviews', authenticateToken, async (req, res) => {
 });
 
 // GET /api/users/search - Search users by name or LSS ID
-router.get('/search', async (req, res) => {
+router.get('/search', authenticateToken, async (req, res) => {
   const query = req.query.query?.toString().trim();
+  const currentUserId = req.user?.userId;
+  
   if (!query) return res.json([]);
   try {
     const users = await User.find({
-      $or: [
-        { firstName: { $regex: query, $options: 'i' } },
-        { lastName: { $regex: query, $options: 'i' } },
-        { lssId: { $regex: query, $options: 'i' } }
+      $and: [
+        {
+          $or: [
+            { firstName: { $regex: query, $options: 'i' } },
+            { lastName: { $regex: query, $options: 'i' } },
+            { lssId: { $regex: query, $options: 'i' } }
+          ]
+        },
+        { _id: { $ne: currentUserId } }  // Exclude current user
       ]
     }).select('firstName lastName avatarUrl lssId role');
     res.json(users);

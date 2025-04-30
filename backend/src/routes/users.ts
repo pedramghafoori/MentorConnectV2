@@ -165,6 +165,28 @@ router.get('/search', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/users/featured - Get random featured users with certifications
+router.get('/featured', async (req, res) => {
+  try {
+    const users = await User.aggregate([
+      { $match: { certifications: { $exists: true, $not: { $size: 0 } } } },
+      { $sample: { size: 10 } },
+      { $project: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          avatarUrl: 1,
+          role: 1,
+          certifications: 1
+        }
+      }
+    ]);
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching featured users', error });
+  }
+});
+
 // GET /api/users/:userId - Get public profile by userId
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;

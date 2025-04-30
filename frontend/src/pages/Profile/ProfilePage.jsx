@@ -8,7 +8,7 @@ import AvatarUpload from '../../features/profile/AvatarUpload';
 import ReviewsSection from '../../features/profile/ReviewsSection';
 import ImageModal from '../../components/ImageModal';
 import ProfilePictureEditor from '../../components/ProfilePictureEditor';
-import '../../styles/profile.css';
+import '../../css/profile.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { uploadPicture } from '../../features/profile/uploadPicture';
 

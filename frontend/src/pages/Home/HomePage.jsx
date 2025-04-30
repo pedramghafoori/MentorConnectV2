@@ -6,6 +6,7 @@ import LoginForm from '../../components/Auth/LoginForm';
 import RegisterForm from '../../components/Auth/RegisterForm';
 import "../../css/HomePage.css";
 import mentorHero from "../../assets/mentor-hero.png";
+import FeaturedUsersCarousel from './FeaturedUsersCarousel';
 
 // Define new certification sections and mapping
 const EXAMINER_CERTS = [
@@ -168,6 +169,8 @@ const HomePage = () => {
             className="hero-image"
           />
         </div>
+
+        <FeaturedUsersCarousel />
       </div>
 
       {/* Auth Modals */}

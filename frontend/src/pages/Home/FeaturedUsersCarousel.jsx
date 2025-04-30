@@ -143,11 +143,7 @@ const FeaturedUsersCarousel = () => {
                 <div className="carousel-profile-content">
                   <div className="carousel-profile-header">
                     <span className="carousel-profile-name">{user.firstName}</span>
-                    {user.role === 'MENTOR' ? (
-                      <span className="mentor-badge profile-badge">Mentor</span>
-                    ) : (
-                      <span className="mentor-badge profile-badge placeholder-badge" aria-hidden="true"></span>
-                    )}
+                    <span className={`mentor-badge profile-badge${user.role === 'MENTOR' ? '' : ' invisible-badge'}`}>Mentor</span>
                   </div>
                   {topCategories.length === 0 && (
                     <div className="carousel-section">

@@ -1,15 +1,16 @@
 .featured-carousel-container {
-  max-width: 540px;
+  max-width: 80%;
   margin: 2.5rem auto 0 auto;
   padding: 2rem 0 1.5rem 0;
   background: none;
+  perspective: 1000px;
 }
 
 .featured-carousel-title {
-  font-size: 1.5rem;
+  font-size: 5rem;
   font-weight: 700;
   color: #22223b;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   text-align: center;
 }
 
@@ -17,13 +18,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  position: relative;
+  height: 500px;
 }
 
 .featured-cards-wrapper {
   display: flex;
-  gap: 1.5rem;
+  gap: 2.5rem;
   transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .featured-card {
@@ -37,9 +43,47 @@
   min-width: 220px;
   min-height: 200px;
   position: relative;
-  transition: box-shadow 0.2s, transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
   opacity: 0.85;
   z-index: 1;
+  transform-origin: center bottom;
+}
+
+/* Curved path positioning */
+.featured-card:nth-child(1) {
+  transform: translateX(-200%) translateY(50px) rotateY(20deg) scale(0.9);
+}
+
+.featured-card:nth-child(2) {
+  transform: translateX(-100%) translateY(0) rotateY(0deg) scale(1);
+  z-index: 2;
+}
+
+.featured-card:nth-child(3) {
+  transform: translateX(0) translateY(50px) rotateY(-20deg) scale(0.9);
+}
+
+/* Hover effects */
+.featured-card:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 8px 32px rgba(230,57,70,0.13);
+  z-index: 3;
+}
+
+/* Smooth transition for card movement */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.featured-card {
+  animation: slideIn 0.5s cubic-bezier(0.4,0,0.2,1) forwards;
 }
 
 .featured-card-center {
@@ -192,7 +236,16 @@
   color: #22223b;
   margin-right: 0.5rem;
   line-height: 1.1;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
+}
+
+.profile-badge,
+.placeholder-badge {
+  min-width: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0;
 }
 
 .profile-badge {
@@ -208,7 +261,6 @@
   border: 1px solid rgba(255, 215, 0, 0.18);
   box-shadow: 0 1px 2px rgba(0,0,0,0.08);
   margin-left: 0.2em;
-  margin-bottom: 0.5rem;
 }
 
 .profile-badge::before {
@@ -216,6 +268,10 @@
   color: #ffd900;
   font-size: 1em;
   margin-right: 0.3em;
+}
+
+.placeholder-badge::before {
+  content: none !important;
 }
 
 .carousel-section {
@@ -248,7 +304,7 @@
   border-radius: 2px;
 }
 
-.placeholder-badge {
-  visibility: hidden;
+.invisible-badge {
+  opacity: 0 !important;
   pointer-events: none;
 } 

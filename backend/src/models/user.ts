@@ -18,6 +18,8 @@ export interface IUser extends Document {
   connectionRequests: mongoose.Types.ObjectId[];
   showLssId?: boolean;
   showConnections?: boolean;
+  isDummy?: boolean;
+  dummyBatch?: string;
 }
 
 const certificationSchema = new Schema({

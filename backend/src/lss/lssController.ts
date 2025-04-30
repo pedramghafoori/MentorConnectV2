@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { getDriver, fetchCertificationsForLssId } from './lssScraper.js';
-import { prisma } from '../db.js';
+import { User } from '../models/user.js';
 
 // Define certification categories and their corresponding awards
 const CERTIFICATION_CATEGORIES = {
@@ -32,7 +32,7 @@ interface CertificationResponse {
 
 export const getCertifications = async (req: Request, res: Response) => {
   const { lssId } = req.body;
-  const userId = req.user?.id; // Assuming you have user data in the request from auth middleware
+  const userId = req.user?.userId; // Changed from id to userId to match JWT payload
 
   if (!lssId) {
     return res.status(400).json({ error: 'Missing lssId in request body' });
@@ -101,10 +101,7 @@ export const getCertifications = async (req: Request, res: Response) => {
 
     // If user is a mentor, update their role in the database
     if (isMentor) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { role: 'MENTOR' }
-      });
+      await User.findByIdAndUpdate(userId, { role: 'MENTOR' });
     }
 
     // Return both certifications and mentor status

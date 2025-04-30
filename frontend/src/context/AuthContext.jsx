@@ -24,9 +24,8 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials, onSuccess) => {
     try {
-      await api.post('/auth/login', credentials);
-      const response = await api.get('/auth/me');
-      setUser(response.data);
+      const response = await api.post('/auth/login', credentials);
+      setUser(response.data.user);
       if (onSuccess) onSuccess();
     } catch (error) {
       throw error;
@@ -35,7 +34,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout', {});
+      await api.post('/auth/logout');
       setUser(null);
     } catch (error) {
       throw error;

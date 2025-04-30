@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../lib/api';
+import { getProfile } from '../features/profile/getProfile';
 
 const AuthContext = createContext();
 
@@ -7,11 +8,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchFullUserProfile = async () => {
+    try {
+      const profileData = await getProfile();
+      console.log('Fetched full profile in AuthContext:', profileData);
+      setUser(profileData);
+    } catch (error) {
+      console.error('Error fetching full profile:', error);
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const response = await api.get('/auth/me');
+        // After basic auth check, fetch full profile
         setUser(response.data);
+        await fetchFullUserProfile();
       } catch (error) {
         setUser(null);
       } finally {
@@ -26,6 +39,8 @@ export function AuthProvider({ children }) {
     try {
       const response = await api.post('/auth/login', credentials);
       setUser(response.data.user);
+      // After login, fetch full profile
+      await fetchFullUserProfile();
       if (onSuccess) onSuccess();
     } catch (error) {
       throw error;

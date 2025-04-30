@@ -6,6 +6,7 @@ import { updateProfile } from '../../features/profile/updateProfile';
 import { getCertifications } from '../../features/profile/getCertifications';
 import AvatarUpload from '../../features/profile/AvatarUpload';
 import ReviewsSection from '../../features/profile/ReviewsSection';
+import ImageModal from '../../components/ImageModal';
 import '../../styles/profile.css';
 import { useParams } from 'react-router-dom';
 
@@ -67,6 +68,7 @@ export default function ProfilePage() {
   const [connectionError, setConnectionError] = useState('');
   const [showRemoveDropdown, setShowRemoveDropdown] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -208,11 +210,16 @@ export default function ProfilePage() {
           {isOwnProfile ? (
             <AvatarUpload src={avatarUrl} isMentor={data.role === 'MENTOR'} />
           ) : (
-            <img
-              src={avatarUrl}
-              alt="Profile"
-              className="w-40 h-40 rounded-full object-cover"
-            />
+            <div 
+              className="cursor-pointer transition-transform hover:scale-105"
+              onClick={() => setShowImageModal(true)}
+            >
+              <img
+                src={avatarUrl}
+                alt={`${firstName} ${lastName}'s profile`}
+                className="w-40 h-40 rounded-full object-cover"
+              />
+            </div>
           )}
         </div>
         <div className="profile-main-info">
@@ -412,6 +419,14 @@ export default function ProfilePage() {
           </section>
         </aside>
       </div>
+
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        imageUrl={avatarUrl}
+        altText={`${firstName} ${lastName}'s profile picture`}
+      />
     </div>
   );
 } 

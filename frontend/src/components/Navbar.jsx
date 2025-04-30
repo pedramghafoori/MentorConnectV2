@@ -308,6 +308,7 @@ const Navbar = () => {
                           onClick={async () => {
                             await respondToConnectionRequest(request._id, 'accept');
                             setConnectionRequests(cr => cr.filter(r => r._id !== request._id));
+                            queryClient.invalidateQueries(['connections']);
                           }}
                         >Accept</button>
                         <button

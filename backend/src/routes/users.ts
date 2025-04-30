@@ -309,4 +309,16 @@ router.get('/:userId/connection-status', authenticateToken, async (req, res) => 
   }
 });
 
+// Get connections for any user by ID
+router.get('/:userId/connections', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId).populate('connections', 'firstName lastName avatarUrl lssId role');
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+    res.json(user.connections);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
 export default router; 

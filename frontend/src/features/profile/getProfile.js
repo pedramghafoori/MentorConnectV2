@@ -44,4 +44,9 @@ export const respondToConnectionRequest = async (userId, action) => {
 export const removeConnection = async (userId) => {
   const response = await api.delete(`/users/${userId}/connection`);
   return response.data;
+};
+
+export const getUserConnections = async (userId) => {
+  const response = await api.get(`/users/${userId}/connections`);
+  return response.data;
 }; 

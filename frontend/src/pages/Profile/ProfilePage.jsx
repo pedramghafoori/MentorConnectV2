@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus, removeConnection, getMyConnections } from '../../features/profile/getProfile';
+import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus, removeConnection, getMyConnections, getUserConnections } from '../../features/profile/getProfile';
 import { updateProfile } from '../../features/profile/updateProfile';
 import { getCertifications } from '../../features/profile/getCertifications';
 import AvatarUpload from '../../features/profile/AvatarUpload';
@@ -61,9 +61,9 @@ export default function ProfilePage() {
 
   // Add new query for connections
   const { data: connections, isLoading: isLoadingConnections } = useQuery({
-    queryKey: ['connections'],
-    queryFn: getMyConnections,
-    enabled: isOwnProfile,
+    queryKey: ['connections', isOwnProfile ? 'me' : userId],
+    queryFn: () => isOwnProfile ? getMyConnections() : getUserConnections(userId),
+    enabled: isOwnProfile || !!userId,
   });
 
   const [about, setAbout] = useState('');

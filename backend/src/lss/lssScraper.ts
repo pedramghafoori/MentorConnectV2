@@ -38,6 +38,12 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
       const expiryStr = (await tds[1].getText()).trim();
       const awardStr = (await tds[2].getText()).trim();
       let daysLeft: number | null = null;
+      let issueDate: Date | null = null;
+      if (issuedStr) {
+        try {
+          issueDate = new Date(issuedStr);
+        } catch {}
+      }
       if (expiryStr) {
         try {
           const expiryDate = new Date(expiryStr);
@@ -47,7 +53,7 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
       }
       detailedAwards.push({
         name: awardStr || null,
-        issued: issuedStr || null,
+        issued: issueDate ? issueDate.toISOString() : null,
         expiry: expiryStr || null,
         daysLeft,
       });

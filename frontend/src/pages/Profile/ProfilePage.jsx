@@ -85,7 +85,13 @@ export default function ProfilePage() {
     try {
       setIsFetchingCerts(true);
       const newCerts = await getCertifications(lssId);
-      await mutation.mutateAsync({ certifications: newCerts });
+      
+      // Transform certifications into an array of strings
+      const certificationStrings = Object.entries(newCerts.certifications)
+        .filter(([_, cert]) => cert.hasCredential)
+        .map(([category, cert]) => `${category}: ${cert.yearsOfExperience} years`);
+      
+      await mutation.mutateAsync({ certifications: certificationStrings });
     } catch (error) {
       console.error('Failed to fetch certifications:', error);
       alert('Failed to fetch certifications. Please try again later.');

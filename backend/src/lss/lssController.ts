@@ -32,7 +32,7 @@ interface CertificationResponse {
 
 export const getCertifications = async (req: Request, res: Response) => {
   const { lssId } = req.body;
-  const userId = req.user?.userId; // Changed from id to userId to match JWT payload
+  const userId = req.user?.userId;
 
   if (!lssId) {
     return res.status(400).json({ error: 'Missing lssId in request body' });
@@ -65,6 +65,7 @@ export const getCertifications = async (req: Request, res: Response) => {
 
     // Process each certification category
     const processedCertifications: Record<string, ProcessedCertification> = {};
+    const certificationStrings: string[] = [];
     
     for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
       const relevantAwards = processedAwards.filter(award => 
@@ -78,10 +79,9 @@ export const getCertifications = async (req: Request, res: Response) => {
         );
 
         // Calculate years of experience
-        const yearsOfExperience = Math.floor(
-          (new Date().getTime() - earliestAward.issueDate.getTime()) / 
-          (1000 * 60 * 60 * 24 * 365)
-        );
+        const currentYear = new Date().getFullYear();
+        const issueYear = earliestAward.issueDate.getFullYear();
+        const yearsOfExperience = currentYear - issueYear;
 
         processedCertifications[category] = {
           category,
@@ -89,6 +89,9 @@ export const getCertifications = async (req: Request, res: Response) => {
           yearsOfExperience,
           earliestDate: earliestAward.issueDate.toISOString()
         };
+
+        // Add to string array for database storage
+        certificationStrings.push(`${category}: ${yearsOfExperience} years`);
       } else {
         processedCertifications[category] = {
           category,
@@ -101,7 +104,14 @@ export const getCertifications = async (req: Request, res: Response) => {
 
     // If user is a mentor, update their role in the database
     if (isMentor) {
-      await User.findByIdAndUpdate(userId, { role: 'MENTOR' });
+      await User.findByIdAndUpdate(userId, { 
+        role: 'MENTOR',
+        certifications: certificationStrings
+      });
+    } else {
+      await User.findByIdAndUpdate(userId, { 
+        certifications: certificationStrings
+      });
     }
 
     // Return both certifications and mentor status

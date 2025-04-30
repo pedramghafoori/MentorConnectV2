@@ -18,6 +18,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/dashboard/*" element={user ? <DashboardRouter /> : <Navigate to="/" />} />
           </Routes>
         </main>

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { getProfile } from '../../features/profile/getProfile';
+import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus } from '../../features/profile/getProfile';
 import { updateProfile } from '../../features/profile/updateProfile';
 import { getCertifications } from '../../features/profile/getCertifications';
 import AvatarUpload from '../../features/profile/AvatarUpload';
 import ReviewsSection from '../../features/profile/ReviewsSection';
 import '../../styles/profile.css';
+import { useParams } from 'react-router-dom';
 
 const formatCertificationName = (name) => {
   // Handle Instructor Trainer certifications
@@ -28,11 +29,24 @@ const formatCertificationName = (name) => {
     .replace(/_/g, ' ');
 };
 
-export default function ProfilePage({ profileId }) {
+export default function ProfilePage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { userId } = useParams();
+
+  // Determine if this is own profile or public profile
+  const isOwnProfile = !userId || user?._id === userId;
+
+  // Fetch profile data
   const { data, isLoading, error } = useQuery({
-    queryKey: ['me'],
-    queryFn: getProfile,
+    queryKey: [isOwnProfile ? 'me' : 'user', userId],
+    queryFn: async () => {
+      if (isOwnProfile) {
+        return await getProfile();
+      } else {
+        return await getProfileById(userId);
+      }
+    },
   });
   const mutation = useMutation({
     mutationFn: updateProfile,
@@ -41,15 +55,16 @@ export default function ProfilePage({ profileId }) {
     },
   });
 
-  const { user } = useAuth();
-  const isOwnProfile = !profileId || user?._id === profileId;
-
   const [about, setAbout] = useState('');
   const [location, setLocation] = useState('Toronto, ON');
   const [isFetchingCerts, setIsFetchingCerts] = useState(false);
   const [lssId, setLssId] = useState('');
   const [isEditingLssId, setIsEditingLssId] = useState(false);
   const [showLocationSelect, setShowLocationSelect] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState({ sent: false, received: false, connected: false });
+  const [checkingConnection, setCheckingConnection] = useState(false);
+  const [connectionLoading, setConnectionLoading] = useState(false);
+  const [connectionError, setConnectionError] = useState('');
 
   useEffect(() => {
     if (data) {
@@ -61,6 +76,26 @@ export default function ProfilePage({ profileId }) {
       }
     }
   }, [data]);
+
+  // Helper to check connection status
+  const checkConnectionStatus = async () => {
+    setCheckingConnection(true);
+    try {
+      const status = await getConnectionStatus(userId);
+      setConnectionStatus(status);
+    } catch (err) {
+      setConnectionError('Failed to check connection status');
+    } finally {
+      setCheckingConnection(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOwnProfile && userId) {
+      checkConnectionStatus();
+    }
+    // eslint-disable-next-line
+  }, [isOwnProfile, userId]);
 
   if (isLoading) {
     return (
@@ -129,6 +164,26 @@ export default function ProfilePage({ profileId }) {
     }
   };
 
+  const handleConnectionClick = async () => {
+    setConnectionLoading(true);
+    setConnectionError('');
+    try {
+      if (connectionStatus.sent) {
+        const res = await cancelConnectionRequest(userId);
+        console.log('Cancel response:', res);
+      } else {
+        const res = await sendConnectionRequest(userId);
+        console.log('Send response:', res);
+      }
+      await checkConnectionStatus();
+    } catch (err) {
+      setConnectionError('Failed to update connection');
+      console.error('Connection error:', err);
+    } finally {
+      setConnectionLoading(false);
+    }
+  };
+
   return (
     <div className="profile-container">
       <div className="profile-header">
@@ -145,6 +200,19 @@ export default function ProfilePage({ profileId }) {
         </div>
         <div className="profile-main-info">
           <h1 className="profile-name">{firstName} {lastName}</h1>
+          {/* Add Connection Button */}
+          {!isOwnProfile && (
+            <button
+              className={`ml-2 px-4 py-2 rounded-full font-semibold text-sm transition-colors ${connectionStatus.sent ? 'bg-gray-300 text-gray-600 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700'} ${(checkingConnection || connectionLoading) ? 'opacity-50 cursor-wait' : ''}`}
+              onClick={handleConnectionClick}
+              disabled={checkingConnection || connectionLoading}
+            >
+              {connectionLoading ? 'Loading...' : connectionStatus.sent ? 'Pending' : 'Add Connection'}
+            </button>
+          )}
+          {connectionError && (
+            <div className="text-red-500 text-xs mt-1">{connectionError}</div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', height: '2.1rem' }}>
             {data.role === 'MENTOR' && (
               <div className="mentor-label" style={{ height: '2rem', display: 'flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}>

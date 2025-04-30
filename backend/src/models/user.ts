@@ -14,6 +14,8 @@ export interface IUser extends Document {
   aboutMe?: string;
   lssId?: string;
   certifications?: string[];
+  connections: mongoose.Types.ObjectId[];
+  connectionRequests: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -69,7 +71,17 @@ const userSchema = new Schema<IUser>({
   certifications: {
     type: [String],
     default: []
-  }
+  },
+  connections: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }],
+  connectionRequests: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }]
 }, {
   timestamps: true
 });

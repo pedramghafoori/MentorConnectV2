@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import { User } from '../models/user.js';
 import { Review } from '../models/review.js';
+import mongoose from 'mongoose';
 
 const router = Router();
 
@@ -79,6 +80,167 @@ router.get('/search', async (req, res) => {
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error searching users', error });
+  }
+});
+
+// GET /api/users/:userId - Get public profile by userId
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// --- CONNECTIONS SYSTEM ---
+// Send connection request
+router.post('/:userId/connect', authenticateToken, async (req, res) => {
+  const fromUserId = req.user?.userId;
+  const toUserId = req.params.userId;
+  if (!fromUserId || !toUserId) return res.status(400).json({ message: 'Invalid user ID.' });
+  if (fromUserId === toUserId) return res.status(400).json({ message: 'Cannot connect to yourself.' });
+  try {
+    const toUser = await User.findById(toUserId);
+    if (!toUser) return res.status(404).json({ message: 'User not found.' });
+    if (toUser.connectionRequests.map(id => id.toString()).includes(fromUserId) || toUser.connections.map(id => id.toString()).includes(fromUserId)) {
+      return res.status(400).json({ message: 'Already requested or connected.' });
+    }
+    toUser.connectionRequests.push(new mongoose.Types.ObjectId(fromUserId));
+    await toUser.save();
+    res.json({ message: 'Connection request sent.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// Accept connection request
+router.post('/:userId/accept', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  const fromUserId = req.params.userId;
+  if (!myUserId || !fromUserId) return res.status(400).json({ message: 'Invalid user ID.' });
+  try {
+    const me = await User.findById(myUserId);
+    const fromUser = await User.findById(fromUserId);
+    if (!me || !fromUser) return res.status(404).json({ message: 'User not found.' });
+    if (!me.connectionRequests.map(id => id.toString()).includes(fromUserId)) {
+      return res.status(400).json({ message: 'No pending request from this user.' });
+    }
+    // Add each other as connections
+    me.connections.push(new mongoose.Types.ObjectId(fromUserId));
+    fromUser.connections.push(new mongoose.Types.ObjectId(myUserId));
+    // Remove request
+    me.connectionRequests = me.connectionRequests.filter(id => id.toString() !== fromUserId);
+    await me.save();
+    await fromUser.save();
+    res.json({ message: 'Connection accepted.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// Reject connection request
+router.post('/:userId/reject', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  const fromUserId = req.params.userId;
+  if (!myUserId || !fromUserId) return res.status(400).json({ message: 'Invalid user ID.' });
+  try {
+    const me = await User.findById(myUserId);
+    if (!me) return res.status(404).json({ message: 'User not found.' });
+    if (!me.connectionRequests.map(id => id.toString()).includes(fromUserId)) {
+      return res.status(400).json({ message: 'No pending request from this user.' });
+    }
+    me.connectionRequests = me.connectionRequests.filter(id => id.toString() !== fromUserId);
+    await me.save();
+    res.json({ message: 'Connection request rejected.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// Remove connection
+router.delete('/:userId/connection', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  const otherUserId = req.params.userId;
+  if (!myUserId || !otherUserId) return res.status(400).json({ message: 'Invalid user ID.' });
+  try {
+    const me = await User.findById(myUserId);
+    const other = await User.findById(otherUserId);
+    if (!me || !other) return res.status(404).json({ message: 'User not found.' });
+    me.connections = me.connections.filter(id => id.toString() !== otherUserId);
+    other.connections = other.connections.filter(id => id.toString() !== myUserId);
+    await me.save();
+    await other.save();
+    res.json({ message: 'Connection removed.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// List my connections
+router.get('/me/connections', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  try {
+    const me = await User.findById(myUserId).populate('connections', 'firstName lastName avatarUrl lssId role');
+    if (!me) return res.status(404).json({ message: 'User not found.' });
+    res.json(me.connections);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// List my pending connection requests
+router.get('/me/connection-requests', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  try {
+    const me = await User.findById(myUserId).populate('connectionRequests', 'firstName lastName avatarUrl lssId role');
+    if (!me) return res.status(404).json({ message: 'User not found.' });
+    res.json(me.connectionRequests);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// Cancel a sent connection request
+router.delete('/:userId/request', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  const toUserId = req.params.userId;
+  if (!myUserId || !toUserId) return res.status(400).json({ message: 'Invalid user ID.' });
+  try {
+    const toUser = await User.findById(toUserId);
+    if (!toUser) return res.status(404).json({ message: 'User not found.' });
+    // Remove your ID from their connectionRequests
+    const before = toUser.connectionRequests.length;
+    toUser.connectionRequests = toUser.connectionRequests.filter(id => id.toString() !== myUserId);
+    if (toUser.connectionRequests.length === before) {
+      return res.status(400).json({ message: 'No pending request to cancel.' });
+    }
+    await toUser.save();
+    res.json({ message: 'Connection request cancelled.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// Get connection status between current user and another user
+router.get('/:userId/connection-status', authenticateToken, async (req, res) => {
+  const myUserId = req.user?.userId;
+  const otherUserId = req.params.userId;
+  if (!myUserId || !otherUserId) return res.status(400).json({ message: 'Invalid user ID.' });
+  try {
+    const me = await User.findById(myUserId);
+    const other = await User.findById(otherUserId);
+    if (!me || !other) return res.status(404).json({ message: 'User not found.' });
+    const sent = other.connectionRequests.map(id => id.toString()).includes(myUserId);
+    const received = me.connectionRequests.map(id => id.toString()).includes(otherUserId);
+    const connected = me.connections.map(id => id.toString()).includes(otherUserId);
+    res.json({ sent, received, connected });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
   }
 });
 

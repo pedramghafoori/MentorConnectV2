@@ -60,7 +60,7 @@ function getTopCategories(userCerts) {
   return categories.slice(0, 2);
 }
 
-const CARDS_TO_SHOW = 3;
+const CARDS_TO_SHOW = 5;
 
 const FeaturedUsersCarousel = () => {
   const [users, setUsers] = useState([]);
@@ -83,12 +83,12 @@ const FeaturedUsersCarousel = () => {
 
   if (users.length === 0) return null;
 
-  // Get the 3 users to show, wrapping around if needed
+  // Get the 5 users to show, wrapping around if needed
   const getVisibleUsers = () => {
     if (users.length <= CARDS_TO_SHOW) return users;
     const visible = [];
-    for (let i = 0; i < CARDS_TO_SHOW; i++) {
-      visible.push(users[(startIdx + i) % users.length]);
+    for (let i = -2; i <= 2; i++) {
+      visible.push(users[(startIdx + i + users.length) % users.length]);
     }
     return visible;
   };
@@ -112,6 +112,23 @@ const FeaturedUsersCarousel = () => {
         >&#8592;</button>
         <div className="featured-cards-wrapper">
           {visibleUsers.map((user, idx) => {
+            // Assign position classes for 5 cards
+            let positionClass = '';
+            if (visibleUsers.length === 5) {
+              if (idx === 0) positionClass = 'carousel-far-left';
+              else if (idx === 1) positionClass = 'carousel-left';
+              else if (idx === 2) positionClass = 'carousel-center';
+              else if (idx === 3) positionClass = 'carousel-right';
+              else if (idx === 4) positionClass = 'carousel-far-right';
+            } else if (visibleUsers.length === 3) {
+              if (idx === 0) positionClass = 'carousel-left';
+              else if (idx === 1) positionClass = 'carousel-center';
+              else if (idx === 2) positionClass = 'carousel-right';
+            } else if (visibleUsers.length === 2) {
+              positionClass = idx === 0 ? 'carousel-two-left' : 'carousel-two-right';
+            } else if (visibleUsers.length === 1) {
+              positionClass = 'carousel-single';
+            }
             const userCerts = user.certifications || [];
             const topCategories = getTopCategories(userCerts);
             // Instructor Trainer section
@@ -131,7 +148,7 @@ const FeaturedUsersCarousel = () => {
             return (
               <div
                 key={user._id}
-                className={`featured-card profile-style${idx === 1 && visibleUsers.length === 3 ? ' featured-card-center' : ''}`}
+                className={`featured-card profile-style ${positionClass}${positionClass === 'carousel-center' ? ' featured-card-center' : ''}`}
               >
                 <div className="carousel-profile-img-wrapper">
                   <img

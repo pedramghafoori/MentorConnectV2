@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus } from '../../features/profile/getProfile';
+import { getProfile, getProfileById, sendConnectionRequest, cancelConnectionRequest, getMyConnectionRequests, getConnectionStatus, removeConnection } from '../../features/profile/getProfile';
 import { updateProfile } from '../../features/profile/updateProfile';
 import { getCertifications } from '../../features/profile/getCertifications';
 import AvatarUpload from '../../features/profile/AvatarUpload';
@@ -65,6 +65,8 @@ export default function ProfilePage() {
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [connectionLoading, setConnectionLoading] = useState(false);
   const [connectionError, setConnectionError] = useState('');
+  const [showRemoveDropdown, setShowRemoveDropdown] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -184,6 +186,21 @@ export default function ProfilePage() {
     }
   };
 
+  const handleRemoveConnection = async () => {
+    setConnectionLoading(true);
+    setConnectionError('');
+    try {
+      await removeConnection(userId);
+      setShowRemoveDropdown(false);
+      setShowRemoveConfirm(false);
+      await checkConnectionStatus();
+    } catch (err) {
+      setConnectionError('Failed to remove connection');
+    } finally {
+      setConnectionLoading(false);
+    }
+  };
+
   return (
     <div className="profile-container">
       <div className="profile-header">
@@ -199,23 +216,78 @@ export default function ProfilePage() {
           )}
         </div>
         <div className="profile-main-info">
-          <h1 className="profile-name">{firstName} {lastName}</h1>
-          {/* Add Connection Button */}
-          {!isOwnProfile && (
-            <button
-              className={`ml-2 px-4 py-2 rounded-full font-semibold text-sm transition-colors ${connectionStatus.sent ? 'bg-gray-300 text-gray-600 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700'} ${(checkingConnection || connectionLoading) ? 'opacity-50 cursor-wait' : ''}`}
-              onClick={handleConnectionClick}
-              disabled={checkingConnection || connectionLoading}
-            >
-              {connectionLoading ? 'Loading...' : connectionStatus.sent ? 'Pending' : 'Add Connection'}
-            </button>
-          )}
-          {connectionError && (
-            <div className="text-red-500 text-xs mt-1">{connectionError}</div>
-          )}
+          <div className="flex items-center gap-4">
+            <h1 className="profile-name">{firstName} {lastName}</h1>
+            {/* Add Connection Button */}
+            {!isOwnProfile && (
+              connectionStatus.connected ? (
+                <div className="relative inline-block">
+                  <button
+                    className="connection-button bg-green-700 text-white"
+                    onClick={() => setShowRemoveDropdown((v) => !v)}
+                    disabled={connectionLoading}
+                  >
+                    Connected
+                  </button>
+                  {showRemoveDropdown && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-lg"
+                        onClick={() => { setShowRemoveDropdown(false); setShowRemoveConfirm(true); }}
+                      >
+                        Remove Connection
+                      </button>
+                    </div>
+                  )}
+                  {showRemoveConfirm && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+                      <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full">
+                        <div className="text-lg font-semibold mb-4">Remove Connection?</div>
+                        <div className="text-gray-700 mb-6">Are you sure you want to remove this connection?</div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            onClick={() => setShowRemoveConfirm(false)}
+                          >Cancel</button>
+                          <button
+                            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                            onClick={handleRemoveConnection}
+                            disabled={connectionLoading}
+                          >{connectionLoading ? 'Removing...' : 'Remove'}</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : connectionStatus.sent ? (
+                <div className="relative inline-block">
+                  <button
+                    className="connection-button bg-gray-300 text-gray-600"
+                    onClick={handleConnectionClick}
+                    disabled={checkingConnection || connectionLoading}
+                  >
+                    {connectionLoading ? 'Loading...' : 'Pending'}
+                  </button>
+                </div>
+              ) : (
+                <div className="relative inline-block">
+                  <button
+                    className="connection-button bg-blue-600 text-white hover:bg-blue-700"
+                    onClick={handleConnectionClick}
+                    disabled={checkingConnection || connectionLoading}
+                  >
+                    {connectionLoading ? 'Loading...' : 'Add Connection'}
+                  </button>
+                </div>
+              )
+            )}
+            {connectionError && (
+              <div className="text-red-500 text-xs mt-1">{connectionError}</div>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', height: '2.1rem' }}>
             {data.role === 'MENTOR' && (
-              <div className="mentor-label" style={{ height: '2rem', display: 'flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}>
+              <div className="mentor-badge">
                 Certified Mentor
               </div>
             )}

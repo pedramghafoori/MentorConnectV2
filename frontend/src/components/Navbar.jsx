@@ -5,6 +5,7 @@ import Modal from './Modal';
 import LoginForm from './Auth/LoginForm';
 import RegisterForm from './Auth/RegisterForm';
 import axios from 'axios';
+import { getMyConnectionRequests, respondToConnectionRequest } from '../features/profile/getProfile';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -17,6 +18,10 @@ const Navbar = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
   const searchRef = useRef();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [connectionRequests, setConnectionRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [notifRef, setNotifRef] = useState(useRef());
 
   const handleLogout = async () => {
     await logout();
@@ -74,6 +79,26 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSearch]);
+
+  // Fetch connection requests when notifications dropdown is opened
+  useEffect(() => {
+    if (showNotifications && user) {
+      setLoadingRequests(true);
+      getMyConnectionRequests().then(setConnectionRequests).finally(() => setLoadingRequests(false));
+    }
+  }, [showNotifications, user]);
+
+  // Click-away listener for notifications
+  useEffect(() => {
+    if (!showNotifications) return;
+    function handleClickOutside(event) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifications]);
 
   return (
     <>
@@ -158,6 +183,66 @@ const Navbar = () => {
               </div>
             </div>
           </div>
+          {/* Notification Bell Icon */}
+          {user && (
+            <div className="relative flex items-center" ref={notifRef}>
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition mr-2 relative"
+                onClick={() => setShowNotifications((v) => !v)}
+                aria-label="Connection Requests"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6.002 6.002 0 0 0-4-5.659V5a2 2 0 1 0-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
+                </svg>
+                {connectionRequests.length > 0 && showNotifications && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
+              </button>
+              {/* Dropdown for connection requests */}
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
+                  <div className="p-4 border-b text-lg font-semibold text-gray-800">Connection Requests</div>
+                  {loadingRequests ? (
+                    <div className="px-4 py-6 text-center text-gray-400 text-sm">Loading...</div>
+                  ) : connectionRequests.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-gray-400 text-sm">No pending requests.</div>
+                  ) : (
+                    connectionRequests.map(request => (
+                      <div key={request._id} className="flex items-center gap-3 px-3 py-2 border-b last:border-b-0">
+                        <img
+                          src={request.avatarUrl || '/default-avatar.png'}
+                          alt={request.firstName}
+                          className="w-9 h-9 rounded-full object-cover bg-gray-200"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 truncate">
+                            {request.firstName} {request.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {request.lssId}
+                          </div>
+                        </div>
+                        <button
+                          className="px-3 py-1 rounded-full bg-green-500 text-white text-xs font-semibold hover:bg-green-600 mr-1"
+                          onClick={async () => {
+                            await respondToConnectionRequest(request._id, 'accept');
+                            setConnectionRequests(cr => cr.filter(r => r._id !== request._id));
+                          }}
+                        >Accept</button>
+                        <button
+                          className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold hover:bg-red-600"
+                          onClick={async () => {
+                            await respondToConnectionRequest(request._id, 'reject');
+                            setConnectionRequests(cr => cr.filter(r => r._id !== request._id));
+                          }}
+                        >Reject</button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           {user ? (
             <>
               <Link 

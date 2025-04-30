@@ -28,4 +28,20 @@ export const getMyConnectionRequests = async () => {
 export const getConnectionStatus = async (userId) => {
   const response = await api.get(`/users/${userId}/connection-status`);
   return response.data;
+};
+
+export const getMyConnections = async () => {
+  const response = await api.get('/users/me/connections');
+  return response.data;
+};
+
+export const respondToConnectionRequest = async (userId, action) => {
+  // action: 'accept' or 'reject'
+  const response = await api.post(`/users/${userId}/${action}`);
+  return response.data;
+};
+
+export const removeConnection = async (userId) => {
+  const response = await api.delete(`/users/${userId}/connection`);
+  return response.data;
 }; 

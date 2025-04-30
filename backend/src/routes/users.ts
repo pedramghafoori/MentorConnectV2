@@ -123,25 +123,33 @@ router.get('/:userId/reviews', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/users/search - Search users by name or LSS ID
+// GET /api/users/search - Search users by name, LSS ID, or certifications
 router.get('/search', authenticateToken, async (req, res) => {
   const query = req.query.query?.toString().trim();
   const currentUserId = req.user?.userId;
-  
-  if (!query) return res.json([]);
+  const certs = req.query.certifications
+    ? req.query.certifications.toString().split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  if (!query && certs.length === 0) return res.json([]);
   try {
+    const certsFilter = certs.length
+      ? { certifications: { $all: certs } }
+      : {};
     const users = await User.find({
       $and: [
         {
           $or: [
-            { firstName: { $regex: query, $options: 'i' } },
-            { lastName: { $regex: query, $options: 'i' } },
-            { lssId: { $regex: query, $options: 'i' } }
+            { firstName: { $regex: query || '', $options: 'i' } },
+            { lastName: { $regex: query || '', $options: 'i' } },
+            { lssId: { $regex: query || '', $options: 'i' } },
+            { certifications: { $elemMatch: { $regex: query || '', $options: 'i' } } }
           ]
         },
-        { _id: { $ne: currentUserId } }  // Exclude current user
+        certsFilter,
+        { _id: { $ne: currentUserId } }
       ]
-    }).select('firstName lastName avatarUrl lssId role');
+    }).select('firstName lastName avatarUrl lssId role certifications');
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error searching users', error });

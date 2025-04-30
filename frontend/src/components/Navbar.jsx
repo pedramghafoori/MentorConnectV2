@@ -9,6 +9,19 @@ import { getMyConnectionRequests, respondToConnectionRequest, getProfile } from 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '../features/profile/updateProfile';
 
+const ALL_CERTIFICATIONS = [
+  'First Aid Instructor',
+  'Lifesaving Instructor',
+  'NL Instructor',
+  'First Aid Examiner',
+  'NL Examiner',
+  'Bronze Examiner',
+  'First Aid IT',
+  'NL IT',
+  'Lifesaving IT',
+  'IT',
+];
+
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +42,8 @@ const Navbar = () => {
   const profileDropdownRef = useRef();
   const [dropdownPanel, setDropdownPanel] = useState('main');
   const queryClient = useQueryClient();
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [selectedCertifications, setSelectedCertifications] = useState([]);
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -69,7 +84,7 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (!showSearch || !searchValue.trim()) {
+    if (!showSearch || (searchValue.trim() === '' && selectedCertifications.length === 0)) {
       setSearchResults([]);
       setSearchLoading(false);
       setSearchError('');
@@ -78,20 +93,22 @@ const Navbar = () => {
     setSearchLoading(true);
     setSearchError('');
     const handler = setTimeout(async () => {
-      console.log('Searching for:', searchValue.trim());
       try {
-        const { data } = await axios.get(`/api/users/search?query=${encodeURIComponent(searchValue.trim())}`);
-        console.log('Search response:', data);
+        const params = new URLSearchParams();
+        params.append('query', searchValue.trim());
+        if (selectedCertifications.length > 0) {
+          params.append('certifications', selectedCertifications.join(','));
+        }
+        const { data } = await axios.get(`/api/users/search?${params.toString()}`);
         setSearchResults(data);
         setSearchLoading(false);
       } catch (err) {
-        console.error('Search error:', err);
         setSearchError('Error searching users');
         setSearchLoading(false);
       }
     }, 300);
     return () => clearTimeout(handler);
-  }, [searchValue, showSearch]);
+  }, [searchValue, showSearch, selectedCertifications]);
 
   // Click-away listener
   useEffect(() => {
@@ -200,6 +217,21 @@ const Navbar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
               </svg>
             </button>
+            {/* Filter icon */}
+            {showSearch && (
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition mr-2"
+                onClick={() => setShowAdvancedSearch((v) => !v)}
+                aria-label="Advanced search"
+              >
+                {/* Filter icon SVG (like Gmail) */}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="7" width="16" height="2" rx="1" fill="#555"/>
+                  <rect x="7" y="11" width="10" height="2" rx="1" fill="#555"/>
+                  <rect x="10" y="15" width="4" height="2" rx="1" fill="#555"/>
+                </svg>
+              </button>
+            )}
             {/* Search bar and dropdown */}
             <div
               className={`transition-all duration-300 z-50`}
@@ -224,7 +256,43 @@ const Navbar = () => {
                   }}
                   autoFocus={showSearch}
                 />
-                {searchValue.trim() !== '' && (
+                {/* Advanced Search Panel (compact, below search bar) */}
+                {showAdvancedSearch && (
+                  <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 z-50 p-4">
+                    <div className="mb-2 font-semibold text-sm">Filter by Certifications</div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {ALL_CERTIFICATIONS.map(cert => (
+                        <button
+                          key={cert}
+                          className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                          onClick={() => setSelectedCertifications(selectedCertifications.includes(cert)
+                            ? selectedCertifications.filter(c => c !== cert)
+                            : [...selectedCertifications, cert])}
+                          type="button"
+                        >
+                          {cert}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        onClick={() => setSelectedCertifications([])}
+                      >Clear</button>
+                      <button
+                        className="px-4 py-2 rounded bg-[#d33] text-white hover:bg-[#c22]"
+                        onClick={() => {
+                          setShowAdvancedSearch(false);
+                          if (searchValue.trim() === '' && selectedCertifications.length > 0) {
+                            setSearchValue(' ');
+                          }
+                        }}
+                      >Search</button>
+                    </div>
+                  </div>
+                )}
+                {/* Search results dropdown (only show if not showing advanced search) */}
+                {!showAdvancedSearch && (searchValue.trim() !== '' || selectedCertifications.length > 0) && (
                   <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
                     {searchLoading && (
                       <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
@@ -241,6 +309,7 @@ const Navbar = () => {
                         className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition rounded-lg cursor-pointer"
                         onMouseDown={() => {
                           setShowSearch(false);
+                          setShowAdvancedSearch(false);
                           navigate(`/profile/${user._id}`);
                         }}
                       >

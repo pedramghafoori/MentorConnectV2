@@ -34,6 +34,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.17.32",
     "@types/nodemailer": "^6.4.17",
+    "@types/selenium-webdriver": "^4.1.28",
     "dotenv-cli": "^8.0.0",
     "nodemon": "^3.1.10",
     "prisma": "^5.22.0",

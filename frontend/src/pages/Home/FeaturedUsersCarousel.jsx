@@ -1,19 +1,19 @@
-import React, { useEffect, useState, useRef } from 'react';
+/* --------------  FeaturedUsersCarousel.jsx -------------- */
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import './FeaturedUsersCarousel.css';
+import '../../css/FeaturedUsersCarousel.css';
 
-// Certification hierarchy from highest to lowest
+/* ──────────────────────────────────────────────────────────
+   Helper tables (unchanged from your original component)
+   ------------------------------------------------------ */
+
 const CERT_HIERARCHY = [
-  // Instructor Trainer (all equal)
   'INSTRUCTOR_TRAINER_FIRST_AID',
   'INSTRUCTOR_TRAINER_LIFESAVING',
   'INSTRUCTOR_TRAINER_NL',
-  // Examiner Mentor (if you have this as a separate type, add here)
-  // Examiner
   'EXAMINER_NL',
   'EXAMINER_FIRST_AID',
   'EXAMINER_BRONZE',
-  // Instructor
   'NL_INSTRUCTOR',
   'FIRST_AID_INSTRUCTOR',
   'BRONZE_INSTRUCTOR',
@@ -31,125 +31,90 @@ const EXAMINER_STREAMS = [
   { type: 'EXAMINER_BRONZE', label: 'Bronze' },
 ];
 
-function getHighestCertification(certifications) {
-  if (!Array.isArray(certifications)) return null;
-  for (const type of CERT_HIERARCHY) {
-    const found = certifications.find(cert => cert.type === type);
-    if (found) return found.type;
-  }
-  return certifications[0]?.type || null;
-}
-
+/* helpers */
 function hasAllStreams(userCerts, streamDefs) {
   return streamDefs.every(def => userCerts.some(cert => cert.type === def.type));
 }
-
 function getUserStreams(userCerts, streamDefs) {
-  return streamDefs.filter(def => userCerts.some(cert => cert.type === def.type)).map(def => def.label);
+  return streamDefs
+    .filter(def => userCerts.some(cert => cert.type === def.type))
+    .map(def => def.label);
 }
-
-// Helper to get the two highest cert categories
 function getTopCategories(userCerts) {
-  const hasIT = userCerts.some(cert => cert.type.startsWith('INSTRUCTOR_TRAINER'));
-  const hasExaminer = userCerts.some(cert => cert.type.startsWith('EXAMINER'));
-  const hasInstructor = userCerts.some(cert => cert.type.endsWith('INSTRUCTOR'));
-  const categories = [];
-  if (hasIT) categories.push('INSTRUCTOR_TRAINER');
-  if (hasExaminer) categories.push('EXAMINER');
-  if (hasInstructor) categories.push('INSTRUCTOR');
-  return categories.slice(0, 2);
+  const hasIT = userCerts.some(c => c.type.startsWith('INSTRUCTOR_TRAINER'));
+  const hasExam = userCerts.some(c => c.type.startsWith('EXAMINER'));
+  const hasInstr = userCerts.some(c => c.type.endsWith('INSTRUCTOR'));
+  const cats = [];
+  if (hasIT) cats.push('INSTRUCTOR_TRAINER');
+  if (hasExam) cats.push('EXAMINER');
+  if (hasInstr) cats.push('INSTRUCTOR');
+  return cats.slice(0, 2);
 }
 
-const CARDS_TO_SHOW = 5;
+/* slot identifiers – these elements never leave the DOM */
+const POSITIONS = ['far-left', 'left', 'center', 'right', 'far-right'];
+const AUTO_SLIDE_MS = 3_000;
 
-const FeaturedUsersCarousel = () => {
+export default function FeaturedUsersCarousel() {
   const [users, setUsers] = useState([]);
   const [startIdx, setStartIdx] = useState(0);
-  const intervalRef = useRef();
+  const slideTimer = useRef(null);
 
+  /* fetch once */
   useEffect(() => {
     axios.get('/api/users/featured')
-      .then(res => setUsers(res.data))
+      .then(res => {
+        console.log('featured users count:', res.data.length);
+        setUsers(res.data);
+      })
       .catch(() => setUsers([]));
   }, []);
 
+  /* auto-advance */
   useEffect(() => {
-    if (users.length <= CARDS_TO_SHOW) return;
-    intervalRef.current = setInterval(() => {
-      setStartIdx(prev => (prev + 1) % users.length);
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
+    if (users.length <= POSITIONS.length) return;
+    slideTimer.current = setInterval(
+      () => setStartIdx(i => (i + 1) % users.length),
+      AUTO_SLIDE_MS,
+    );
+    return () => clearInterval(slideTimer.current);
   }, [users]);
 
   if (users.length === 0) return null;
 
-  // Get the 5 users to show, wrapping around if needed
-  const getVisibleUsers = () => {
-    if (users.length <= CARDS_TO_SHOW) return users;
-    const visible = [];
-    for (let i = -2; i <= 2; i++) {
-      visible.push(users[(startIdx + i + users.length) % users.length]);
-    }
-    return visible;
-  };
-  const visibleUsers = getVisibleUsers();
-
-  const handlePrev = () => {
-    setStartIdx((startIdx - 1 + users.length) % users.length);
-  };
-  const handleNext = () => {
-    setStartIdx((startIdx + 1) % users.length);
-  };
+  /* handlers */
+  const prev = () => setStartIdx(i => (i - 1 + users.length) % users.length);
+  const next = () => setStartIdx(i => (i + 1) % users.length);
 
   return (
     <div className="featured-carousel-container">
-      <h2 className="featured-carousel-title">Featured Profiles</h2>
-      <div className="featured-carousel multi">
-        <button
-          className="carousel-arrow left"
-          onClick={handlePrev}
-          aria-label="Previous"
-        >&#8592;</button>
+      <h2 className="featured-carousel-title">Featured&nbsp;Profiles</h2>
+
+      <div className="featured-carousel">
+        <button className="carousel-arrow left" onClick={prev}>&#8592;</button>
+
         <div className="featured-cards-wrapper">
-          {visibleUsers.map((user, idx) => {
-            // Assign position classes for 5 cards
-            let positionClass = '';
-            if (visibleUsers.length === 5) {
-              if (idx === 0) positionClass = 'carousel-far-left';
-              else if (idx === 1) positionClass = 'carousel-left';
-              else if (idx === 2) positionClass = 'carousel-center';
-              else if (idx === 3) positionClass = 'carousel-right';
-              else if (idx === 4) positionClass = 'carousel-far-right';
-            } else if (visibleUsers.length === 3) {
-              if (idx === 0) positionClass = 'carousel-left';
-              else if (idx === 1) positionClass = 'carousel-center';
-              else if (idx === 2) positionClass = 'carousel-right';
-            } else if (visibleUsers.length === 2) {
-              positionClass = idx === 0 ? 'carousel-two-left' : 'carousel-two-right';
-            } else if (visibleUsers.length === 1) {
-              positionClass = 'carousel-single';
-            }
-            const userCerts = user.certifications || [];
-            const topCategories = getTopCategories(userCerts);
-            // Instructor Trainer section
-            const itHasAll = hasAllStreams(userCerts, IT_STREAMS);
-            const itStreams = getUserStreams(userCerts, IT_STREAMS);
-            // Examiner section
-            const exHasAll = hasAllStreams(userCerts, EXAMINER_STREAMS);
-            const exStreams = getUserStreams(userCerts, EXAMINER_STREAMS);
-            // Instructor section
-            const instrStreams = userCerts.filter(cert => cert.type.endsWith('INSTRUCTOR')).map(cert => {
-              if (cert.type === 'NL_INSTRUCTOR') return 'National Lifeguard';
-              if (cert.type === 'FIRST_AID_INSTRUCTOR') return 'First Aid';
-              if (cert.type === 'BRONZE_INSTRUCTOR') return 'Bronze';
-              if (cert.type === 'SWIM_INSTRUCTOR') return 'Swim';
-              return cert.type.replace('_INSTRUCTOR', '').replace(/_/g, ' ');
-            });
+          {POSITIONS.map((pos, slotIdx) => {
+            const user = users[(startIdx + slotIdx) % users.length];
+            const certs = user.certifications || [];
+            const top = getTopCategories(certs);
+
+            const itStreams = getUserStreams(certs, IT_STREAMS);
+            const exStreams = getUserStreams(certs, EXAMINER_STREAMS);
+            const itAll = hasAllStreams(certs, IT_STREAMS);
+            const exAll = hasAllStreams(certs, EXAMINER_STREAMS);
+            const instrStreams = certs
+              .filter(c => c.type.endsWith('INSTRUCTOR'))
+              .map(c => {
+                if (c.type === 'NL_INSTRUCTOR') return 'National Lifeguard';
+                if (c.type === 'FIRST_AID_INSTRUCTOR') return 'First Aid';
+                if (c.type === 'BRONZE_INSTRUCTOR') return 'Bronze';
+                if (c.type === 'SWIM_INSTRUCTOR') return 'Swim';
+                return c.type.replace('_INSTRUCTOR', '').replace(/_/g, ' ');
+              });
+
             return (
-              <div
-                key={user._id}
-                className={`featured-card profile-style ${positionClass}${positionClass === 'carousel-center' ? ' featured-card-center' : ''}`}
-              >
+              <div key={pos} className={`featured-card profile-style carousel-${pos}`}>
                 <div className="carousel-profile-img-wrapper">
                   <img
                     src={user.avatarUrl || '/default-avatar.png'}
@@ -157,23 +122,26 @@ const FeaturedUsersCarousel = () => {
                     className="carousel-profile-img"
                   />
                 </div>
+
                 <div className="carousel-profile-content">
                   <div className="carousel-profile-header">
                     <span className="carousel-profile-name">{user.firstName}</span>
                     <span className={`mentor-badge profile-badge${user.role === 'MENTOR' ? '' : ' invisible-badge'}`}>Mentor</span>
                   </div>
-                  {topCategories.length === 0 && (
+
+                  {top.length === 0 && (
                     <div className="carousel-section">
                       <div className="carousel-section-title">No certifications</div>
                     </div>
                   )}
-                  {topCategories.map((cat, i) => (
+
+                  {top.map((cat, i) => (
                     <React.Fragment key={cat}>
                       {cat === 'INSTRUCTOR_TRAINER' && (
                         <div className="carousel-section">
                           <div className="carousel-section-title">Instructor Trainer:</div>
                           <div className="carousel-section-streams">
-                            {itHasAll ? 'All streams' : itStreams.length > 0 ? itStreams.join(', ') : <span className="carousel-section-none">None</span>}
+                            {itAll ? 'All streams' : itStreams.join(', ') || <span className="carousel-section-none">None</span>}
                           </div>
                         </div>
                       )}
@@ -181,7 +149,7 @@ const FeaturedUsersCarousel = () => {
                         <div className="carousel-section">
                           <div className="carousel-section-title">Examiner:</div>
                           <div className="carousel-section-streams">
-                            {exHasAll ? 'All streams' : exStreams.length > 0 ? exStreams.join(', ') : <span className="carousel-section-none">None</span>}
+                            {exAll ? 'All streams' : exStreams.join(', ') || <span className="carousel-section-none">None</span>}
                           </div>
                         </div>
                       )}
@@ -189,12 +157,11 @@ const FeaturedUsersCarousel = () => {
                         <div className="carousel-section">
                           <div className="carousel-section-title">Instructor:</div>
                           <div className="carousel-section-streams">
-                            {instrStreams.length > 0 ? instrStreams.join(', ') : <span className="carousel-section-none">None</span>}
+                            {instrStreams.join(', ') || <span className="carousel-section-none">None</span>}
                           </div>
                         </div>
                       )}
-                      {/* Divider between the two categories, but not after the last */}
-                      {topCategories.length > 1 && i === 0 && <div className="carousel-divider" />}
+                      {top.length > 1 && i === 0 && <div className="carousel-divider" />}
                     </React.Fragment>
                   ))}
                 </div>
@@ -202,12 +169,10 @@ const FeaturedUsersCarousel = () => {
             );
           })}
         </div>
-        <button
-          className="carousel-arrow right"
-          onClick={handleNext}
-          aria-label="Next"
-        >&#8594;</button>
+
+        <button className="carousel-arrow right" onClick={next}>&#8594;</button>
       </div>
+
       <div className="carousel-dots">
         {users.map((_, idx) => (
           <span
@@ -219,6 +184,4 @@ const FeaturedUsersCarousel = () => {
       </div>
     </div>
   );
-};
-
-export default FeaturedUsersCarousel; 
+}

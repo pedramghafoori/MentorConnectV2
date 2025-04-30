@@ -1,0 +1,135 @@
+/* --------------  FeaturedUsersCarousel.css -------------- */
+
+/* container & title */
+.featured-carousel-container {
+    max-width: 90%;
+    margin: 3rem auto 0;
+    padding: 2rem 0 1.5rem;
+    background: none;
+  }
+  .featured-carousel-title {
+    font-size: 4.4rem;
+    font-weight: 700;
+    color: #22223b;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  /* flex track */
+  .featured-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 600px;
+  }
+  .featured-cards-wrapper {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;                  /* gap handled by translateX */
+  }
+  
+  /* core card */
+  .featured-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    padding: 2rem 2.5rem;
+    width: 270px;
+    height: 410px;
+    position: relative;
+    transform: var(--pos);
+    transition: transform .6s cubic-bezier(.4,0,.2,1),
+                opacity   .4s ease;
+    transform-origin: center bottom;
+    opacity: .85;
+  }
+  
+  /* slot‑specific transforms (balanced fan v3) */
+  .carousel-far-left  { --pos: translateX(-60%) scale(.72)  skewY( 2deg); opacity:.38; z-index:0; filter:blur(1px); pointer-events:none; }
+  .carousel-left      { --pos: translateX(-40%) scale(.92)  skewY( 1deg); opacity:.68; z-index:1; }
+  .carousel-center    { --pos: translateX(  0 ) scale(1.12) translateY(-40px); opacity:1;  z-index:3;
+                        box-shadow:0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08); }
+  .carousel-right     { --pos: translateX( 40%) scale(.92)  skewY(-1deg); opacity:.68; z-index:1; }
+  .carousel-far-right { --pos: translateX( 60%) scale(.72)  skewY(-2deg); opacity:.38; z-index:0; filter:blur(1px); pointer-events:none; }
+  
+  /* gentle hover that *adds* to the slot transform */
+  .featured-card:hover { transform: var(--pos) scale(1.05); }
+  
+  /* image area */
+  .carousel-profile-img-wrapper{
+    width:100%; height:200px;
+    overflow:hidden;
+    border-top-left-radius:16px; border-top-right-radius:16px;
+    background:#f3f4f6;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .carousel-profile-img{
+    width:100%; height:100%; object-fit:cover;
+    border-top-left-radius:16px; border-top-right-radius:16px;
+  }
+  
+  /* content area */
+  .carousel-profile-content{ flex:1; display:flex; flex-direction:column; padding:1.2rem; }
+  .carousel-profile-header{ display:flex; align-items:center; gap:.7rem; margin-bottom:.7rem; }
+  .carousel-profile-name{ font-size:2rem; font-weight:700; color:#22223b; line-height:1.1; }
+  .mentor-badge.profile-badge{ background:#1a365d; color:#ffd900; font-size:.95rem;
+    padding:.18em .9em .18em .7em; border-radius:999px; display:inline-flex;
+    align-items:center; gap:.3em; border:1px solid rgba(255,215,0,.18); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .profile-badge::before{ content:'\2605'; color:#ffd900; margin-right:.3em; }
+  .invisible-badge{ opacity:0!important; pointer-events:none; }
+  
+  /* sections */
+  .carousel-section-title{ font-weight:700; font-size:1.05rem; color:#22223b; margin-bottom:.1rem; }
+  .carousel-section-streams{ font-size:1.01rem; color:#22223b; }
+  .carousel-section-none{ color:#b0b0b0; font-style:italic; }
+  .carousel-divider{ width:100%; height:1.5px; background:#e5e7eb; margin:.7rem 0; border-radius:2px; }
+  
+  /* arrows & dots */
+  .carousel-arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:none; border:none; font-size:2rem; color:#bbb;
+    cursor:pointer; transition:color .2s; padding:.3rem;
+    user-select:none;
+  }
+  .carousel-arrow.left { left:0;  }
+  .carousel-arrow.right{ right:0; }
+  .carousel-arrow:hover{ color:#e63946; }
+  
+  /* hide navigation dots */
+  .carousel-dots{ display:none; }
+  .carousel-dots{ display:flex; justify-content:center; gap:.5rem; margin-top:1.4rem; }
+  .carousel-dot{ width:10px; height:10px; border-radius:50%; background:#e5e7eb;
+    cursor:pointer; transition:background .2s; }
+  .carousel-dot.active{ background:#e63946; }
+  
+  /* widen/fan layout for large desktop viewports */
+  @media (min-width:1101px){
+    /* slightly narrower card plus negative margin gives a gentle overlap so all five fit */
+    .featured-card.profile-style{
+      width:250px;
+      height:390px;
+      margin:0 -55px;         /* 110 px total overlap across neighbours */
+    }
+  }
+  /* responsive tweaks */
+  @media (max-width:1100px){
+    .featured-card{ width:220px; height:360px; }
+    .carousel-far-left, .carousel-left,
+    .carousel-right, .carousel-far-right{
+      --pos: scale(.8);   /* shrink whole fan on small screens */
+    }
+  }
+  @media (max-width:700px){
+    .featured-card{ width:160px; height:280px; }
+    .carousel-profile-name{ font-size:1.4rem; }
+    .featured-carousel-title{ font-size:3rem; }
+  }
+
+/* ------- ensure outer cards aren’t clipped by a global overflow-x:hidden ------- */
+.featured-carousel-container,
+.featured-carousel,
+.featured-cards-wrapper{
+  overflow: visible !important;
+}

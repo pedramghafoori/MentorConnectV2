@@ -33,17 +33,18 @@
   /* core card */
   .featured-card {
     background: #fff;
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     box-shadow: 0 4px 24px rgba(0,0,0,.08);
-    padding: 2rem 2.5rem;
+    padding: 1rem 1rem;
     width: 270px;
     height: 410px;
     position: relative;
     transform: var(--pos);
     transition: transform .6s cubic-bezier(.4,0,.2,1),
                 opacity   .4s ease;
-    transform-origin: center bottom;
+    transform-origin: top center;
     opacity: .85;
+    overflow: hidden;
   }
   
   /* slot‑specific transforms (balanced fan v3) */
@@ -74,9 +75,19 @@
   .carousel-profile-content{ flex:1; display:flex; flex-direction:column; padding:1.2rem; }
   .carousel-profile-header{ display:flex; align-items:center; gap:.7rem; margin-bottom:.7rem; }
   .carousel-profile-name{ font-size:2rem; font-weight:700; color:#22223b; line-height:1.1; }
-  .mentor-badge.profile-badge{ background:#1a365d; color:#ffd900; font-size:.95rem;
-    padding:.18em .9em .18em .7em; border-radius:999px; display:inline-flex;
-    align-items:center; gap:.3em; border:1px solid rgba(255,215,0,.18); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .mentor-badge.profile-badge {
+    background: #1a365d;
+    color: #ffd900;
+    font-size: 0.8rem;
+    padding: 0.12em 0.7em 0.12em 0.6em;
+    border-radius: 1em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    border: 0px solid rgba(255,215,0,.18);
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    line-height: 1;
+  }
   .profile-badge::before{ content:'\2605'; color:#ffd900; margin-right:.3em; }
   .invisible-badge{ opacity:0!important; pointer-events:none; }
   
@@ -127,9 +138,59 @@
     .featured-carousel-title{ font-size:3rem; }
   }
 
-/* ------- ensure outer cards aren’t clipped by a global overflow-x:hidden ------- */
+/* ------- ensure outer cards aren't clipped by a global overflow-x:hidden ------- */
 .featured-carousel-container,
 .featured-carousel,
 .featured-cards-wrapper{
   overflow: visible !important;
+}
+
+.featured-card-inner { width: 100%; height: 100%; }
+
+.scale-carousel-far-left  { transform: scale(0.72); }
+.scale-carousel-left      { transform: scale(0.92); }
+.scale-carousel-center    { transform: scale(1.12); }
+.scale-carousel-right     { transform: scale(0.92); }
+.scale-carousel-far-right { transform: scale(0.72); }
+
+.carousel-category-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+.carousel-category-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  color: #22223b;
+  font-size: 1.01rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.32em 1.1em 0.32em 1.1em;
+  border: 1.5px solid #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  letter-spacing: 0.01em;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.carousel-category-badge.cat-instructor_trainer {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #a5b4fc;
+}
+.carousel-category-badge.cat-examiner {
+  background: #ffe0e0;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.carousel-category-badge.cat-instructor {
+  background: #e0f7fa;
+  color: #006064;
+  border-color: #b2ebf2;
+}
+.carousel-category-badge.none {
+  background: #f3f4f6;
+  color: #b0b0b0;
+  border-color: #e5e7eb;
+  font-style: italic;
 }

@@ -99,71 +99,44 @@ export default function FeaturedUsersCarousel() {
             const certs = user.certifications || [];
             const top = getTopCategories(certs);
 
-            const itStreams = getUserStreams(certs, IT_STREAMS);
-            const exStreams = getUserStreams(certs, EXAMINER_STREAMS);
-            const itAll = hasAllStreams(certs, IT_STREAMS);
-            const exAll = hasAllStreams(certs, EXAMINER_STREAMS);
-            const instrStreams = certs
-              .filter(c => c.type.endsWith('INSTRUCTOR'))
-              .map(c => {
-                if (c.type === 'NL_INSTRUCTOR') return 'National Lifeguard';
-                if (c.type === 'FIRST_AID_INSTRUCTOR') return 'First Aid';
-                if (c.type === 'BRONZE_INSTRUCTOR') return 'Bronze';
-                if (c.type === 'SWIM_INSTRUCTOR') return 'Swim';
-                return c.type.replace('_INSTRUCTOR', '').replace(/_/g, ' ');
-              });
+            // Map category keys to display labels
+            const categoryLabels = {
+              'INSTRUCTOR_TRAINER': 'Instructor Trainer',
+              'EXAMINER': 'Examiner',
+              'INSTRUCTOR': 'Instructor',
+            };
 
             return (
               <div key={pos} className={`featured-card profile-style carousel-${pos}`}>
-                <div className="carousel-profile-img-wrapper">
-                  <img
-                    src={user.avatarUrl || '/default-avatar.png'}
-                    alt={user.firstName}
-                    className="carousel-profile-img"
-                  />
-                </div>
-
-                <div className="carousel-profile-content">
-                  <div className="carousel-profile-header">
-                    <span className="carousel-profile-name">{user.firstName}</span>
-                    <span className={`mentor-badge profile-badge${user.role === 'MENTOR' ? '' : ' invisible-badge'}`}>Mentor</span>
+                <div className={`featured-card-inner scale-${pos}`}>
+                  <div className="carousel-profile-img-wrapper">
+                    <img
+                      src={user.avatarUrl || '/default-avatar.png'}
+                      alt={user.firstName}
+                      className="carousel-profile-img"
+                    />
                   </div>
 
-                  {top.length === 0 && (
-                    <div className="carousel-section">
-                      <div className="carousel-section-title">No certifications</div>
+                  <div className="carousel-profile-content">
+                    <div className="carousel-profile-header">
+                      <span className="carousel-profile-name">{user.firstName}</span>
+                      <span className={`mentor-badge profile-badge${user.role === 'MENTOR' ? '' : ' invisible-badge'}`}>Mentor</span>
                     </div>
-                  )}
 
-                  {top.map((cat, i) => (
-                    <React.Fragment key={cat}>
-                      {cat === 'INSTRUCTOR_TRAINER' && (
-                        <div className="carousel-section">
-                          <div className="carousel-section-title">Instructor Trainer:</div>
-                          <div className="carousel-section-streams">
-                            {itAll ? 'All streams' : itStreams.join(', ') || <span className="carousel-section-none">None</span>}
-                          </div>
+                    <div className="carousel-category-badges">
+                      {top.length === 0 ? (
+                        <span className="carousel-category-text none">No certifications</span>
+                      ) : (
+                        <div className="carousel-category-text-list">
+                          {top.map(cat => (
+                            <div key={cat} className="carousel-category-text">
+                              {categoryLabels[cat] || cat}
+                            </div>
+                          ))}
                         </div>
                       )}
-                      {cat === 'EXAMINER' && (
-                        <div className="carousel-section">
-                          <div className="carousel-section-title">Examiner:</div>
-                          <div className="carousel-section-streams">
-                            {exAll ? 'All streams' : exStreams.join(', ') || <span className="carousel-section-none">None</span>}
-                          </div>
-                        </div>
-                      )}
-                      {cat === 'INSTRUCTOR' && (
-                        <div className="carousel-section">
-                          <div className="carousel-section-title">Instructor:</div>
-                          <div className="carousel-section-streams">
-                            {instrStreams.join(', ') || <span className="carousel-section-none">None</span>}
-                          </div>
-                        </div>
-                      )}
-                      {top.length > 1 && i === 0 && <div className="carousel-divider" />}
-                    </React.Fragment>
-                  ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             );

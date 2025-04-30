@@ -388,32 +388,34 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="profile-meta-row">
-            <div className="meta-item">
-              <span className="meta-label">LSS ID:</span>
-              {isOwnProfile ? (
-                data.lssId ? (
-                  <span>{data.lssId}</span>
+            {showLssId && (
+              <div className="meta-item">
+                <span className="meta-label">LSS ID:</span>
+                {isOwnProfile ? (
+                  data.lssId ? (
+                    <span>{data.lssId}</span>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={lssId}
+                        onChange={(e) => setLssId(e.target.value)}
+                        placeholder="Enter your LSS ID"
+                        className="form-select"
+                      />
+                      <button 
+                        onClick={handleSaveLssId}
+                        className="btn btn-secondary"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  )
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={lssId}
-                      onChange={(e) => setLssId(e.target.value)}
-                      placeholder="Enter your LSS ID"
-                      className="form-select"
-                    />
-                    <button 
-                      onClick={handleSaveLssId}
-                      className="btn btn-secondary"
-                    >
-                      Save
-                    </button>
-                  </div>
-                )
-              ) : (
-                showLssId ? <span>{data.lssId}</span> : <span className="text-gray-400 italic">Hidden</span>
-              )}
-            </div>
+                  <span>{data.lssId}</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -436,8 +438,8 @@ export default function ProfilePage() {
             )}
           </section>
 
-          {/* Connections Section - moved here, styled as pills, clickable */}
-          {(isOwnProfile || showConnections) && (
+          {/* Connections Section - only render if showConnections is true */}
+          {showConnections && (
             <section className="section-card mb-6">
               <div className="section-header">
                 <h2 className="section-title">Connections</h2>

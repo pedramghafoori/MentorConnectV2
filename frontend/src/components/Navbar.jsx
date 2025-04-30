@@ -6,7 +6,7 @@ import LoginForm from './Auth/LoginForm';
 import RegisterForm from './Auth/RegisterForm';
 import axios from 'axios';
 import { getMyConnectionRequests, respondToConnectionRequest, getProfile } from '../features/profile/getProfile';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '../features/profile/updateProfile';
 
 const Navbar = () => {
@@ -28,6 +28,7 @@ const Navbar = () => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const profileDropdownRef = useRef();
   const [dropdownPanel, setDropdownPanel] = useState('main');
+  const queryClient = useQueryClient();
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -174,6 +175,10 @@ const Navbar = () => {
   const handleToggle = async (field, value) => {
     await updateProfile({ [field]: value });
     refetch();
+    queryClient.invalidateQueries(['me']);
+    if (user?._id) {
+      queryClient.invalidateQueries(['user', user._id]);
+    }
   };
 
   return (

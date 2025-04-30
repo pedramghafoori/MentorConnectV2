@@ -21,7 +21,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 600px;
+    height: 500px;
   }
   .featured-cards-wrapper {
     display: flex;
@@ -35,7 +35,6 @@
     background: #fff;
     border-radius: 1.5rem;
     box-shadow: 0 4px 24px rgba(0,0,0,.08);
-    padding: 1rem 1rem;
     width: 270px;
     height: 410px;
     position: relative;
@@ -44,6 +43,7 @@
     transform-origin: top center;
     opacity: .85;
     overflow: hidden;
+    padding: 0;
   }
   
   /* slot‑specific transforms (balanced fan v3) */
@@ -57,24 +57,38 @@
   /* gentle hover that *adds* to the slot transform */
   .featured-card:hover {
     transform: var(--pos) scale(1.05);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   /* image area */
-  .carousel-profile-img-wrapper{
-    width:100%; height:200px;
-    overflow:hidden;
-    border-top-left-radius:16px; border-top-right-radius:16px;
-    background:#f3f4f6;
-    display:flex; align-items:center; justify-content:center;
+  .carousel-profile-img-wrapper {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
   }
-  .carousel-profile-img{
-    width:100%; height:100%; object-fit:cover;
-    border-top-left-radius:16px; border-top-right-radius:16px;
+  .carousel-profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
   }
   
   /* content area */
-  .carousel-profile-content{ flex:1; display:flex; flex-direction:column; padding:1.2rem; }
+  .carousel-profile-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem;
+  }
   .carousel-profile-header{ display:flex; align-items:center; gap:0.7rem; margin-bottom:0.7rem; justify-content:space-between; }
   .carousel-profile-name{ font-size:1.6rem; font-weight:700; color:#22223b; line-height:1.1; }
   .featured-card .mentor-badge.profile-badge {
@@ -148,7 +162,9 @@
     .carousel-category-text, .carousel-category-text-list { font-size: 0.85rem; }
     .featured-card .mentor-badge.profile-badge {
       font-size: 0.45rem;
-      padding: 0.07em 0.5em 0.07em 0.5em;
+      padding: 0.6em 0.6em;
+      line-height: 0.9;
+      height: fit-content;
     }
     .carousel-profile-header {
       flex-direction: column;
@@ -158,7 +174,14 @@
     .carousel-profile-content {
       padding: 0.8rem;
     }
-    .featured-carousel-title{ font-size:3rem; }
+    .featured-carousel-title{ font-size:3.5rem; }
+    
+    /* Adjust card positions for more consistent spacing */
+    .carousel-far-left  { --pos: translateX(-0%) scale(.72) skewY(2deg); }
+    .carousel-left      { --pos: translateX(-10%) scale(.92) skewY(1deg); }
+    .carousel-center    { --pos: translateX(0) scale(1.12) translateY(-40px); }
+    .carousel-right     { --pos: translateX(10%) scale(.92) skewY(-1deg); }
+    .carousel-far-right { --pos: translateX(0%) scale(.72) skewY(-2deg); }
   }
 
 /* ------- ensure outer cards aren't clipped by a global overflow-x:hidden ------- */

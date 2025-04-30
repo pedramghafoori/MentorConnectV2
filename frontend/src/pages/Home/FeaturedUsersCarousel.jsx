@@ -52,13 +52,24 @@ function getTopCategories(userCerts) {
 }
 
 /* slot identifiers – these elements never leave the DOM */
-const POSITIONS = ['far-left', 'left', 'center', 'right', 'far-right'];
+const DESKTOP_POSITIONS = ['far-left', 'left', 'center', 'right', 'far-right'];
+const MOBILE_POSITIONS = ['left', 'center', 'right'];
 const AUTO_SLIDE_MS = 3_000;
 
 export default function FeaturedUsersCarousel() {
   const [users, setUsers] = useState([]);
   const [startIdx, setStartIdx] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
   const slideTimer = useRef(null);
+
+  /* Handle window resize */
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 700);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   /* fetch once */
   useEffect(() => {
@@ -72,13 +83,14 @@ export default function FeaturedUsersCarousel() {
 
   /* auto-advance */
   useEffect(() => {
-    if (users.length <= POSITIONS.length) return;
+    const positions = isMobile ? MOBILE_POSITIONS : DESKTOP_POSITIONS;
+    if (users.length <= positions.length) return;
     slideTimer.current = setInterval(
       () => setStartIdx(i => (i + 1) % users.length),
       AUTO_SLIDE_MS,
     );
     return () => clearInterval(slideTimer.current);
-  }, [users]);
+  }, [users, isMobile]);
 
   if (users.length === 0) return null;
 
@@ -86,15 +98,17 @@ export default function FeaturedUsersCarousel() {
   const prev = () => setStartIdx(i => (i - 1 + users.length) % users.length);
   const next = () => setStartIdx(i => (i + 1) % users.length);
 
+  const positions = isMobile ? MOBILE_POSITIONS : DESKTOP_POSITIONS;
+
   return (
     <div className="featured-carousel-container">
-      <h2 className="featured-carousel-title">Featured&nbsp;Profiles</h2>
+      <h2 className="featured-carousel-title">Experience & Passion Connected</h2>
 
       <div className="featured-carousel">
         <button className="carousel-arrow left" onClick={prev}>&#8592;</button>
 
         <div className="featured-cards-wrapper">
-          {POSITIONS.map((pos, slotIdx) => {
+          {positions.map((pos, slotIdx) => {
             const user = users[(startIdx + slotIdx) % users.length];
             const certs = user.certifications || [];
             const top = getTopCategories(certs);

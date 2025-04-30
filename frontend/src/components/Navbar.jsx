@@ -6,6 +6,7 @@ import LoginForm from './Auth/LoginForm';
 import RegisterForm from './Auth/RegisterForm';
 import axios from 'axios';
 import { getMyConnectionRequests, respondToConnectionRequest, getProfile } from '../features/profile/getProfile';
+import { useQuery } from '@tanstack/react-query';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -24,25 +25,14 @@ const Navbar = () => {
   const [notifRef, setNotifRef] = useState(useRef());
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
-  const [fullUserData, setFullUserData] = useState(null);
   const profileDropdownRef = useRef();
 
-  // Fetch full user data when authenticated
-  useEffect(() => {
-    const fetchFullUserData = async () => {
-      if (user?._id) {
-        try {
-          const userData = await getProfile();
-          console.log('Fetched full user data:', userData);
-          setFullUserData(userData);
-        } catch (error) {
-          console.error('Error fetching full user data:', error);
-        }
-      }
-    };
-
-    fetchFullUserData();
-  }, [user]);
+  // Use React Query to fetch user data
+  const { data: fullUserData } = useQuery({
+    queryKey: ['me'],
+    queryFn: getProfile,
+    enabled: !!user?._id,
+  });
 
   // Only log user object once when it changes
   useEffect(() => {

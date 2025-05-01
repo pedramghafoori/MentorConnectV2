@@ -57,6 +57,19 @@ app.use('/api/lss', lssRoutes);
 
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+
+// For any route not handled by your API, serve the React index.html
+app.get('*', (req, res) => {
+  // Only serve index.html for non-API routes
+  if (!req.originalUrl.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, '../../frontend/dist', 'index.html'));
+  } else {
+    res.status(404).json({ error: 'Not found' });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {

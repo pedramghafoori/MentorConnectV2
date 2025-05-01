@@ -56,6 +56,46 @@ const DESKTOP_POSITIONS = ['far-left', 'left', 'center', 'right', 'far-right'];
 const MOBILE_POSITIONS = ['left', 'center', 'right'];
 const AUTO_SLIDE_MS = 3_000;
 
+// Define transform values for each position
+const POSITION_TRANSFORMS = {
+  'far-left': {
+    transform: 'translateX(-60%) scale(0.72) skewY(2deg)',
+    opacity: 0.38,
+    zIndex: 0,
+    filter: 'blur(1px)',
+    pointerEvents: 'none'
+  },
+  'left': {
+    transform: 'translateX(-40%) scale(0.92) skewY(1deg)',
+    opacity: 0.68,
+    zIndex: 1,
+    filter: 'none',
+    pointerEvents: 'auto'
+  },
+  'center': {
+    transform: 'translateX(0) scale(1.12) translateY(-40px)',
+    opacity: 1,
+    zIndex: 3,
+    filter: 'none',
+    pointerEvents: 'auto',
+    boxShadow: '0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08)'
+  },
+  'right': {
+    transform: 'translateX(40%) scale(0.92) skewY(-1deg)',
+    opacity: 0.68,
+    zIndex: 1,
+    filter: 'none',
+    pointerEvents: 'auto'
+  },
+  'far-right': {
+    transform: 'translateX(60%) scale(0.72) skewY(-2deg)',
+    opacity: 0.38,
+    zIndex: 0,
+    filter: 'blur(1px)',
+    pointerEvents: 'none'
+  }
+};
+
 export default function FeaturedUsersCarousel() {
   const [users, setUsers] = useState([]);
   const [startIdx, setStartIdx] = useState(0);
@@ -102,6 +142,22 @@ export default function FeaturedUsersCarousel() {
 
   const positions = isMobile ? MOBILE_POSITIONS : DESKTOP_POSITIONS;
 
+  // Calculate visible users and their positions
+  const visibleUsers = positions.map((pos, idx) => {
+    const userIndex = (startIdx + idx) % users.length;
+    return {
+      user: users[userIndex],
+      position: pos
+    };
+  });
+
+  // Map category keys to display labels
+  const categoryLabels = {
+    'INSTRUCTOR_TRAINER': 'Instructor Trainer',
+    'EXAMINER': 'Examiner',
+    'INSTRUCTOR': 'Instructor',
+  };
+
   return (
     <div className="featured-carousel-container">
       <h2 className="featured-carousel-title">Experience & Passion Connected</h2>
@@ -110,21 +166,18 @@ export default function FeaturedUsersCarousel() {
         <button className="carousel-arrow left" onClick={prev}>&#8592;</button>
 
         <div className="featured-cards-wrapper">
-          {positions.map((pos, slotIdx) => {
-            const user = users[(startIdx + slotIdx) % users.length];
+          {visibleUsers.map(({ user, position }) => {
             const certs = user.certifications || [];
             const top = getTopCategories(certs);
-
-            // Map category keys to display labels
-            const categoryLabels = {
-              'INSTRUCTOR_TRAINER': 'Instructor Trainer',
-              'EXAMINER': 'Examiner',
-              'INSTRUCTOR': 'Instructor',
-            };
+            const positionStyle = POSITION_TRANSFORMS[position];
 
             return (
-              <div key={pos} className={`featured-card profile-style carousel-${pos}`}>
-                <div className={`featured-card-inner scale-${pos}`}>
+              <div 
+                key={user._id}
+                className="featured-card profile-style"
+                style={positionStyle}
+              >
+                <div className="featured-card-inner">
                   <div className="carousel-profile-img-wrapper">
                     <img
                       src={user.avatarUrl || '/default-avatar.png'}

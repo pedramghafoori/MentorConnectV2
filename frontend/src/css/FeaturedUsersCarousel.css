@@ -38,26 +38,64 @@
     width: 270px;
     height: 410px;
     position: relative;
-    transform: var(--pos);
-    transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
     transform-origin: top center;
-    opacity: .85;
     overflow: hidden;
     padding: 0;
-    will-change: transform, opacity;
+    will-change: transform, opacity, filter;
+    transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 1s cubic-bezier(0.34, 1.56, 0.64, 1),
+                filter 1s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 1s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   
   /* slot‑specific transforms (balanced fan v3) */
-  .carousel-far-left  { --pos: translateX(-60%) scale(.72)  skewY( 2deg); opacity:.38; z-index:0; filter:blur(1px); pointer-events:none; }
-  .carousel-left      { --pos: translateX(-40%) scale(.92)  skewY( 1deg); opacity:.68; z-index:1; }
-  .carousel-center    { --pos: translateX(  0 ) scale(1.12) translateY(-40px); opacity:1;  z-index:3;
-                        box-shadow:0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08); }
-  .carousel-right     { --pos: translateX( 40%) scale(.92)  skewY(-1deg); opacity:.68; z-index:1; }
-  .carousel-far-right { --pos: translateX( 60%) scale(.72)  skewY(-2deg); opacity:.38; z-index:0; filter:blur(1px); pointer-events:none; }
+  .carousel-far-left  { 
+    --pos: translateX(-60%) scale(.72) skewY(2deg); 
+    opacity: .38; 
+    z-index: 0; 
+    filter: blur(1px); 
+    pointer-events: none;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .carousel-left      { 
+    --pos: translateX(-40%) scale(.92) skewY(1deg); 
+    opacity: .68; 
+    z-index: 1;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .carousel-center    { 
+    --pos: translateX(0) scale(1.12) translateY(-40px); 
+    opacity: 1;  
+    z-index: 3;
+    box-shadow: 0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .carousel-right     { 
+    --pos: translateX(40%) scale(.92) skewY(-1deg); 
+    opacity: .68; 
+    z-index: 1;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .carousel-far-right { 
+    --pos: translateX(60%) scale(.72) skewY(-2deg); 
+    opacity: .38; 
+    z-index: 0; 
+    filter: blur(1px); 
+    pointer-events: none;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
   
   /* gentle hover that *adds* to the slot transform */
   .featured-card:hover {
-    transform: var(--pos) scale(1.05);
+    transform: scale(1.05);
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   

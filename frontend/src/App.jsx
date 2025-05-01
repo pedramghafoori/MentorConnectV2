@@ -4,6 +4,7 @@ import ProfilePage from './pages/Profile/ProfilePage';
 import DashboardRouter from './pages/Dashboard/DashboardRouter';
 import HomePage from './pages/Home/HomePage';
 import Navbar from './components/Navbar';
+import SettingsPage from './pages/Settings/SettingsPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -20,6 +21,7 @@ const App = () => {
             <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/dashboard/*" element={user ? <DashboardRouter /> : <Navigate to="/" />} />
+            <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
           </Routes>
         </main>
       </div>

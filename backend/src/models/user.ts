@@ -20,12 +20,24 @@ export interface IUser extends Document {
   showConnections?: boolean;
   isDummy?: boolean;
   dummyBatch?: string;
+  preferredNoticeDays?: number;
+  prepRequirements?: string[];
+  expectedMenteeInvolvement?: string;
+  prepSupportFee?: number;
+  feeCurrency?: string;
 }
 
 const certificationSchema = new Schema({
   type: { type: String, required: true },
   years: { type: Number, required: true }
 }, { _id: false });
+
+const ALLOWED_PREP_REQUIREMENTS = [
+  'lesson-plan',
+  'exam-plan',
+  'scenarios',
+  'must-sees',
+];
 
 const userSchema = new Schema<IUser>({
   email: {
@@ -98,6 +110,35 @@ const userSchema = new Schema<IUser>({
   showConnections: {
     type: Boolean,
     default: true
+  },
+  preferredNoticeDays: {
+    type: Number,
+    default: 7,
+    min: 1,
+    max: 90
+  },
+  prepRequirements: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: function(arr: string[]) {
+        return arr.every(val => ALLOWED_PREP_REQUIREMENTS.includes(val));
+      },
+      message: 'Invalid prep requirement value.'
+    }
+  },
+  expectedMenteeInvolvement: {
+    type: String,
+    enum: ['', 'full-apprentice', 'exam-only'],
+    default: ''
+  },
+  prepSupportFee: {
+    type: Number,
+    min: 0
+  },
+  feeCurrency: {
+    type: String,
+    default: 'CAD'
   }
 }, {
   timestamps: true

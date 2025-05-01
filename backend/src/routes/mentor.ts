@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { updateNoticeDays, updatePrepRequirements, updateExpectedInvolvement, updatePrepSupportFee } from '../controllers/mentorPreferences.js';
 
 const router = Router();
 
@@ -16,5 +17,17 @@ router.put('/profile', (req, res) => {
 router.get('/mentees', (req, res) => {
   res.json({ message: 'Get mentor mentees endpoint' });
 });
+
+// Update preferred notice days
+router.put('/notice-days', updateNoticeDays);
+
+// Update prep requirements
+router.put('/prep-requirements', updatePrepRequirements);
+
+// Update expected mentee involvement
+router.put('/expected-involvement', updateExpectedInvolvement);
+
+// Update prep support fee
+router.put('/prep-support-fee', updatePrepSupportFee);
 
 export default router; 

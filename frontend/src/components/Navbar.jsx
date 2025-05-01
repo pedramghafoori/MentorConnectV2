@@ -472,15 +472,16 @@ const Navbar = () => {
                             </svg>
                             <span>Profile</span>
                           </Link>
-                          <button
+                          <Link
+                            to="/settings"
                             className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
-                            onClick={() => setDropdownPanel('settings')}
+                            onClick={() => setShowProfileDropdown(false)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                             </svg>
                             <span>Settings</span>
-                          </button>
+                          </Link>
                           <button
                             onClick={() => {
                               setShowProfileDropdown(false);
@@ -493,35 +494,6 @@ const Navbar = () => {
                             </svg>
                             <span>Logout</span>
                           </button>
-                        </div>
-                        {/* Settings panel */}
-                        <div className={`absolute inset-0 transition-transform duration-300 ${dropdownPanel === 'settings' ? 'translate-x-0' : 'translate-x-full'} bg-white`}>
-                          <div className="flex items-center gap-2 px-4 py-3 border-b">
-                            <button onClick={() => setDropdownPanel('main')} className="text-gray-500 hover:text-[#d33]">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                            </button>
-                            <span className="font-semibold text-lg">Settings & Privacy</span>
-                          </div>
-                          <div className="px-4 py-4 flex flex-col gap-4">
-                            <div className="flex items-center justify-between">
-                              <span>Show LSS ID</span>
-                              <button
-                                className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${fullUserData?.showLssId ? 'bg-[#d33]' : 'bg-gray-300'}`}
-                                onClick={() => handleToggle('showLssId', !fullUserData?.showLssId)}
-                              >
-                                <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${fullUserData?.showLssId ? 'translate-x-4' : ''}`}></span>
-                              </button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>Show Connections</span>
-                              <button
-                                className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${fullUserData?.showConnections ? 'bg-[#d33]' : 'bg-gray-300'}`}
-                                onClick={() => handleToggle('showConnections', !fullUserData?.showConnections)}
-                              >
-                                <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${fullUserData?.showConnections ? 'translate-x-4' : ''}`}></span>
-                              </button>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>

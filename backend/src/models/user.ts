@@ -34,6 +34,8 @@ export interface IUser extends Document {
   allowSearch?: boolean;
   deletedAt?: Date | null;
   deletionRequestedAt?: Date | null;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }
 
 const certificationSchema = new Schema({
@@ -188,6 +190,14 @@ const userSchema = new Schema<IUser>({
   deletionRequestedAt: {
     type: Date,
     default: null
+  },
+  resetPasswordToken: {
+    type: String,
+    default: undefined
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: undefined
   }
 }, {
   timestamps: true

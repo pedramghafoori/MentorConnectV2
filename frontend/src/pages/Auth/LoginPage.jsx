@@ -68,6 +68,9 @@ const LoginPage = () => {
             </button>
           </div>
         </form>
+        <div className="text-center mt-4">
+          <a href="/reset-password" className="text-sm text-[#d33] underline hover:text-[#b22]">Forgot password?</a>
+        </div>
       </div>
     </div>
   );

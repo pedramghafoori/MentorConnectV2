@@ -25,10 +25,10 @@ export const makeStorageFactory = () => {
       s3: s3Client,
       bucket: process.env.DO_SPACES_BUCKET!,
       acl: 'public-read',
-      metadata: (req, file, cb) => {
+      metadata: (req: any, file: any, cb: any) => {
         cb(null, { fieldName: file.fieldname });
       },
-      key: (req, file, cb) => {
+      key: (req: any, file: any, cb: any) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, `avatars/${uniqueSuffix}${path.extname(file.originalname)}`);
       }

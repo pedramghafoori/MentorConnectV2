@@ -1,3 +1,1 @@
-import accountRoutes from './routes/account.js';
-
-app.use('/api/account', accountRoutes); 
+// Remove all code from this file as app is handled in app.ts 

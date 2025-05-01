@@ -73,6 +73,7 @@
   box-shadow: none;
   box-sizing: border-box;
   text-align: center;
+  appearance: none;
 }
 
 .settings-input-number:focus {

@@ -75,8 +75,10 @@ export default function FeaturedUsersCarousel() {
   useEffect(() => {
     axios.get('/api/users/featured')
       .then(res => {
-        console.log('featured users count:', res.data.length);
-        setUsers(res.data);
+        // Filter users to only include those who have allowFeatured set to true
+        const featuredUsers = res.data.filter(user => user.allowFeatured !== false);
+        console.log('featured users count:', featuredUsers.length);
+        setUsers(featuredUsers);
       })
       .catch(() => setUsers([]));
   }, []);

@@ -28,6 +28,10 @@ export interface IUser extends Document {
   cancellationPolicyHours?: number;
   maxApprentices?: number;
   languages?: string[];
+  collectsHST?: boolean;
+  taxId?: string;
+  allowFeatured?: boolean;
+  allowSearch?: boolean;
 }
 
 const certificationSchema = new Schema({
@@ -158,9 +162,34 @@ const userSchema = new Schema<IUser>({
   languages: {
     type: [String],
     default: []
+  },
+  collectsHST: {
+    type: Boolean,
+    default: false
+  },
+  taxId: {
+    type: String,
+    trim: true
+  },
+  allowFeatured: {
+    type: Boolean,
+    default: true
+  },
+  allowSearch: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true
+});
+
+// Add pre-save hook for tax validation
+userSchema.pre('save', function(next) {
+  if (this.collectsHST && (!this.taxId || this.taxId.length === 0)) {
+    next(new Error('Tax ID is required when collecting HST'));
+  } else {
+    next();
+  }
 });
 
 export const User = mongoose.model<IUser>('User', userSchema); 

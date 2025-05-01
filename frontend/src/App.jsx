@@ -4,7 +4,7 @@ import ProfilePage from './pages/Profile/ProfilePage';
 import DashboardRouter from './pages/Dashboard/DashboardRouter';
 import HomePage from './pages/Home/HomePage';
 import Navbar from './components/Navbar';
-import SettingsPage from './pages/Settings/SettingsPage';
+import SettingsPage from './pages/Settings/SettingsPage.jsx';
 
 const App = () => {
   const { user, loading } = useAuth();

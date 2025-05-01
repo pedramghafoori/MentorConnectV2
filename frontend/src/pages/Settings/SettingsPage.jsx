@@ -3,12 +3,13 @@ import { updateProfile } from '../../features/profile/updateProfile';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProfile } from '../../features/profile/getProfile';
 import Select from 'react-select';
-
 import Container from '../../components/Container';
+import '../../css/settings.css';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
   { key: 'privacy', label: 'Privacy' },
+  { key: 'tax', label: 'Tax and Payout' },
 ];
 
 const PREP_OPTIONS = [
@@ -43,7 +44,6 @@ const LANGUAGE_OPTIONS = [
   { value: 'sv', label: 'Swedish' },
   { value: 'uk', label: 'Ukrainian' },
   { value: 'he', label: 'Hebrew' },
-  // ...add more as needed
 ];
 
 export default function SettingsPage() {
@@ -55,6 +55,8 @@ export default function SettingsPage() {
   });
   const [showLssId, setShowLssId] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
+  const [allowFeatured, setAllowFeatured] = useState(true);
+  const [allowSearch, setAllowSearch] = useState(true);
   const [noticeDays, setNoticeDays] = useState(7);
   const [noticeLoading, setNoticeLoading] = useState(false);
   const [noticeError, setNoticeError] = useState(null);
@@ -83,11 +85,20 @@ export default function SettingsPage() {
   const [languagesLoading, setLanguagesLoading] = useState(false);
   const [languagesError, setLanguagesError] = useState(null);
   const [languagesSuccess, setLanguagesSuccess] = useState(false);
+  const [collectsHST, setCollectsHST] = useState(false);
+  const [taxId, setTaxId] = useState('');
+  const [taxLoading, setTaxLoading] = useState(false);
+  const [taxError, setTaxError] = useState(null);
+  const [taxSuccess, setTaxSuccess] = useState(false);
 
   useEffect(() => {
     if (fullUserData) {
       setShowLssId(!!fullUserData.showLssId);
       setShowConnections(!!fullUserData.showConnections);
+      setAllowFeatured(!!fullUserData.allowFeatured);
+      setAllowSearch(!!fullUserData.allowSearch);
+      setCollectsHST(!!fullUserData.collectsHST);
+      setTaxId(fullUserData.taxId || '');
     }
   }, [fullUserData]);
 
@@ -137,7 +148,7 @@ export default function SettingsPage() {
     }
   }, [fullUserData]);
 
-  const handleToggle = async (field: 'showLssId' | 'showConnections', value: boolean) => {
+  const handleToggle = async (field, value) => {
     await updateProfile({ [field]: value });
     refetch();
     queryClient.invalidateQueries({ queryKey: ['me'] });
@@ -166,7 +177,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Prep Requirements save on change
   const handlePrepChange = async (newRequirements) => {
     setPrepRequirements(newRequirements);
     setPrepLoading(true);
@@ -184,7 +194,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Involvement save on change
   const handleInvolvementChange = async (val) => {
     setExpectedMenteeInvolvement(val);
     setInvolvementLoading(true);
@@ -266,6 +275,34 @@ export default function SettingsPage() {
     }
   };
 
+  const handleTaxSave = async () => {
+    setTaxLoading(true);
+    setTaxError(null);
+    setTaxSuccess(false);
+
+    // Validate HST number if collectsHST is true
+    if (collectsHST) {
+      // HST number format: 123456789RT0001
+      const hstRegex = /^\d{9}RT\d{4}$/;
+      if (!taxId || !hstRegex.test(taxId)) {
+        setTaxError('Please enter a valid HST number (format: 123456789RT0001)');
+        setTaxLoading(false);
+        return;
+      }
+    }
+
+    try {
+      await updateProfile({ collectsHST, taxId });
+      setTaxSuccess(true);
+      refetch();
+      setTimeout(() => setTaxSuccess(false), 1200);
+    } catch (err) {
+      setTaxError('Failed to save. Please try again.');
+    } finally {
+      setTaxLoading(false);
+    }
+  };
+
   return (
     <div style={{ background: '#fafbfc', minHeight: '80vh' }}>
       <Container style={{ display: 'flex', minHeight: '80vh' }}>
@@ -297,34 +334,61 @@ export default function SettingsPage() {
         </aside>
         <main style={{ flex: 1, padding: '2.5rem 3rem' }}>
           {selected === 'privacy' && (
-            <section>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Privacy</h2>
-              <div className="flex flex-col gap-4 max-w-md">
-                <div className="flex items-center justify-between">
-                  <span>Show LSS ID</span>
-                  <button
-                    className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${showLssId ? 'bg-[#d33]' : 'bg-gray-300'}`}
-                    onClick={() => { setShowLssId(!showLssId); handleToggle('showLssId', !showLssId); }}
-                  >
-                    <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${showLssId ? 'translate-x-4' : ''}`}></span>
-                  </button>
+            <section className="settings-section-privacy settings-section">
+              <h2 className="settings-section-title">Privacy</h2>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Profile Visibility</h3>
+                <div className="flex flex-col gap-1 max-w-md settings-toggle-list">
+                  <div className="flex items-center justify-between">
+                    <span>Show LSS ID</span>
+                    <button
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${showLssId ? 'bg-[#d33]' : 'bg-gray-300'}`}
+                      onClick={() => { setShowLssId(!showLssId); handleToggle('showLssId', !showLssId); }}
+                    >
+                      <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${showLssId ? 'translate-x-4' : ''}`}></span>
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Show Connections</span>
+                    <button
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${showConnections ? 'bg-[#d33]' : 'bg-gray-300'}`}
+                      onClick={() => { setShowConnections(!showConnections); handleToggle('showConnections', !showConnections); }}
+                    >
+                      <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${showConnections ? 'translate-x-4' : ''}`}></span>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Show Connections</span>
-                  <button
-                    className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${showConnections ? 'bg-[#d33]' : 'bg-gray-300'}`}
-                    onClick={() => { setShowConnections(!showConnections); handleToggle('showConnections', !showConnections); }}
-                  >
-                    <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${showConnections ? 'translate-x-4' : ''}`}></span>
-                  </button>
+              </div>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Discovery Preferences</h3>
+                <div className="flex flex-col gap-1 max-w-md settings-toggle-list">
+                  <div className="flex items-center justify-between">
+                    <span>Allow my profile to be featured</span>
+                    <button
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${allowFeatured ? 'bg-[#d33]' : 'bg-gray-300'}`}
+                      onClick={() => { setAllowFeatured(!allowFeatured); handleToggle('allowFeatured', !allowFeatured); }}
+                    >
+                      <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${allowFeatured ? 'translate-x-4' : ''}`}></span>
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Allow my profile to be searchable</span>
+                    <button
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${allowSearch ? 'bg-[#d33]' : 'bg-gray-300'}`}
+                      onClick={() => { setAllowSearch(!allowSearch); handleToggle('allowSearch', !allowSearch); }}
+                    >
+                      <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${allowSearch ? 'translate-x-4' : ''}`}></span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
           )}
           {selected === 'mentor' && (
-            <section>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Mentor Preferences</h2>
-              <div className="flex flex-col gap-6 max-w-md">
+            <section className="settings-section-mentor settings-section">
+              <h2 className="settings-section-title">Mentor Preferences</h2>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Scheduling</h3>
                 <label className="font-medium text-base mb-1">
                   How many days' notice do you need before mentoring?
                   <input
@@ -333,8 +397,7 @@ export default function SettingsPage() {
                     max={90}
                     value={noticeDays}
                     onChange={e => setNoticeDays(Number(e.target.value))}
-                    className="block mt-2 w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
-                    style={{ fontSize: '1.1rem' }}
+                    className="settings-input-number"
                   />
                 </label>
                 <button
@@ -346,8 +409,9 @@ export default function SettingsPage() {
                 </button>
                 {noticeError && <div className="text-red-500 text-sm mt-1">{noticeError}</div>}
                 {noticeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-
-                {/* Prep Requirements Pills Multi-Select */}
+              </div>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Preparation</h3>
                 <div>
                   <div className="font-medium text-base mb-2">What mentee must prepare</div>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -376,8 +440,6 @@ export default function SettingsPage() {
                   {prepError && <div className="text-red-500 text-sm mt-1">{prepError}</div>}
                   {prepSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                 </div>
-
-                {/* Expected Mentee Involvement Section */}
                 <div>
                   <div className="font-medium text-base mb-2">Expected mentee involvement</div>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -401,8 +463,9 @@ export default function SettingsPage() {
                   {involvementError && <div className="text-red-500 text-sm mt-1">{involvementError}</div>}
                   {involvementSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                 </div>
-
-                {/* Mentor Prep Support Fee */}
+              </div>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Fees & Capacity</h3>
                 <div>
                   <div className="font-medium text-base mb-2">Additional mentor fee (optional)</div>
                   <div className="flex items-center gap-2 mb-3">
@@ -414,7 +477,6 @@ export default function SettingsPage() {
                       value={prepSupportFee}
                       onChange={e => {
                         const val = e.target.value;
-                        // Only allow numbers and decimals
                         if (/^\d*(\.\d{0,2})?$/.test(val) || val === "") {
                           setPrepSupportFee(val);
                         }
@@ -435,8 +497,6 @@ export default function SettingsPage() {
                   {feeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                   <div className="text-xs text-gray-500 mt-1">Covers pre-course reviews & comms</div>
                 </div>
-
-                {/* Cancellation Policy */}
                 <div>
                   <div className="font-medium text-base mb-2">How late can a mentee cancel and still get a refund?</div>
                   <div className="flex items-center gap-2 mb-3">
@@ -446,9 +506,7 @@ export default function SettingsPage() {
                       max={168}
                       value={cancellationPolicyHours}
                       onChange={e => setCancellationPolicyHours(Number(e.target.value))}
-                      className="block w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
-                      style={{ fontSize: '1.1rem' }}
-                      disabled={cancellationLoading}
+                      className="settings-input-number"
                     />
                     <span>hours</span>
                     <button
@@ -463,8 +521,6 @@ export default function SettingsPage() {
                   {cancellationSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                   <div className="text-xs text-gray-500 mt-1">Free cancellation up to {cancellationPolicyHours} h before start</div>
                 </div>
-
-                {/* Max Apprentices */}
                 <div>
                   <div className="font-medium text-base mb-2">How many apprentices can you handle at once?</div>
                   <div className="flex items-center gap-2 mb-3">
@@ -474,9 +530,7 @@ export default function SettingsPage() {
                       max={10}
                       value={maxApprentices}
                       onChange={e => setMaxApprentices(Number(e.target.value))}
-                      className="block w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
-                      style={{ fontSize: '1.1rem' }}
-                      disabled={maxApprenticesLoading}
+                      className="settings-input-number"
                     />
                     <button
                       onClick={handleMaxApprenticesSave}
@@ -489,8 +543,6 @@ export default function SettingsPage() {
                   {maxApprenticesError && <div className="text-red-500 text-sm mt-1">{maxApprenticesError}</div>}
                   {maxApprenticesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                 </div>
-
-                {/* Languages */}
                 <div>
                   <div className="font-medium text-base mb-2">Languages you speak</div>
                   <div className="mb-3" style={{ maxWidth: 400 }}>
@@ -512,6 +564,55 @@ export default function SettingsPage() {
                   </button>
                   {languagesError && <div className="text-red-500 text-sm mt-1">{languagesError}</div>}
                   {languagesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                </div>
+              </div>
+            </section>
+          )}
+          {selected === 'tax' && (
+            <section className="settings-section-tax settings-section">
+              <h2 className="settings-section-title">Tax and Payout</h2>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Tax Information</h3>
+                <div className="flex flex-col gap-6 max-w-md">
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <input
+                        type="checkbox"
+                        id="collectsHST"
+                        checked={collectsHST}
+                        onChange={(e) => setCollectsHST(e.target.checked)}
+                        className="w-4 h-4 text-[#d33] border-gray-300 rounded focus:ring-[#d33]"
+                      />
+                      <label htmlFor="collectsHST" className="font-medium text-base">
+                        I am required to collect HST/GST
+                      </label>
+                    </div>
+                    {collectsHST && (
+                      <div className="mt-4">
+                        <label className="block font-medium text-base mb-2">
+                          Tax ID
+                          <input
+                            type="text"
+                            value={taxId}
+                            onChange={(e) => setTaxId(e.target.value)}
+                            placeholder="Enter your HST/GST number"
+                            className="block mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
+                            style={{ fontSize: '1.1rem' }}
+                            disabled={taxLoading}
+                          />
+                        </label>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleTaxSave}
+                      disabled={taxLoading}
+                      className="mt-4 px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
+                    >
+                      {taxLoading ? 'Saving...' : 'Save'}
+                    </button>
+                    {taxError && <div className="text-red-500 text-sm mt-1">{taxError}</div>}
+                    {taxSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                  </div>
                 </div>
               </div>
             </section>

@@ -156,7 +156,10 @@ router.get('/search', authenticateToken, async (req, res) => {
     }
 
     console.log('Search filter:', JSON.stringify(searchFilter, null, 2));
-    const users = await User.find(searchFilter).select('firstName lastName avatarUrl lssId role certifications');
+    const users = await User.find({
+      ...searchFilter,
+      allowSearch: { $ne: false }
+    }).select('firstName lastName avatarUrl lssId role certifications');
     console.log('Found users:', users.length);
     res.json(users);
   } catch (error) {
@@ -169,7 +172,7 @@ router.get('/search', authenticateToken, async (req, res) => {
 router.get('/featured', async (req, res) => {
   try {
     const users = await User.aggregate([
-      { $match: { certifications: { $exists: true, $not: { $size: 0 } } } },
+      { $match: { certifications: { $exists: true, $not: { $size: 0 } }, allowFeatured: { $ne: false } } },
       { $sample: { size: 10 } },
       { $project: {
           _id: 1,
@@ -177,7 +180,8 @@ router.get('/featured', async (req, res) => {
           lastName: 1,
           avatarUrl: 1,
           role: 1,
-          certifications: 1
+          certifications: 1,
+          allowFeatured: 1
         }
       }
     ]);

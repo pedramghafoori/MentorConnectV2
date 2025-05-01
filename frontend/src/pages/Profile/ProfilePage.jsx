@@ -11,6 +11,7 @@ import ProfilePictureEditor from '../../components/ProfilePictureEditor';
 import '../../css/profile.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { uploadPicture } from '../../features/profile/uploadPicture';
+import Container from '../../components/Container.jsx';
 
 const formatCertificationName = (name) => {
   // Handle Instructor Trainer certifications
@@ -116,14 +117,16 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d33]"></div>
-      </div>
+      <Container>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d33]"></div>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
-    return <div className="text-red-500 text-center mt-8">Error loading profile: {error.message}</div>;
+    return <Container><div className="text-red-500 text-center mt-8">Error loading profile: {error.message}</div></Container>;
   }
 
   // Log profile data for debugging
@@ -198,7 +201,6 @@ export default function ProfilePage() {
       await checkConnectionStatus();
     } catch (err) {
       setConnectionError('Failed to update connection');
-      console.error('Connection error:', err);
     } finally {
       setConnectionLoading(false);
     }
@@ -251,295 +253,297 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="avatar-section">
-          {isOwnProfile ? (
-            <div 
-              className="cursor-pointer transition-transform hover:scale-105"
-              onClick={() => {
-                setSelectedImage(data?.profilePicture || data?.avatarUrl);
-                setShowProfileEditor(true);
-              }}
-            >
-              <img
-                src={data?.profilePicture || data?.avatarUrl}
-                alt="Profile"
-                className="w-40 h-40 rounded-full object-cover"
-              />
-            </div>
-          ) : (
-            <div 
-              className="cursor-pointer transition-transform hover:scale-105"
-              onClick={() => setShowImageModal(true)}
-            >
-              <img
-                src={data?.profilePicture || data?.avatarUrl}
-                alt={`${data?.firstName} ${data?.lastName}'s profile`}
-                className="w-40 h-40 rounded-full object-cover"
-              />
-            </div>
-          )}
-        </div>
-        <div className="profile-main-info">
-          <div className="flex items-center gap-4">
-            <h1 className="profile-name">{firstName} {lastName}</h1>
-            {/* Add Connection Button */}
-            {!isOwnProfile && (
-              connectionStatus.connected ? (
-                <div className="relative inline-block">
-                  <button
-                    className="connection-button bg-green-700 text-white"
-                    onClick={() => setShowRemoveDropdown((v) => !v)}
-                    disabled={connectionLoading}
-                  >
-                    Connected
-                  </button>
-                  {showRemoveDropdown && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                      <button
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-lg"
-                        onClick={() => { setShowRemoveDropdown(false); setShowRemoveConfirm(true); }}
-                      >
-                        Remove Connection
-                      </button>
-                    </div>
-                  )}
-                  {showRemoveConfirm && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-                      <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full">
-                        <div className="text-lg font-semibold mb-4">Remove Connection?</div>
-                        <div className="text-gray-700 mb-6">Are you sure you want to remove this connection?</div>
-                        <div className="flex justify-end gap-2">
-                          <button
-                            className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            onClick={() => setShowRemoveConfirm(false)}
-                          >Cancel</button>
-                          <button
-                            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                            onClick={handleRemoveConnection}
-                            disabled={connectionLoading}
-                          >{connectionLoading ? 'Removing...' : 'Remove'}</button>
+    <Container>
+      <div className="profile-container">
+        <div className="profile-header">
+          <div className="avatar-section">
+            {isOwnProfile ? (
+              <div 
+                className="cursor-pointer transition-transform hover:scale-105"
+                onClick={() => {
+                  setSelectedImage(data?.profilePicture || data?.avatarUrl);
+                  setShowProfileEditor(true);
+                }}
+              >
+                <img
+                  src={data?.profilePicture || data?.avatarUrl}
+                  alt="Profile"
+                  className="w-40 h-40 rounded-full object-cover"
+                />
+              </div>
+            ) : (
+              <div 
+                className="cursor-pointer transition-transform hover:scale-105"
+                onClick={() => setShowImageModal(true)}
+              >
+                <img
+                  src={data?.profilePicture || data?.avatarUrl}
+                  alt={`${data?.firstName} ${data?.lastName}'s profile`}
+                  className="w-40 h-40 rounded-full object-cover"
+                />
+              </div>
+            )}
+          </div>
+          <div className="profile-main-info">
+            <div className="flex items-center gap-4">
+              <h1 className="profile-name">{firstName} {lastName}</h1>
+              {/* Add Connection Button */}
+              {!isOwnProfile && (
+                connectionStatus.connected ? (
+                  <div className="relative inline-block">
+                    <button
+                      className="connection-button bg-green-700 text-white"
+                      onClick={() => setShowRemoveDropdown((v) => !v)}
+                      disabled={connectionLoading}
+                    >
+                      Connected
+                    </button>
+                    {showRemoveDropdown && (
+                      <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-lg"
+                          onClick={() => { setShowRemoveDropdown(false); setShowRemoveConfirm(true); }}
+                        >
+                          Remove Connection
+                        </button>
+                      </div>
+                    )}
+                    {showRemoveConfirm && (
+                      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+                        <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full">
+                          <div className="text-lg font-semibold mb-4">Remove Connection?</div>
+                          <div className="text-gray-700 mb-6">Are you sure you want to remove this connection?</div>
+                          <div className="flex justify-end gap-2">
+                            <button
+                              className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                              onClick={() => setShowRemoveConfirm(false)}
+                            >Cancel</button>
+                            <button
+                              className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                              onClick={handleRemoveConnection}
+                              disabled={connectionLoading}
+                            >{connectionLoading ? 'Removing...' : 'Remove'}</button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ) : connectionStatus.sent ? (
-                <div className="relative inline-block">
-                  <button
-                    className="connection-button bg-gray-300 text-gray-600"
-                    onClick={handleConnectionClick}
-                    disabled={checkingConnection || connectionLoading}
-                  >
-                    {connectionLoading ? 'Loading...' : 'Pending'}
-                  </button>
-                </div>
-              ) : (
-                <div className="relative inline-block">
-                  <button
-                    className="connection-button bg-blue-600 text-white hover:bg-blue-700"
-                    onClick={handleConnectionClick}
-                    disabled={checkingConnection || connectionLoading}
-                  >
-                    {connectionLoading ? 'Loading...' : 'Add Connection'}
-                  </button>
-                </div>
-              )
-            )}
-            {connectionError && (
-              <div className="text-red-500 text-xs mt-1">{connectionError}</div>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', height: '2.1rem' }}>
-            {data.role === 'MENTOR' && (
-              <div className="mentor-badge">
-                Certified Mentor
-              </div>
-            )}
-            {/* Location display */}
-            <div className="location-wrapper">
-              {!showLocationSelect ? (
-                <button
-                  className="location-text"
-                  onClick={() => isOwnProfile && setShowLocationSelect(true)}
-                  disabled={!isOwnProfile}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <circle cx="12" cy="10" r="2.9" fill="currentColor" />
-                  </svg>
-                  <span>
-                    {location.split(',')[0]}
-                  </span>
-                </button>
-              ) : (
-                isOwnProfile && (
-                  <select
-                    value={location}
-                    onChange={e => setLocation(e.target.value)}
-                    onBlur={() => { handleSaveLocation(); setShowLocationSelect(false); }}
-                    autoFocus
-                    className="form-select"
-                    style={{ minWidth: 140 }}
-                  >
-                    <option value="Toronto, ON">Toronto, ON</option>
-                    <option value="Ottawa, ON">Ottawa, ON</option>
-                  </select>
+                    )}
+                  </div>
+                ) : connectionStatus.sent ? (
+                  <div className="relative inline-block">
+                    <button
+                      className="connection-button bg-gray-300 text-gray-600"
+                      onClick={handleConnectionClick}
+                      disabled={checkingConnection || connectionLoading}
+                    >
+                      {connectionLoading ? 'Loading...' : 'Pending'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative inline-block">
+                    <button
+                      className="connection-button bg-blue-600 text-white hover:bg-blue-700"
+                      onClick={handleConnectionClick}
+                      disabled={checkingConnection || connectionLoading}
+                    >
+                      {connectionLoading ? 'Loading...' : 'Add Connection'}
+                    </button>
+                  </div>
                 )
               )}
+              {connectionError && (
+                <div className="text-red-500 text-xs mt-1">{connectionError}</div>
+              )}
             </div>
-          </div>
-          <div className="profile-meta-row">
-            {showLssId && (
-              <div className="meta-item">
-                <span className="meta-label">LSS ID:</span>
-                {isOwnProfile ? (
-                  data.lssId ? (
-                    <span>{data.lssId}</span>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={lssId}
-                        onChange={(e) => setLssId(e.target.value)}
-                        placeholder="Enter your LSS ID"
-                        className="form-select"
-                      />
-                      <button 
-                        onClick={handleSaveLssId}
-                        className="btn btn-secondary"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', height: '2.1rem' }}>
+              {data.role === 'MENTOR' && (
+                <div className="mentor-badge">
+                  Certified Mentor
+                </div>
+              )}
+              {/* Location display */}
+              <div className="location-wrapper">
+                {!showLocationSelect ? (
+                  <button
+                    className="location-text"
+                    onClick={() => isOwnProfile && setShowLocationSelect(true)}
+                    disabled={!isOwnProfile}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      <circle cx="12" cy="10" r="2.9" fill="currentColor" />
+                    </svg>
+                    <span>
+                      {location.split(',')[0]}
+                    </span>
+                  </button>
                 ) : (
-                  <span>{data.lssId}</span>
+                  isOwnProfile && (
+                    <select
+                      value={location}
+                      onChange={e => setLocation(e.target.value)}
+                      onBlur={() => { handleSaveLocation(); setShowLocationSelect(false); }}
+                      autoFocus
+                      className="form-select"
+                      style={{ minWidth: 140 }}
+                    >
+                      <option value="Toronto, ON">Toronto, ON</option>
+                      <option value="Ottawa, ON">Ottawa, ON</option>
+                    </select>
+                  )
                 )}
               </div>
-            )}
+            </div>
+            <div className="profile-meta-row">
+              {showLssId && (
+                <div className="meta-item">
+                  <span className="meta-label">LSS ID:</span>
+                  {isOwnProfile ? (
+                    data.lssId ? (
+                      <span>{data.lssId}</span>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={lssId}
+                          onChange={(e) => setLssId(e.target.value)}
+                          placeholder="Enter your LSS ID"
+                          className="form-select"
+                        />
+                        <button 
+                          onClick={handleSaveLssId}
+                          className="btn btn-secondary"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    )
+                  ) : (
+                    <span>{data.lssId}</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="profile-content">
-        <main>
-          <section className="section-card about-section mb-6">
-            <div className="section-header">
-              <h2 className="section-title">About Me</h2>
-              {isOwnProfile && <button onClick={handleSaveAbout} className="btn btn-primary">Save</button>}
-            </div>
-            {isOwnProfile ? (
-              <textarea
-                defaultValue={data.about}
-                onChange={(e) => setAbout(e.target.value)}
-                placeholder="Tell us about yourself..."
-              />
-            ) : (
-              <div style={{ minHeight: 80, color: '#4a5568', fontSize: '1rem' }}>{data.about || <span className="text-gray-400">No bio provided.</span>}</div>
-            )}
-          </section>
-
-          {/* Connections Section - only render if showConnections is true */}
-          {showConnections && (
-            <section className="section-card mb-6">
+        <div className="profile-content">
+          <main>
+            <section className="section-card about-section mb-6">
               <div className="section-header">
-                <h2 className="section-title">Connections</h2>
+                <h2 className="section-title">About Me</h2>
+                {isOwnProfile && <button onClick={handleSaveAbout} className="btn btn-primary">Save</button>}
               </div>
-              {isLoadingConnections ? (
-                <div className="flex justify-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#d33]"></div>
-                </div>
-              ) : connections?.length > 0 ? (
-                <div className="flex flex-wrap gap-3">
-                  {connections.map((connection) => (
-                    <button
-                      key={connection._id}
-                      onClick={() => navigate(`/profile/${connection._id}`)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm cursor-pointer border border-gray-200"
-                      style={{ minWidth: 0 }}
-                    >
-                      <img
-                        src={connection.avatarUrl || '/default-avatar.png'}
-                        alt={`${connection.firstName} ${connection.lastName}'s profile`}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div className="flex flex-col items-start min-w-0">
-                        <span className="font-medium text-gray-900 truncate text-sm">
-                          {connection.firstName} {connection.lastName}
-                        </span>
-                        <span className="text-xs text-gray-500 truncate">{connection.lssId}</span>
-                        {connection.role === 'MENTOR' && (
-                          <span className="text-xs text-[#d33] font-medium">Mentor</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              {isOwnProfile ? (
+                <textarea
+                  defaultValue={data.about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  placeholder="Tell us about yourself..."
+                />
               ) : (
-                <p className="text-gray-500 text-center py-4">No connections yet.</p>
+                <div style={{ minHeight: 80, color: '#4a5568', fontSize: '1rem' }}>{data.about || <span className="text-gray-400">No bio provided.</span>}</div>
               )}
             </section>
-          )}
 
-          <section className="section-card mb-6">
-            <div className="section-header">
-              <h2 className="section-title">Reviews</h2>
-            </div>
-            <ReviewsSection userId={data._id} />
-          </section>
-        </main>
-
-        <aside>
-          <section className="section-card">
-            <div className="section-header">
-              <h2 className="section-title">Certifications</h2>
-              {isOwnProfile && (
-                <button 
-                  onClick={handleFetchCertifications}
-                  disabled={isFetchingCerts}
-                  className="btn btn-primary"
-                >
-                  {isFetchingCerts ? 'Fetching...' : 'Fetch'}
-                </button>
-              )}
-            </div>
-            <div className="certifications-grid">
-              {certifications?.map((cert, index) => (
-                <div key={index} className="certification-pill">
-                  <span className="certification-name">{formatCertificationName(cert.type)}</span>
-                  <span className="certification-years">{cert.years} years</span>
+            {/* Connections Section - only render if showConnections is true */}
+            {showConnections && (
+              <section className="section-card mb-6">
+                <div className="section-header">
+                  <h2 className="section-title">Connections</h2>
                 </div>
-              ))}
-              {certifications?.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No certifications found. {isOwnProfile && "Click 'Fetch' to load your certifications."}</p>
-              )}
-            </div>
-          </section>
-        </aside>
-      </div>
+                {isLoadingConnections ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#d33]"></div>
+                  </div>
+                ) : connections?.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {connections.map((connection) => (
+                      <button
+                        key={connection._id}
+                        onClick={() => navigate(`/profile/${connection._id}`)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm cursor-pointer border border-gray-200"
+                        style={{ minWidth: 0 }}
+                      >
+                        <img
+                          src={connection.avatarUrl || '/default-avatar.png'}
+                          alt={`${connection.firstName} ${connection.lastName}'s profile`}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div className="flex flex-col items-start min-w-0">
+                          <span className="font-medium text-gray-900 truncate text-sm">
+                            {connection.firstName} {connection.lastName}
+                          </span>
+                          <span className="text-xs text-gray-500 truncate">{connection.lssId}</span>
+                          {connection.role === 'MENTOR' && (
+                            <span className="text-xs text-[#d33] font-medium">Mentor</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No connections yet.</p>
+                )}
+              </section>
+            )}
 
-      {/* Image Modal for viewing other users' profile pictures */}
-      <ImageModal
-        isOpen={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        imageUrl={data?.profilePicture || data?.avatarUrl}
-        altText={`${data?.firstName} ${data?.lastName}'s profile picture`}
-      />
+            <section className="section-card mb-6">
+              <div className="section-header">
+                <h2 className="section-title">Reviews</h2>
+              </div>
+              <ReviewsSection userId={data._id} />
+            </section>
+          </main>
 
-      {/* Profile Picture Editor for editing own profile picture */}
-      {showProfileEditor && (
-        <ProfilePictureEditor
-          image={selectedImage}
-          onSave={handleSaveProfilePicture}
-          onCancel={() => {
-            setShowProfileEditor(false);
-            setSelectedImage(null);
-          }}
-          onChangePicture={(newImage) => setSelectedImage(newImage)}
+          <aside>
+            <section className="section-card">
+              <div className="section-header">
+                <h2 className="section-title">Certifications</h2>
+                {isOwnProfile && (
+                  <button 
+                    onClick={handleFetchCertifications}
+                    disabled={isFetchingCerts}
+                    className="btn btn-primary"
+                  >
+                    {isFetchingCerts ? 'Fetching...' : 'Fetch'}
+                  </button>
+                )}
+              </div>
+              <div className="certifications-grid">
+                {certifications?.map((cert, index) => (
+                  <div key={index} className="certification-pill">
+                    <span className="certification-name">{formatCertificationName(cert.type)}</span>
+                    <span className="certification-years">{cert.years} years</span>
+                  </div>
+                ))}
+                {certifications?.length === 0 && (
+                  <p className="text-gray-500 text-center py-4">No certifications found. {isOwnProfile && "Click 'Fetch' to load your certifications."}</p>
+                )}
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        {/* Image Modal for viewing other users' profile pictures */}
+        <ImageModal
+          isOpen={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          imageUrl={data?.profilePicture || data?.avatarUrl}
+          altText={`${data?.firstName} ${data?.lastName}'s profile picture`}
         />
-      )}
-    </div>
+
+        {/* Profile Picture Editor for editing own profile picture */}
+        {showProfileEditor && (
+          <ProfilePictureEditor
+            image={selectedImage}
+            onSave={handleSaveProfilePicture}
+            onCancel={() => {
+              setShowProfileEditor(false);
+              setSelectedImage(null);
+            }}
+            onChangePicture={(newImage) => setSelectedImage(newImage)}
+          />
+        )}
+      </div>
+    </Container>
   );
 } 

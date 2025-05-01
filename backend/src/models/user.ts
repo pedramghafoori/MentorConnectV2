@@ -25,6 +25,9 @@ export interface IUser extends Document {
   expectedMenteeInvolvement?: string;
   prepSupportFee?: number;
   feeCurrency?: string;
+  cancellationPolicyHours?: number;
+  maxApprentices?: number;
+  languages?: string[];
 }
 
 const certificationSchema = new Schema({
@@ -139,6 +142,22 @@ const userSchema = new Schema<IUser>({
   feeCurrency: {
     type: String,
     default: 'CAD'
+  },
+  cancellationPolicyHours: {
+    type: Number,
+    default: 48,
+    min: 1,
+    max: 168
+  },
+  maxApprentices: {
+    type: Number,
+    default: 1,
+    min: 1,
+    max: 10
+  },
+  languages: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { updateNoticeDays, updatePrepRequirements, updateExpectedInvolvement, updatePrepSupportFee } from '../controllers/mentorPreferences.js';
+import { updateNoticeDays, updatePrepRequirements, updateExpectedInvolvement, updatePrepSupportFee, updateCancellationWindow } from '../controllers/mentorPreferences.js';
 
 const router = Router();
 
@@ -29,5 +29,8 @@ router.put('/expected-involvement', updateExpectedInvolvement);
 
 // Update prep support fee
 router.put('/prep-support-fee', updatePrepSupportFee);
+
+// Update cancellation window
+router.put('/cancellation-window', updateCancellationWindow);
 
 export default router; 

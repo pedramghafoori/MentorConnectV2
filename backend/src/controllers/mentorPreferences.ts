@@ -89,4 +89,24 @@ export async function updatePrepSupportFee(req: Request, res: Response) {
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
+}
+
+export async function updateCancellationWindow(req: Request, res: Response) {
+  try {
+    const userId = req.user?._id || req.user?.id;
+    const { cancellationPolicyHours } = req.body;
+    const hours = Number(cancellationPolicyHours);
+    if (!Number.isInteger(hours) || hours < 1 || hours > 168) {
+      return res.status(400).json({ error: 'cancellationPolicyHours must be an integer between 1 and 168.' });
+    }
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { cancellationPolicyHours: hours },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ cancellationPolicyHours: user.cancellationPolicyHours });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
 } 

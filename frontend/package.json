@@ -15,6 +15,7 @@
     "react-dom": "^18.3.0",
     "react-image-crop": "^11.0.10",
     "react-router-dom": "^6.23.0",
+    "react-select": "^5.10.1",
     "shadcn-ui": "latest",
     "zustand": "^4.5.0"
   },

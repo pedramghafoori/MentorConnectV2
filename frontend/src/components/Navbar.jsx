@@ -8,6 +8,7 @@ import axios from 'axios';
 import { getMyConnectionRequests, respondToConnectionRequest, getProfile } from '../features/profile/getProfile';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '../features/profile/updateProfile';
+import Container from './Container.jsx';
 
 const ALL_CERTIFICATIONS = [
   { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
@@ -218,8 +219,8 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
-        <div className="max-w-7xl w-full mx-auto flex justify-between items-center">
+      <header className="flex justify-between items-center py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
+        <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Link to="/" className="text-2xl font-bold text-[#d33] tracking-tight font-['Inter',system-ui,sans-serif]">
             MentorConnect
           </Link>
@@ -517,7 +518,7 @@ const Navbar = () => {
               </>
             )}
           </nav>
-        </div>
+        </Container>
       </header>
 
       {/* Auth Modals */}

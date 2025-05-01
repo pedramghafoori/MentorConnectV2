@@ -14,8 +14,9 @@ const menuItems = [
 
 const PREP_OPTIONS = [
   { value: 'lesson-plan', label: 'Lesson Plan' },
-  { value: 'exam-plan', label: 'Exam Plan' },
+  
   { value: 'scenarios', label: 'Scenarios' },
+  { value: 'exam-plan', label: 'Exam Plan' },
   { value: 'must-sees', label: 'Must-Sees' },
 ];
 
@@ -306,7 +307,7 @@ export default function SettingsPage() {
   return (
     <div style={{ background: '#fafbfc', minHeight: '80vh' }}>
       <Container style={{ display: 'flex', minHeight: '80vh' }}>
-        <aside style={{ width: 220, background: '#fff', borderRight: '1px solid #eee', padding: '2rem 0' }}>
+        <aside className="settings-sidebar">
           <nav>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {menuItems.map(item => (
@@ -389,32 +390,49 @@ export default function SettingsPage() {
               <h2 className="settings-section-title">Mentor Preferences</h2>
               <div className="settings-subsection">
                 <h3 className="settings-subsection-title">Scheduling</h3>
-                <label className="font-medium text-base mb-1">
-                  How many days' notice do you need before mentoring?
-                  <input
-                    type="number"
-                    min={1}
-                    max={90}
-                    value={noticeDays}
-                    onChange={e => setNoticeDays(Number(e.target.value))}
-                    className="settings-input-number"
-                  />
-                </label>
-                <button
-                  onClick={handleNoticeSave}
-                  disabled={noticeLoading}
-                  className="px-5 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
-                >
-                  {noticeLoading ? 'Saving...' : 'Save'}
-                </button>
-                {noticeError && <div className="text-red-500 text-sm mt-1">{noticeError}</div>}
-                {noticeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                <div className="settings-fee-input-row">
+                  <label className="font-medium text-base mb-1" htmlFor="noticeDays">
+                    How many days' notice do you need before mentoring?
+                  </label>
+                  <div className="settings-input-spinner-row">
+                    <button
+                      type="button"
+                      className="settings-spinner-btn"
+                      onClick={() => setNoticeDays(prev => Math.max(1, prev - 1))}
+                      tabIndex={-1}
+                    >−</button>
+                    <input
+                      id="noticeDays"
+                      type="number"
+                      min={1}
+                      max={90}
+                      value={noticeDays}
+                      onChange={e => setNoticeDays(Number(e.target.value))}
+                      className="settings-input-number"
+                    />
+                    <button
+                      type="button"
+                      className="settings-spinner-btn"
+                      onClick={() => setNoticeDays(prev => Math.min(90, prev + 1))}
+                      tabIndex={-1}
+                    >+</button>
+                  </div>
+                  <button
+                    onClick={handleNoticeSave}
+                    disabled={noticeLoading}
+                    className="settings-fee-save-btn px-5 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                  >
+                    {noticeLoading ? 'Saving...' : 'Save'}
+                  </button>
+                  {noticeError && <div className="text-red-500 text-sm mt-1">{noticeError}</div>}
+                  {noticeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                </div>
               </div>
               <div className="settings-subsection">
                 <h3 className="settings-subsection-title">Preparation</h3>
                 <div>
                   <div className="font-medium text-base mb-2">What mentee must prepare</div>
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2 settings-group-spacing">
                     {PREP_OPTIONS.map(opt => (
                       <button
                         key={opt.value}
@@ -466,104 +484,140 @@ export default function SettingsPage() {
               </div>
               <div className="settings-subsection">
                 <h3 className="settings-subsection-title">Fees & Capacity</h3>
-                <div>
-                  <div className="font-medium text-base mb-2">Additional mentor fee (optional)</div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span>CAD</span>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      pattern="^\\d*(\\.\\d{0,2})?$"
-                      value={prepSupportFee}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (/^\d*(\.\d{0,2})?$/.test(val) || val === "") {
-                          setPrepSupportFee(val);
-                        }
-                      }}
-                      className="block w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
-                      style={{ fontSize: '1.1rem' }}
-                      disabled={feeLoading}
-                    />
+                <div className="settings-fee-list">
+                  <div className="settings-fee-group">
+                    <div className="font-medium text-base mb-2">Additional mentor fee (optional)</div>
+                    <div className="settings-supporting-text">Covers pre-course reviews & comms</div>
+                    <div className="settings-fee-input-row">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          pattern="^\\d*(\\.\\d{0,2})?$"
+                          value={prepSupportFee}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (/^\d*(\.\d{0,2})?$/.test(val) || val === "") {
+                              setPrepSupportFee(val);
+                            }
+                          }}
+                          className="block w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
+                          style={{ fontSize: '1.1rem' }}
+                          disabled={feeLoading}
+                        />
+                        <span>CAD</span>
+                      </div>
+                      <button
+                        onClick={handlePrepSupportFeeSave}
+                        disabled={feeLoading}
+                        className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
+                      >
+                        {feeLoading ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                    {feeError && <div className="text-red-500 text-sm mt-1">{feeError}</div>}
+                    {feeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                  </div>
+                  <div className="settings-fee-group">
+                    <div className="font-medium text-base mb-2">How late can a mentee cancel and still get a refund?</div>
+                    <div className="settings-supporting-text">
+                      Free cancellation up to {cancellationPolicyHours} h before start
+                    </div>
+                    <div className="settings-fee-input-row">
+                      <div className="flex items-center gap-2">
+                        <div className="settings-input-spinner-row">
+                          <button
+                            type="button"
+                            className="settings-spinner-btn"
+                            onClick={() => setCancellationPolicyHours(prev => Math.max(1, prev - 1))}
+                            tabIndex={-1}
+                          >−</button>
+                          <input
+                            type="number"
+                            min={1}
+                            max={168}
+                            value={cancellationPolicyHours}
+                            onChange={e => setCancellationPolicyHours(Number(e.target.value))}
+                            className="settings-input-number"
+                          />
+                          <button
+                            type="button"
+                            className="settings-spinner-btn"
+                            onClick={() => setCancellationPolicyHours(prev => Math.min(168, prev + 1))}
+                            tabIndex={-1}
+                          >+</button>
+                        </div>
+                        <span>hours</span>
+                      </div>
+                      <button
+                        onClick={handleCancellationPolicySave}
+                        disabled={cancellationLoading}
+                        className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
+                      >
+                        {cancellationLoading ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                    {cancellationError && <div className="text-red-500 text-sm mt-1">{cancellationError}</div>}
+                    {cancellationSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                  </div>
+                  <div className="settings-fee-group">
+                    <div className="font-medium text-base mb-2">How many apprentices can you handle at once?</div>
+                    <div className="settings-fee-input-row">
+                      <div className="settings-input-spinner-row">
+                        <button
+                          type="button"
+                          className="settings-spinner-btn"
+                          onClick={() => setMaxApprentices(prev => Math.max(1, prev - 1))}
+                          tabIndex={-1}
+                        >−</button>
+                        <input
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={maxApprentices}
+                          onChange={e => setMaxApprentices(Number(e.target.value))}
+                          className="settings-input-number"
+                        />
+                        <button
+                          type="button"
+                          className="settings-spinner-btn"
+                          onClick={() => setMaxApprentices(prev => Math.min(10, prev + 1))}
+                          tabIndex={-1}
+                        >+</button>
+                      </div>
+                      <button
+                        onClick={handleMaxApprenticesSave}
+                        disabled={maxApprenticesLoading}
+                        className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
+                      >
+                        {maxApprenticesLoading ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                    {maxApprenticesError && <div className="text-red-500 text-sm mt-1">{maxApprenticesError}</div>}
+                    {maxApprenticesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                  </div>
+                  <div className="settings-fee-group">
+                    <div className="font-medium text-base mb-2">Languages you speak</div>
+                    <div className="mb-3" style={{ maxWidth: 400 }}>
+                      <Select
+                        isMulti
+                        options={LANGUAGE_OPTIONS}
+                        value={languages}
+                        onChange={setLanguages}
+                        isDisabled={languagesLoading}
+                        placeholder="Select languages..."
+                      />
+                    </div>
                     <button
-                      onClick={handlePrepSupportFeeSave}
-                      disabled={feeLoading}
-                      className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
+                      onClick={handleLanguagesSave}
+                      disabled={languagesLoading}
+                      className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
                     >
-                      {feeLoading ? 'Saving...' : 'Save'}
+                      {languagesLoading ? 'Saving...' : 'Save'}
                     </button>
+                    {languagesError && <div className="text-red-500 text-sm mt-1">{languagesError}</div>}
+                    {languagesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                   </div>
-                  {feeError && <div className="text-red-500 text-sm mt-1">{feeError}</div>}
-                  {feeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                  <div className="text-xs text-gray-500 mt-1">Covers pre-course reviews & comms</div>
-                </div>
-                <div>
-                  <div className="font-medium text-base mb-2">How late can a mentee cancel and still get a refund?</div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <input
-                      type="number"
-                      min={1}
-                      max={168}
-                      value={cancellationPolicyHours}
-                      onChange={e => setCancellationPolicyHours(Number(e.target.value))}
-                      className="settings-input-number"
-                    />
-                    <span>hours</span>
-                    <button
-                      onClick={handleCancellationPolicySave}
-                      disabled={cancellationLoading}
-                      className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                    >
-                      {cancellationLoading ? 'Saving...' : 'Save'}
-                    </button>
-                  </div>
-                  {cancellationError && <div className="text-red-500 text-sm mt-1">{cancellationError}</div>}
-                  {cancellationSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                  <div className="text-xs text-gray-500 mt-1">Free cancellation up to {cancellationPolicyHours} h before start</div>
-                </div>
-                <div>
-                  <div className="font-medium text-base mb-2">How many apprentices can you handle at once?</div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <input
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={maxApprentices}
-                      onChange={e => setMaxApprentices(Number(e.target.value))}
-                      className="settings-input-number"
-                    />
-                    <button
-                      onClick={handleMaxApprenticesSave}
-                      disabled={maxApprenticesLoading}
-                      className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                    >
-                      {maxApprenticesLoading ? 'Saving...' : 'Save'}
-                    </button>
-                  </div>
-                  {maxApprenticesError && <div className="text-red-500 text-sm mt-1">{maxApprenticesError}</div>}
-                  {maxApprenticesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                </div>
-                <div>
-                  <div className="font-medium text-base mb-2">Languages you speak</div>
-                  <div className="mb-3" style={{ maxWidth: 400 }}>
-                    <Select
-                      isMulti
-                      options={LANGUAGE_OPTIONS}
-                      value={languages}
-                      onChange={setLanguages}
-                      isDisabled={languagesLoading}
-                      placeholder="Select languages..."
-                    />
-                  </div>
-                  <button
-                    onClick={handleLanguagesSave}
-                    disabled={languagesLoading}
-                    className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                  >
-                    {languagesLoading ? 'Saving...' : 'Save'}
-                  </button>
-                  {languagesError && <div className="text-red-500 text-sm mt-1">{languagesError}</div>}
-                  {languagesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                 </div>
               </div>
             </section>

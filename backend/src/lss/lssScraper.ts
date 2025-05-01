@@ -1,5 +1,5 @@
 import { Builder, By, until, WebDriver, WebElement } from 'selenium-webdriver';
-import { Options as ChromeOptions } from 'selenium-webdriver/chrome';
+import chrome from 'selenium-webdriver/chrome.js';
 import chromedriver from 'chromedriver';
 
 // Initialize chromedriver
@@ -13,7 +13,7 @@ export interface Award {
 }
 
 export async function getDriver(): Promise<WebDriver> {
-  const options = new ChromeOptions();
+  const options = new chrome.Options();
   // Use headless Chrome in production, visible in dev
   if (process.env.NODE_ENV === 'production') {
     options.addArguments('--headless');

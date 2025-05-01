@@ -183,6 +183,13 @@
     .carousel-center    { --pos: translateX(0) scale(1.12) translateY(-40px); }
     .carousel-right     { --pos: translateX(1%) scale(.92) skewY(-1deg); }
     .carousel-far-right { --pos: translateX(0%) scale(.72) skewY(-2deg); }
+    .featured-carousel-container {
+      max-width: 100%;
+      margin: 6rem auto 1.5rem;  /* maintain same margins as desktop */
+      padding: 0 1rem;
+      position: relative;
+      order: 2;  /* ensures it stays at the bottom of flex containers */
+    }
   }
 
 /* ------- ensure outer cards aren't clipped by a global overflow-x:hidden ------- */

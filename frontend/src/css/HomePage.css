@@ -21,26 +21,76 @@
   object-position: center;
 }
 
-/* floating card that overlaps image */
-.search-card {
-  position: absolute;
-  z-index: 10;
-  left: 1rem;
-  top: 9rem;
-  max-width: 425px;
+/* Default styles for mobile/tablet */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1rem 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
 }
 
-@media (min-width: 768px) {
-  .search-card {
-    left: 3rem;
-  }
+.hero-image-container {
+  width: 95%;
+  height: 300px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: 18px;
+  order: 1;
+  overflow: hidden;
+}
+
+.search-card {
+  position: static;
+  width: 100%;
+  margin: 0 auto;
+  order: 2;
 }
 
 .search-card-inner {
+  padding: 1.2rem 1rem;
+  border-radius: 18px;
   background-color: rgb(255, 255, 255);
-  border-radius: 32px;
-  padding: 2rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Featured carousel ordering for mobile/tablet */
+.featured-carousel-container {
+  order: 3;  /* Ensure it comes after hero and search */
+}
+
+/* Desktop styles */
+@media (min-width: 1000px) {
+  .content-wrapper {
+    padding: 3rem 1rem;
+  }
+  
+  .hero-image-container {
+    width: 85%;
+    height: 700px;
+    margin-left: auto;
+    border-radius: 32px;
+    order: 0;
+  }
+  
+  .search-card {
+    position: absolute;
+    z-index: 10;
+    left: 3rem;
+    top: 9rem;
+    max-width: 425px;
+    order: 0;
+  }
+  
+  .search-card-inner {
+    padding: 2rem;
+    border-radius: 32px;
+  }
+
+  .featured-carousel-container {
+    order: 0;  /* Reset order for desktop */
+  }
 }
 
 .search-title {
@@ -177,36 +227,6 @@
   opacity: 0.9;
 }
 
-/* Hero Image */
-.hero-image-container {
-  margin-left: auto;
-  width: 85%;
-  height: 700px;
-  border-radius: 32px;
-  overflow: hidden;
-}
-
-.hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Main container */
-.home-container {
-  min-height: 100vh;
-  background-color: rgb(249, 250, 251);
-  position: relative;
-}
-
-/* Content wrapper */
-.content-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 3rem 1rem;
-  position: relative;
-}
-
 /* Vertical search form layout */
 .search-form-vertical {
   display: flex;
@@ -274,30 +294,4 @@
 .it-section {
   margin-top: -0.5rem; /* or any value you want */
   margin-bottom: -0.5rem;
-}
-
-@media (max-width: 700px) {
-  .content-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1rem 0.5rem;
-  }
-  .hero-image-container {
-    width: 100%;
-    height: 220px;
-    margin: 0 0 1.5rem 0;
-    border-radius: 18px;
-    order: 1;
-  }
-  .search-card {
-    position: static;
-    max-width: 100%;
-    margin: 0;
-    order: 2;
-  }
-  .search-card-inner {
-    padding: 1.2rem 1rem;
-    border-radius: 18px;
-  }
 } 

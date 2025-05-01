@@ -5,11 +5,15 @@ import { getProfile } from '../../features/profile/getProfile';
 import Select from 'react-select';
 import Container from '../../components/Container';
 import '../../css/settings.css';
+import AccountDangerZone from './AccountDangerZone';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import axios from 'axios';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
   { key: 'privacy', label: 'Privacy' },
   { key: 'tax', label: 'Tax and Payout' },
+  { key: 'account', label: 'Account Settings' },
 ];
 
 const PREP_OPTIONS = [
@@ -91,6 +95,12 @@ export default function SettingsPage() {
   const [taxLoading, setTaxLoading] = useState(false);
   const [taxError, setTaxError] = useState(null);
   const [taxSuccess, setTaxSuccess] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwError, setPwError] = useState(null);
+  const [pwSuccess, setPwSuccess] = useState(false);
 
   useEffect(() => {
     if (fullUserData) {
@@ -301,6 +311,27 @@ export default function SettingsPage() {
       setTaxError('Failed to save. Please try again.');
     } finally {
       setTaxLoading(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+    setPwError(null);
+    setPwSuccess(false);
+    setPwLoading(true);
+    try {
+      // Call backend endpoint to update password (implement as needed)
+      await axios.patch('/api/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      setPwSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (err) {
+      setPwError(err.response?.data?.message || 'Failed to update password.');
+    } finally {
+      setPwLoading(false);
     }
   };
 
@@ -669,6 +700,63 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+            </section>
+          )}
+          {selected === 'account' && (
+            <section className="settings-section-account settings-section">
+              <h2 className="settings-section-title">Account Settings</h2>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Change Password</h3>
+                <form
+                  onSubmit={handlePasswordUpdate}
+                  style={{ maxWidth: 400 }}
+                >
+                  <label className="block font-medium mb-2">Email (username)
+                    <input
+                      type="email"
+                      value={fullUserData?.email || ''}
+                      disabled
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-lg mb-4 mt-1"
+                    />
+                  </label>
+                  <label className="block font-medium mb-2">Current Password
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showCurrentPw ? 'text' : 'password'}
+                        value={currentPassword}
+                        onChange={e => setCurrentPassword(e.target.value)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md text-lg mb-2 mt-1"
+                        required
+                      />
+                      <span
+                        onClick={() => setShowCurrentPw(v => !v)}
+                        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: '#b32' }}
+                      >
+                        {showCurrentPw ? <FaEyeSlash /> : <FaEye />}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="block font-medium mb-2">New Password
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md text-lg mb-2 mt-1"
+                      required
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={pwLoading || !currentPassword || !newPassword}
+                    className="settings-fee-save-btn px-5 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                  >
+                    {pwLoading ? 'Saving...' : 'Update Password'}
+                  </button>
+                  {pwError && <div className="text-red-500 text-sm mt-1">{pwError}</div>}
+                  {pwSuccess && <div className="text-green-600 text-sm mt-1">Password updated!</div>}
+                </form>
+              </div>
+              <AccountDangerZone />
             </section>
           )}
         </main>

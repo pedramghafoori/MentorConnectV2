@@ -39,7 +39,7 @@ router.post('/me/profile-picture', authenticateToken, upload.single('file'), asy
     }
 
     // Get the current user to find the old profile picture
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, deletedAt: null }).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -71,7 +71,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     return res.status(401).json({ message: 'Unauthorized' });
   }
   try {
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findOne({ _id: userId, deletedAt: null }).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -89,7 +89,7 @@ router.patch('/me', authenticateToken, async (req, res) => {
   }
   try {
     const updates = req.body;
-    const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
+    const user = await User.findOneAndUpdate({ _id: userId, deletedAt: null }, updates, { new: true }).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -195,7 +195,7 @@ router.get('/featured', async (req, res) => {
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findOne({ _id: userId, deletedAt: null }).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -213,7 +213,7 @@ router.post('/:userId/connect', authenticateToken, async (req, res) => {
   if (!fromUserId || !toUserId) return res.status(400).json({ message: 'Invalid user ID.' });
   if (fromUserId === toUserId) return res.status(400).json({ message: 'Cannot connect to yourself.' });
   try {
-    const toUser = await User.findById(toUserId);
+    const toUser = await User.findOne({ _id: toUserId, deletedAt: null });
     if (!toUser) return res.status(404).json({ message: 'User not found.' });
     if (toUser.connectionRequests.map(id => id.toString()).includes(fromUserId) || toUser.connections.map(id => id.toString()).includes(fromUserId)) {
       return res.status(400).json({ message: 'Already requested or connected.' });
@@ -232,8 +232,8 @@ router.post('/:userId/accept', authenticateToken, async (req, res) => {
   const fromUserId = req.params.userId;
   if (!myUserId || !fromUserId) return res.status(400).json({ message: 'Invalid user ID.' });
   try {
-    const me = await User.findById(myUserId);
-    const fromUser = await User.findById(fromUserId);
+    const me = await User.findOne({ _id: myUserId, deletedAt: null });
+    const fromUser = await User.findOne({ _id: fromUserId, deletedAt: null });
     if (!me || !fromUser) return res.status(404).json({ message: 'User not found.' });
     if (!me.connectionRequests.map(id => id.toString()).includes(fromUserId)) {
       return res.status(400).json({ message: 'No pending request from this user.' });
@@ -257,7 +257,7 @@ router.post('/:userId/reject', authenticateToken, async (req, res) => {
   const fromUserId = req.params.userId;
   if (!myUserId || !fromUserId) return res.status(400).json({ message: 'Invalid user ID.' });
   try {
-    const me = await User.findById(myUserId);
+    const me = await User.findOne({ _id: myUserId, deletedAt: null });
     if (!me) return res.status(404).json({ message: 'User not found.' });
     if (!me.connectionRequests.map(id => id.toString()).includes(fromUserId)) {
       return res.status(400).json({ message: 'No pending request from this user.' });
@@ -276,8 +276,8 @@ router.delete('/:userId/connection', authenticateToken, async (req, res) => {
   const otherUserId = req.params.userId;
   if (!myUserId || !otherUserId) return res.status(400).json({ message: 'Invalid user ID.' });
   try {
-    const me = await User.findById(myUserId);
-    const other = await User.findById(otherUserId);
+    const me = await User.findOne({ _id: myUserId, deletedAt: null });
+    const other = await User.findOne({ _id: otherUserId, deletedAt: null });
     if (!me || !other) return res.status(404).json({ message: 'User not found.' });
     me.connections = me.connections.filter(id => id.toString() !== otherUserId);
     other.connections = other.connections.filter(id => id.toString() !== myUserId);
@@ -293,7 +293,7 @@ router.delete('/:userId/connection', authenticateToken, async (req, res) => {
 router.get('/me/connections', authenticateToken, async (req, res) => {
   const myUserId = req.user?.userId;
   try {
-    const me = await User.findById(myUserId).populate('connections', 'firstName lastName avatarUrl lssId role');
+    const me = await User.findOne({ _id: myUserId, deletedAt: null }).populate('connections', 'firstName lastName avatarUrl lssId role');
     if (!me) return res.status(404).json({ message: 'User not found.' });
     res.json(me.connections);
   } catch (error) {
@@ -305,7 +305,7 @@ router.get('/me/connections', authenticateToken, async (req, res) => {
 router.get('/me/connection-requests', authenticateToken, async (req, res) => {
   const myUserId = req.user?.userId;
   try {
-    const me = await User.findById(myUserId).populate('connectionRequests', 'firstName lastName avatarUrl lssId role');
+    const me = await User.findOne({ _id: myUserId, deletedAt: null }).populate('connectionRequests', 'firstName lastName avatarUrl lssId role');
     if (!me) return res.status(404).json({ message: 'User not found.' });
     res.json(me.connectionRequests);
   } catch (error) {
@@ -319,7 +319,7 @@ router.delete('/:userId/request', authenticateToken, async (req, res) => {
   const toUserId = req.params.userId;
   if (!myUserId || !toUserId) return res.status(400).json({ message: 'Invalid user ID.' });
   try {
-    const toUser = await User.findById(toUserId);
+    const toUser = await User.findOne({ _id: toUserId, deletedAt: null });
     if (!toUser) return res.status(404).json({ message: 'User not found.' });
     // Remove your ID from their connectionRequests
     const before = toUser.connectionRequests.length;
@@ -340,8 +340,8 @@ router.get('/:userId/connection-status', authenticateToken, async (req, res) => 
   const otherUserId = req.params.userId;
   if (!myUserId || !otherUserId) return res.status(400).json({ message: 'Invalid user ID.' });
   try {
-    const me = await User.findById(myUserId);
-    const other = await User.findById(otherUserId);
+    const me = await User.findOne({ _id: myUserId, deletedAt: null });
+    const other = await User.findOne({ _id: otherUserId, deletedAt: null });
     if (!me || !other) return res.status(404).json({ message: 'User not found.' });
     const sent = other.connectionRequests.map(id => id.toString()).includes(myUserId);
     const received = me.connectionRequests.map(id => id.toString()).includes(otherUserId);
@@ -356,7 +356,7 @@ router.get('/:userId/connection-status', authenticateToken, async (req, res) => 
 router.get('/:userId/connections', authenticateToken, async (req, res) => {
   const { userId } = req.params;
   try {
-    const user = await User.findById(userId).populate('connections', 'firstName lastName avatarUrl lssId role');
+    const user = await User.findOne({ _id: userId, deletedAt: null }).populate('connections', 'firstName lastName avatarUrl lssId role');
     if (!user) return res.status(404).json({ message: 'User not found.' });
     res.json(user.connections);
   } catch (error) {

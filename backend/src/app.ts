@@ -7,6 +7,7 @@ import uploadRoutes from './routes/upload.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import lssRoutes from './lss/lssRoutes.js';
+import accountRoutes from './routes/account.js';
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.use('/api', router);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/lss', lssRoutes);
+app.use('/api/account', accountRoutes);
 
 export default app; 

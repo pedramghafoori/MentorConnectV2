@@ -32,6 +32,8 @@ export interface IUser extends Document {
   taxId?: string;
   allowFeatured?: boolean;
   allowSearch?: boolean;
+  deletedAt?: Date | null;
+  deletionRequestedAt?: Date | null;
 }
 
 const certificationSchema = new Schema({
@@ -178,6 +180,14 @@ const userSchema = new Schema<IUser>({
   allowSearch: {
     type: Boolean,
     default: true
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
+  deletionRequestedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

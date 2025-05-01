@@ -54,45 +54,46 @@ function getTopCategories(userCerts) {
 /* slot identifiers – these elements never leave the DOM */
 const DESKTOP_POSITIONS = ['far-left', 'left', 'center', 'right', 'far-right'];
 const MOBILE_POSITIONS = ['left', 'center', 'right'];
-const AUTO_SLIDE_MS = 3_000;
+const AUTO_SLIDE_MS = 5000; // Time between slides
+const TRANSITION_DURATION_MS = 1000; // Duration of the transition animation
 
 // Define transform values for each position
 const POSITION_TRANSFORMS = {
   'far-left': {
-    transform: 'translateX(-60%) scale(0.72) skewY(2deg)',
+    transform: 'translate(-200%, -0%) scale(0.7) skewY(2deg)',
     opacity: 0.38,
     zIndex: 0,
     filter: 'blur(1px)',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
   },
   'left': {
-    transform: 'translateX(-40%) scale(0.92) skewY(1deg)',
+    transform: 'translate(-110%, -0%) scale(0.85) skewY(2deg)',
     opacity: 0.68,
     zIndex: 1,
     filter: 'none',
-    pointerEvents: 'auto'
+    pointerEvents: 'auto',
   },
   'center': {
-    transform: 'translateX(0) scale(1.12) translateY(-40px)',
+    transform: 'translate(0%, -0%) scale(1.12)',
     opacity: 1,
     zIndex: 3,
     filter: 'none',
     pointerEvents: 'auto',
-    boxShadow: '0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08)'
+    boxShadow: '0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08)',
   },
   'right': {
-    transform: 'translateX(40%) scale(0.92) skewY(-1deg)',
+    transform: 'translate(110%, -0%) scale(0.85) skewY(-2deg)',
     opacity: 0.68,
     zIndex: 1,
     filter: 'none',
-    pointerEvents: 'auto'
+    pointerEvents: 'auto',
   },
   'far-right': {
-    transform: 'translateX(60%) scale(0.72) skewY(-2deg)',
+    transform: 'translate(200%, -0%) scale(0.7) skewY(-3deg)',
     opacity: 0.38,
     zIndex: 0,
     filter: 'blur(1px)',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
   }
 };
 
@@ -115,7 +116,6 @@ export default function FeaturedUsersCarousel() {
   useEffect(() => {
     axios.get('/api/users/featured')
       .then(res => {
-        // Filter users to only include those who have allowFeatured set to true
         const featuredUsers = res.data.filter(user => user.allowFeatured !== false);
         console.log('featured users count:', featuredUsers.length);
         setUsers(featuredUsers);
@@ -147,7 +147,8 @@ export default function FeaturedUsersCarousel() {
     const userIndex = (startIdx + idx) % users.length;
     return {
       user: users[userIndex],
-      position: pos
+      position: pos,
+      index: idx // Add index to maintain DOM order
     };
   });
 
@@ -166,16 +167,22 @@ export default function FeaturedUsersCarousel() {
         <button className="carousel-arrow left" onClick={prev}>&#8592;</button>
 
         <div className="featured-cards-wrapper">
-          {visibleUsers.map(({ user, position }) => {
+          {visibleUsers.map(({ user, position, index }) => {
             const certs = user.certifications || [];
             const top = getTopCategories(certs);
-            const positionStyle = POSITION_TRANSFORMS[position];
+            const positionStyle = {
+              ...POSITION_TRANSFORMS[position],
+              position: 'absolute',
+              left: '50%',
+            };
 
             return (
               <div 
                 key={user._id}
                 className="featured-card profile-style"
                 style={positionStyle}
+                data-position={position}
+                data-index={index}
               >
                 <div className="featured-card-inner">
                   <div className="carousel-profile-img-wrapper">

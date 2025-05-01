@@ -4,15 +4,19 @@
 .featured-carousel-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 6rem 0 1.5rem;
+    padding: 2rem 0 1.5rem;
     background: none;
+    position: relative;
+    min-height: 700px; /* Ensure enough space for the cards */
   }
   .featured-carousel-title {
     font-size: 4.4rem;
     font-weight: 700;
     color: #22223b;
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 20rem; /* Increase space between title and carousel */
+    position: relative;
+    z-index: 2; /* Ensure title stays above cards */
   }
   
   /* flex track */
@@ -22,12 +26,15 @@
     justify-content: center;
     position: relative;
     height: 500px;
+    margin-top: -4rem; /* Pull carousel up slightly to balance spacing */
   }
   .featured-cards-wrapper {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    gap: 0;                  /* gap handled by translateX */
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
   
   /* core card */
@@ -37,66 +44,18 @@
     box-shadow: 0 4px 24px rgba(0,0,0,.08);
     width: 270px;
     height: 410px;
-    position: relative;
-    transform-origin: top center;
+    position: absolute;
+    transform-origin: center center;
     overflow: hidden;
     padding: 0;
     will-change: transform, opacity, filter;
-    transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1),
-                opacity 1s cubic-bezier(0.34, 1.56, 0.64, 1),
-                filter 1s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* slot‑specific transforms (balanced fan v3) */
-  .carousel-far-left  { 
-    --pos: translateX(-60%) scale(.72) skewY(2deg); 
-    opacity: .38; 
-    z-index: 0; 
-    filter: blur(1px); 
-    pointer-events: none;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .carousel-left      { 
-    --pos: translateX(-40%) scale(.92) skewY(1deg); 
-    opacity: .68; 
-    z-index: 1;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .carousel-center    { 
-    --pos: translateX(0) scale(1.12) translateY(-40px); 
-    opacity: 1;  
-    z-index: 3;
-    box-shadow: 0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08);
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .carousel-right     { 
-    --pos: translateX(40%) scale(.92) skewY(-1deg); 
-    opacity: .68; 
-    z-index: 1;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .carousel-far-right { 
-    --pos: translateX(60%) scale(.72) skewY(-2deg); 
-    opacity: .38; 
-    z-index: 0; 
-    filter: blur(1px); 
-    pointer-events: none;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* gentle hover that *adds* to the slot transform */
+  /* gentle hover effect */
   .featured-card:hover {
-    transform: scale(1.05);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(1.05) !important;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   }
   
   /* image area */
@@ -168,16 +127,11 @@
     .featured-card.profile-style{
       width:250px;
       height:390px;
-      margin:0 -55px;         /* 110 px total overlap across neighbours */
     }
   }
   /* responsive tweaks */
   @media (max-width:1100px){
     .featured-card{ width:220px; height:360px; }
-    .carousel-far-left, .carousel-left,
-    .carousel-right, .carousel-far-right{
-      --pos: scale(.8);   /* shrink whole fan on small screens */
-    }
   }
   @media (max-width:700px){
     .featured-card{ width:160px; height:280px; padding:0; }
@@ -214,19 +168,12 @@
       padding: 0.8rem;
     }
     .featured-carousel-title{ font-size:3.5rem; }
-    
-    /* Adjust card positions for more consistent spacing */
-    .carousel-far-left  { --pos: translateX(-0%) scale(.72) skewY(2deg); }
-    .carousel-left      { --pos: translateX(-1%) scale(.92) skewY(1deg); }
-    .carousel-center    { --pos: translateX(0) scale(1.12) translateY(-40px); }
-    .carousel-right     { --pos: translateX(1%) scale(.92) skewY(-1deg); }
-    .carousel-far-right { --pos: translateX(0%) scale(.72) skewY(-2deg); }
     .featured-carousel-container {
       max-width: 100%;
-      margin: 6rem auto 1.5rem;  /* maintain same margins as desktop */
+      margin: 6rem auto 1.5rem;
       padding: 0 1rem;
       position: relative;
-      order: 2;  /* ensures it stays at the bottom of flex containers */
+      order: 2;
     }
   }
 
@@ -240,15 +187,7 @@
 .featured-card-inner {
   width: 100%;
   height: 100%;
-  transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-  will-change: transform;
 }
-
-.scale-carousel-far-left  { transform: scale(0.72); }
-.scale-carousel-left      { transform: scale(0.92); }
-.scale-carousel-center    { transform: scale(1.12); }
-.scale-carousel-right     { transform: scale(0.92); }
-.scale-carousel-far-right { transform: scale(0.72); }
 
 .carousel-category-badges {
   display: flex;

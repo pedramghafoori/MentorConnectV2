@@ -60,21 +60,21 @@ const TRANSITION_DURATION_MS = 1000; // Duration of the transition animation
 // Define transform values for each position
 const POSITION_TRANSFORMS = {
   'far-left': {
-    transform: 'translate(-200%, -0%) scale(0.7) skewY(2deg)',
+    transform: 'translate(-200%, 0) scale(0.7) skewY(2deg)',
     opacity: 0.38,
     zIndex: 0,
-    filter: 'blur(1px)',
+    filter: 'blur(3px) brightness(0.9)',
     pointerEvents: 'none',
   },
   'left': {
-    transform: 'translate(-110%, -0%) scale(0.85) skewY(2deg)',
+    transform: 'translate(-150%, 0) scale(0.85) skewY(2deg)',
     opacity: 0.68,
     zIndex: 1,
-    filter: 'none',
+    filter: 'blur(1px) brightness(0.95)',
     pointerEvents: 'auto',
   },
   'center': {
-    transform: 'translate(0%, -0%) scale(1.12)',
+    transform: 'translate(-50%, 0) scale(1.12)',
     opacity: 1,
     zIndex: 3,
     filter: 'none',
@@ -82,17 +82,17 @@ const POSITION_TRANSFORMS = {
     boxShadow: '0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08)',
   },
   'right': {
-    transform: 'translate(110%, -0%) scale(0.85) skewY(-2deg)',
+    transform: 'translate(50%, 0) scale(0.85) skewY(-2deg)',
     opacity: 0.68,
     zIndex: 1,
-    filter: 'none',
+    filter: 'blur(1px) brightness(0.95)',
     pointerEvents: 'auto',
   },
   'far-right': {
-    transform: 'translate(200%, -0%) scale(0.7) skewY(-3deg)',
+    transform: 'translate(100%, 0) scale(0.7) skewY(-2deg)',
     opacity: 0.38,
     zIndex: 0,
-    filter: 'blur(1px)',
+    filter: 'blur(3px) brightness(0.9)',
     pointerEvents: 'none',
   }
 };
@@ -101,6 +101,7 @@ export default function FeaturedUsersCarousel() {
   const [users, setUsers] = useState([]);
   const [startIdx, setStartIdx] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
+  const [isPaused, setIsPaused] = useState(false);
   const slideTimer = useRef(null);
 
   /* Handle window resize */
@@ -126,13 +127,25 @@ export default function FeaturedUsersCarousel() {
   /* auto-advance */
   useEffect(() => {
     const positions = isMobile ? MOBILE_POSITIONS : DESKTOP_POSITIONS;
-    if (users.length <= positions.length) return;
+    if (users.length <= positions.length || isPaused) {
+      if (slideTimer.current) {
+        clearInterval(slideTimer.current);
+        slideTimer.current = null;
+      }
+      return;
+    }
+
     slideTimer.current = setInterval(
       () => setStartIdx(i => (i + 1) % users.length),
       AUTO_SLIDE_MS,
     );
-    return () => clearInterval(slideTimer.current);
-  }, [users, isMobile]);
+
+    return () => {
+      if (slideTimer.current) {
+        clearInterval(slideTimer.current);
+      }
+    };
+  }, [users, isMobile, isPaused]);
 
   if (users.length === 0) return null;
 
@@ -163,7 +176,11 @@ export default function FeaturedUsersCarousel() {
     <div className="featured-carousel-container">
       <h2 className="featured-carousel-title">Experience & Passion Connected</h2>
 
-      <div className="featured-carousel">
+      <div 
+        className="featured-carousel"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <button className="carousel-arrow left" onClick={prev}>&#8592;</button>
 
         <div className="featured-cards-wrapper">

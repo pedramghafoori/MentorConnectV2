@@ -9,6 +9,7 @@ import { getMyConnectionRequests, respondToConnectionRequest, getProfile } from 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '../features/profile/updateProfile';
 import Container from './Container.jsx';
+import CreateCourseModal from './Course/CreateCourseModal';
 
 const ALL_CERTIFICATIONS = [
   { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
@@ -45,6 +46,7 @@ const Navbar = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [selectedCertifications, setSelectedCertifications] = useState([]);
   const [searchMode, setSearchMode] = useState('name'); // 'name' or 'certs'
+  const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -464,18 +466,6 @@ const Navbar = () => {
                 >
                   Find Mentors
                 </Link>
-                {/* Post Course Button - Only visible for mentors */}
-                {user.role === 'MENTOR' && (
-                  <Link 
-                    to="/courses/new" 
-                    className="hidden sm:flex items-center gap-2 text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Post Course
-                  </Link>
-                )}
                 {/* Profile Picture and Dropdown */}
                 <div className="relative" ref={profileDropdownRef}>
                   <button
@@ -485,14 +475,28 @@ const Navbar = () => {
                     <ProfileDisplay />
                   </button>
                   {showProfileDropdown && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50 transition-all duration-300" style={{ minHeight: 220 }}>
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50">
                       {/* Sliding panels */}
-                      <div className="relative w-full h-full" style={{ minHeight: 220 }}>
+                      <div className="relative w-full">
                         {/* Main panel */}
-                        <div className={`absolute inset-0 transition-transform duration-300 ${dropdownPanel === 'main' ? 'translate-x-0' : '-translate-x-full'} bg-white`}>
+                        <div className={`transition-transform duration-300 ${dropdownPanel === 'main' ? 'translate-x-0' : '-translate-x-full'} bg-white`}>
+                          {user.role === 'MENTOR' && (
+                            <button
+                              onClick={() => {
+                                setShowProfileDropdown(false);
+                                setShowCreateCourseModal(true);
+                              }}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                              </svg>
+                              <span>Post an Opportunity</span>
+                            </button>
+                          )}
                           <Link
                             to="/profile"
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
                             onClick={() => setShowProfileDropdown(false)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -503,7 +507,7 @@ const Navbar = () => {
                           {user.role === 'MENTOR' && (
                             <Link
                               to="/courses/my-courses"
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
                               onClick={() => setShowProfileDropdown(false)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -514,7 +518,7 @@ const Navbar = () => {
                           )}
                           <Link
                             to="/settings"
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
                             onClick={() => setShowProfileDropdown(false)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -568,6 +572,12 @@ const Navbar = () => {
       <Modal isOpen={showRegisterModal} onClose={handleCloseModals}>
         <RegisterForm onClose={handleCloseModals} onSwitchToLogin={handleOpenLogin} />
       </Modal>
+
+      {/* Course Creation Modal */}
+      <CreateCourseModal 
+        isOpen={showCreateCourseModal} 
+        onClose={() => setShowCreateCourseModal(false)} 
+      />
     </>
   );
 };

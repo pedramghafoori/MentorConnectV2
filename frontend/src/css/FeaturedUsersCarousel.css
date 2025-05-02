@@ -105,7 +105,7 @@
 
 /* gentle hover effect - only apply to center card */
 .featured-card[data-position='center']:hover {
-    transform: translateY(20px) scale(1.12) !important;
+    transform: translate(0%, calc(-50% - 60px)) scale(1.12) !important;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
     filter: brightness(1.05) !important;

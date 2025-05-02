@@ -57,46 +57,6 @@ const MOBILE_POSITIONS = ['left', 'center', 'right'];
 const AUTO_SLIDE_MS = 5000; // Time between slides
 const TRANSITION_DURATION_MS = 1000; // Duration of the transition animation
 
-// Define transform values for each position
-const POSITION_TRANSFORMS = {
-  'far-left': {
-    transform: 'translate(-200%, 0) scale(0.7) skewY(2deg)',
-    opacity: 0.38,
-    zIndex: 0,
-    filter: 'blur(3px) brightness(0.9)',
-    pointerEvents: 'none',
-  },
-  'left': {
-    transform: 'translate(-150%, 0) scale(0.85) skewY(2deg)',
-    opacity: 0.68,
-    zIndex: 1,
-    filter: 'blur(1px) brightness(0.95)',
-    pointerEvents: 'auto',
-  },
-  'center': {
-    transform: 'translate(-50%, 0) scale(1.12)',
-    opacity: 1,
-    zIndex: 3,
-    filter: 'none',
-    pointerEvents: 'auto',
-    boxShadow: '0 12px 40px rgba(230,57,70,.18), 0 2px 8px rgba(0,0,0,.08)',
-  },
-  'right': {
-    transform: 'translate(50%, 0) scale(0.85) skewY(-2deg)',
-    opacity: 0.68,
-    zIndex: 1,
-    filter: 'blur(1px) brightness(0.95)',
-    pointerEvents: 'auto',
-  },
-  'far-right': {
-    transform: 'translate(100%, 0) scale(0.7) skewY(-2deg)',
-    opacity: 0.38,
-    zIndex: 0,
-    filter: 'blur(3px) brightness(0.9)',
-    pointerEvents: 'none',
-  }
-};
-
 export default function FeaturedUsersCarousel() {
   const [users, setUsers] = useState([]);
   const [startIdx, setStartIdx] = useState(0);

@@ -5,6 +5,7 @@ import { getProfile } from '../../features/profile/getProfile';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/calendar.css";
+import api from '../../lib/api';
 
 const COURSE_OPTIONS = [
   'Bronze',
@@ -26,7 +27,6 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
     title: '',
     price: 0,
     maxParticipants: 1,
-    location: '',
     schedule: {
       isExamOnly: false,
       examDate: null,
@@ -35,7 +35,6 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
     defaultSettings: {
       useProfileDefaults: true,
       customSettings: {
-        location: '',
         price: 0,
         prepSupportFee: 0,
         cancellationPolicyHours: 48,
@@ -85,18 +84,18 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('/api/courses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+    
+    // Check if user is logged in and is a mentor
+    if (!user || user.role !== 'MENTOR') {
+      console.error('User must be logged in as a mentor to create a course');
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to create course');
-      }
+    try {
+      const response = await api.post('/courses', {
+        ...formData,
+        mentorId: user._id
+      });
 
       onClose();
     } catch (error) {
@@ -258,7 +257,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
             )}
 
             {step === 2 && (
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-4">
@@ -305,7 +304,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                <div>
+                <div className="w-full">
                   <DatePicker
                     selected={null}
                     onChange={(date) => {

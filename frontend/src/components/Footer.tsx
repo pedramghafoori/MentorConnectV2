@@ -42,7 +42,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/mentor-agreement" className="text-gray-600 hover:text-[#d33] text-sm">
-                  Mentor Agreement
+                  User Agreement
                 </Link>
               </li>
             </ul>

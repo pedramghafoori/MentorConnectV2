@@ -5,7 +5,7 @@ const MentorAgreementPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <section className="bg-white rounded-lg shadow-sm p-8">
-          <h1 className="text-4xl font-light text-[#4a1d1d] mb-8">Mentor Agreement</h1>
+          <h1 className="text-4xl font-light text-[#4a1d1d] mb-8">User Agreement</h1>
           
           <div className="mb-8 pb-6 border-b border-gray-100">
             <h2 className="text-xl font-semibold text-[#b32] mb-4 tracking-wide">1. Independent Contractor</h2>

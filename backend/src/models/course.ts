@@ -80,15 +80,14 @@ const courseSchema = new Schema<ICourse>({
     }
   },
   title: { type: String, required: true },
-  description: { type: String, required: true },
+  description: { type: String },
   price: { type: Number, required: true, min: 0 },
-  duration: { type: Number, required: true, min: 1 }, // in minutes
+  duration: { type: Number, min: 1 }, // in minutes
   maxParticipants: { type: Number, required: true, min: 1 },
-  location: { type: String, required: true },
+  location: { type: String },
   mode: { 
     type: String, 
-    enum: ['ONLINE', 'IN_PERSON', 'HYBRID'],
-    required: true 
+    enum: ['ONLINE', 'IN_PERSON', 'HYBRID']
   },
   schedule: { 
     type: scheduleSchema,

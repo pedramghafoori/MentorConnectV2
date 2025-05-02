@@ -161,7 +161,7 @@ export default function FeaturedUsersCarousel() {
     return {
       user: users[userIndex],
       position: pos,
-      index: idx // Add index to maintain DOM order
+      index: idx
     };
   });
 
@@ -187,17 +187,11 @@ export default function FeaturedUsersCarousel() {
           {visibleUsers.map(({ user, position, index }) => {
             const certs = user.certifications || [];
             const top = getTopCategories(certs);
-            const positionStyle = {
-              ...POSITION_TRANSFORMS[position],
-              position: 'absolute',
-              left: '50%',
-            };
 
             return (
               <div 
                 key={user._id}
                 className="featured-card profile-style"
-                style={positionStyle}
                 data-position={position}
                 data-index={index}
               >

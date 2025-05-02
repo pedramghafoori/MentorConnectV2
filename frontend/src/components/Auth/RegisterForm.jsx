@@ -1,22 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import { FaTimes } from 'react-icons/fa';
+import Select from 'react-select';
+import CANADIAN_CITIES from '../../lib/cities.json';
+import LANGUAGES from '../../lib/languages.json';
+import axios from 'axios';
+import './RegisterForm.css';
 
 const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  
+  // Form step state
+  const [currentStep, setCurrentStep] = useState(1);
+  const [animationDirection, setAnimationDirection] = useState('');
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Form field states
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [lssId, setLssId] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [cityInput, setCityInput] = useState('Toronto, ON');
+  const [location, setLocation] = useState({ value: 'Toronto, ON', label: 'Toronto, ON' });
+  const [languages, setLanguages] = useState([]);
+  const [languageInput, setLanguageInput] = useState('');
+  const [workplaces, setWorkplaces] = useState([]);
+  const [newWorkplace, setNewWorkplace] = useState('');
   const [heardAbout, setHeardAbout] = useState([]);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  // Form validation states
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [location, setLocation] = useState('Toronto, ON');
-  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Add state for LSS ID validation and loading
+  const [isLssIdValid, setIsLssIdValid] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [certificationsFetched, setCertificationsFetched] = useState(false);
+
+  const [filteredCities, setFilteredCities] = useState([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const cityInputRef = useRef(null);
+
+  const [filteredLanguages, setFilteredLanguages] = useState([]);
+  const [showLanguageSuggestions, setShowLanguageSuggestions] = useState(false);
+  const languageInputRef = useRef(null);
 
   const isStrongPassword = (pw) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
@@ -29,18 +62,110 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     );
   };
 
+  const handleAddWorkplace = () => {
+    if (!newWorkplace.trim()) return;
+    setWorkplaces([...workplaces, newWorkplace.trim()]);
+    setNewWorkplace('');
+  };
+
+  const handleRemoveWorkplace = (index) => {
+    const updatedWorkplaces = [...workplaces];
+    updatedWorkplaces.splice(index, 1);
+    setWorkplaces(updatedWorkplaces);
+  };
+
+  const handleKeyDown = (e, type) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (type === 'workplace') {
+        handleAddWorkplace();
+      }
+    }
+  };
+
+  const goToNextStep = async () => {
+    if (currentStep === 1 && (!firstName.trim() || !lastName.trim())) {
+      setError('Please enter your first and last name');
+      return;
+    }
+    
+    if (currentStep === 2) {
+      // Validate LSS ID when on step 2
+      if (!lssId.trim()) {
+        setError('Please enter your LSS ID');
+        return;
+      }
+      
+      // Check if LSS ID is 6 characters
+      if (lssId.trim().length !== 6) {
+        setError('LSS ID must be 6 characters long');
+        setIsLssIdValid(false);
+        return;
+      }
+      
+      setIsLssIdValid(true);
+      
+      try {
+        // Only fetch certifications if not already fetched
+        if (!certificationsFetched) {
+          setIsLoading(true);
+          setError('');
+          
+          // Call the LSS scraper to fetch certifications
+          const response = await axios.post('/api/lss/fetchCertifications', { lssId });
+          
+          // Mark as fetched if successful
+          if (response.data.success) {
+            setCertificationsFetched(true);
+          }
+          
+          setIsLoading(false);
+        }
+      } catch (err) {
+        setIsLoading(false);
+        console.error('Failed to fetch certifications:', err);
+        // Don't block progression if fetch fails
+      }
+    }
+    
+    setError('');
+    setAnimationDirection('slide-left');
+    setIsAnimating(true);
+    
+    // Wait for animation to complete before changing step
+    setTimeout(() => {
+      setCurrentStep(prev => prev + 1);
+      setIsAnimating(false);
+    }, 300);
+  };
+
+  const goToPrevStep = () => {
+    setError('');
+    setAnimationDirection('slide-right');
+    setIsAnimating(true);
+    
+    // Wait for animation to complete before changing step
+    setTimeout(() => {
+      setCurrentStep(prev => prev - 1);
+      setIsAnimating(false);
+    }, 300);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    
     if (!isStrongPassword(password)) {
       setError('Password must be at least 8 characters and include uppercase, lowercase, and a number.');
       return;
     }
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
+    
     try {
       const res = await register({
         lssId,
@@ -50,10 +175,13 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         password,
         phone,
         heardAbout: heardAbout.join(','),
-        city: location.split(',')[0].trim(),
-        province: location.split(',')[1].trim(),
+        city: location.value.split(',')[0].trim(),
+        province: location.value.split(',')[1]?.trim() || '',
+        languages: languages.map(lang => lang.value),
+        workplaces,
         termsAccepted
       });
+      
       setSuccess(res.message || 'Registration successful!');
       setTimeout(() => {
         onClose();
@@ -64,174 +192,512 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     }
   };
 
-  const inputClasses = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e63946] focus:border-transparent outline-none transition-all";
-  const labelClasses = "font-semibold mb-1 block text-gray-700";
+  // Modify LSS ID input to handle uppercase transformation
+  const handleLssIdChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setLssId(value);
+    
+    // Reset validation when typing
+    if (!isLssIdValid) {
+      setIsLssIdValid(true);
+    }
+  };
+
+  // Get class names for step animation
+  const getStepClasses = (step) => {
+    if (step !== currentStep) return 'register-step hidden';
+    
+    let classes = 'register-step active';
+    
+    if (isAnimating) {
+      if (animationDirection === 'slide-left') {
+        classes = 'register-step slide-left';
+      } else if (animationDirection === 'slide-right') {
+        classes = 'register-step slide-right';
+      }
+    }
+    
+    return classes;
+  };
+
+  // Handle city input change and filtering
+  const handleCityInputChange = (e) => {
+    const value = e.target.value;
+    setCityInput(value);
+    
+    if (value.trim() === '') {
+      setFilteredCities([]);
+      return;
+    }
+    
+    const filtered = CANADIAN_CITIES.filter(city => 
+      city.label.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5); // Limit to 5 suggestions
+    
+    setFilteredCities(filtered);
+    setShowCitySuggestions(true);
+  };
+  
+  // Handle city selection from suggestions
+  const handleCitySelect = (city) => {
+    setCityInput(city.label);
+    setLocation(city);
+    setShowCitySuggestions(false);
+  };
+  
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cityInputRef.current && !cityInputRef.current.contains(event.target)) {
+        setShowCitySuggestions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle language input change and filtering
+  const handleLanguageInputChange = (e) => {
+    const value = e.target.value;
+    setLanguageInput(value);
+    
+    if (value.trim() === '') {
+      setFilteredLanguages([]);
+      return;
+    }
+    
+    const filtered = LANGUAGES.filter(lang => 
+      lang.label.toLowerCase().includes(value.toLowerCase()) && 
+      !languages.some(l => l.value === lang.value)
+    ).slice(0, 5); // Limit to 5 suggestions
+    
+    setFilteredLanguages(filtered);
+    setShowLanguageSuggestions(true);
+  };
+  
+  // Handle language selection from suggestions
+  const handleLanguageSelect = (language) => {
+    setLanguages([...languages, language]);
+    setLanguageInput('');
+    setShowLanguageSuggestions(false);
+  };
+  
+  // Handle language removal
+  const handleRemoveLanguage = (languageToRemove) => {
+    setLanguages(languages.filter(lang => lang.value !== languageToRemove.value));
+  };
+  
+  // Handle Enter key press in language input
+  const handleLanguageKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      // If there's a match in the filtered results, add the first one
+      if (filteredLanguages.length > 0) {
+        handleLanguageSelect(filteredLanguages[0]);
+      }
+    }
+  };
+  
+  // Close language suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (languageInputRef.current && !languageInputRef.current.contains(event.target)) {
+        setShowLanguageSuggestions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-6">Create account</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="firstName" className={labelClasses}>First Name</label>
-          <input
-            id="firstName"
-            type="text"
-            value={firstName}
-            onChange={e => setFirstName(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="lastName" className={labelClasses}>Last Name</label>
-          <input
-            id="lastName"
-            type="text"
-            value={lastName}
-            onChange={e => setLastName(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="lssId" className={labelClasses}>LSS ID</label>
-          <input
-            id="lssId"
-            type="text"
-            value={lssId}
-            onChange={e => setLssId(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className={labelClasses}>Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="phone" className={labelClasses}>Phone Number</label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="location" className={labelClasses}>Location</label>
-          <p className="text-sm text-gray-500 mt-1">
-            Please select the city you're based out of. We're looking forward to expand to more cities soon.
-          </p>
-          <select
-            id="location"
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            required
-            className={inputClasses}
-          >
-            <option value="Toronto, ON">Toronto, ON</option>
-            <option value="Ottawa, ON">Ottawa, ON</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="password" className={labelClasses}>Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="confirmPassword" className={labelClasses}>Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            required
-            className={inputClasses}
-          />
-        </div>
-
-        <div className="mt-6">
-          <label className={labelClasses}>How did you hear about MentorConnect? (optional)</label>
-          <div className="grid grid-cols-2 gap-4 mt-2">
-            {['Word of mouth', 'My area chair', 'Lifesaving Society', 'My instructor']
-              .map(option => (
-                <label key={option} className="relative">
-                  <input
-                    type="checkbox"
-                    value={option}
-                    checked={heardAbout.includes(option)}
-                    onChange={() => toggleHeardAbout(option)}
-                    className="peer sr-only"
-                  />
-                  <span className="block w-full px-3 py-2 text-sm text-gray-600 border border-gray-400 rounded-lg cursor-pointer transition-all hover:bg-gray-50 peer-checked:bg-[rgba(230,57,70,0.08)] peer-checked:text-[#e63946] peer-checked:border-gray-500 peer-focus:ring-2 peer-focus:ring-gray-600 text-center">
-                    {option}
-                  </span>
-                </label>
-              ))}
+    <div className="register-container">
+      <h2 className="register-title">Create account</h2>
+      
+      <form onSubmit={handleSubmit} className="register-form">
+        <div className="relative">
+          <div className={getStepClasses(1)}>
+            <h3 className="register-step-title">Its great to meet you! Please tell us your name</h3>
+            
+            <div className="register-input-group">
+              <label htmlFor="firstName" className="register-label">First Name</label>
+              <input
+                id="firstName"
+                type="text"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                className="register-input"
+                required
+              />
+            </div>
+            
+            <div className="register-input-group">
+              <label htmlFor="lastName" className="register-label">Last Name</label>
+              <input
+                id="lastName"
+                type="text"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                className="register-input"
+                required
+              />
+            </div>
+            
+            <button 
+              type="button" 
+              onClick={goToNextStep}
+              className="register-button-primary"
+            >
+              Next
+            </button>
+            
+            {/* Progress bar - step 1 */}
+            <div className="register-progress-container">
+              <div className="register-progress-bar">
+                <div 
+                  className="register-progress-fill" 
+                  style={{ width: `${(currentStep / 4) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className={getStepClasses(2)}>
+            <h3 className="register-step-title">More information</h3>
+            
+            <div className="register-input-group">
+              <label htmlFor="lssId" className="register-label">LSS ID</label>
+              <input
+                id="lssId"
+                type="text"
+                value={lssId}
+                onChange={handleLssIdChange}
+                className={`register-input ${!isLssIdValid ? 'register-input-invalid' : ''}`}
+                maxLength={6}
+                required
+              />
+              <p className="register-helper-text">
+                We will use this to verify your profile and fetch your certifications for you.
+              </p>
+              {!isLssIdValid && (
+                <p className="register-error-text">
+                  LSS ID must be exactly 6 characters long.
+                </p>
+              )}
+            </div>
+            
+            <div className="register-input-group">
+              <label htmlFor="email" className="register-label">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="register-input"
+                required
+              />
+            </div>
+            
+            <div className="register-input-group">
+              <label htmlFor="phone" className="register-label">Phone Number</label>
+              <input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                className="register-input"
+                required
+              />
+            </div>
+            
+            <div className="register-button-group">
+              <button 
+                type="button" 
+                onClick={goToPrevStep}
+                className="register-button-secondary"
+                disabled={isLoading}
+              >
+                Back
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={goToNextStep}
+                className="register-button-primary"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Fetching...' : 'Next'}
+              </button>
+            </div>
+            
+            {/* Progress bar - step 2 */}
+            <div className="register-progress-container">
+              <div className="register-progress-bar">
+                <div 
+                  className="register-progress-fill" 
+                  style={{ width: `${(currentStep / 4) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className={getStepClasses(3)}>
+            <h3 className="register-step-title">Tell us a little bit more about yourself</h3>
+            <p className="register-subtitle">You can always edit this information later in settings</p>
+            
+            <div className="register-input-group">
+              <label htmlFor="location" className="register-label">What city are you based out of?</label>
+              <div className="register-city-autocomplete" ref={cityInputRef}>
+                <input
+                  id="location"
+                  type="text"
+                  value={cityInput}
+                  onChange={handleCityInputChange}
+                  className="register-input"
+                  placeholder="Type to search cities..."
+                />
+                {showCitySuggestions && filteredCities.length > 0 && (
+                  <ul className="register-city-suggestions">
+                    {filteredCities.map((city) => (
+                      <li 
+                        key={city.value} 
+                        onClick={() => handleCitySelect(city)}
+                        className="register-city-suggestion-item"
+                      >
+                        {city.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            
+            <div className="register-input-group">
+              <label className="register-label">What languages do you speak?</label>
+              <div className="register-language-tags">
+                {languages.map((lang) => (
+                  <div key={lang.value} className="register-tag">
+                    <span className="register-tag-text">{lang.label}</span>
+                    <button 
+                      type="button"
+                      onClick={() => handleRemoveLanguage(lang)}
+                      className="register-tag-remove"
+                      aria-label="Remove language"
+                    >
+                      <FaTimes size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="register-language-autocomplete" ref={languageInputRef}>
+                <input
+                  type="text"
+                  value={languageInput}
+                  onChange={handleLanguageInputChange}
+                  onKeyDown={handleLanguageKeyDown}
+                  className="register-input"
+                  placeholder="Type to add languages..."
+                />
+                {showLanguageSuggestions && filteredLanguages.length > 0 && (
+                  <ul className="register-language-suggestions">
+                    {filteredLanguages.map((language) => (
+                      <li 
+                        key={language.value} 
+                        onClick={() => handleLanguageSelect(language)}
+                        className="register-language-suggestion-item"
+                      >
+                        {language.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            
+            <div className="register-input-group">
+              <label className="register-label">What organizations have you taught with?</label>
+              <div className="register-tag-container">
+                {workplaces.map((workplace, index) => (
+                  <div key={index} className="register-tag">
+                    <span className="register-tag-text">{workplace}</span>
+                    <button 
+                      type="button"
+                      onClick={() => handleRemoveWorkplace(index)}
+                      className="register-tag-remove"
+                      aria-label="Remove workplace"
+                    >
+                      <FaTimes size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="register-tag-input-container">
+                <input
+                  type="text"
+                  value={newWorkplace}
+                  onChange={(e) => setNewWorkplace(e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, 'workplace')}
+                  placeholder="Add workplace and press Enter"
+                  className="register-tag-input"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddWorkplace}
+                  disabled={!newWorkplace.trim()}
+                  className="register-tag-button"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+            
+            <div className="register-input-group">
+              <label className="register-label">How did you hear about MentorConnect?</label>
+              <div className="register-checkbox-grid">
+                {['Word of mouth', 'My area chair', 'Lifesaving Society', 'My instructor']
+                  .map(option => (
+                    <label key={option} className="register-checkbox-label">
+                      <input
+                        type="checkbox"
+                        value={option}
+                        checked={heardAbout.includes(option)}
+                        onChange={() => toggleHeardAbout(option)}
+                        className="register-checkbox-input"
+                      />
+                      <span className="register-checkbox-text">
+                        {option}
+                      </span>
+                    </label>
+                  ))}
+              </div>
+            </div>
+            
+            <div className="register-button-group">
+              <button 
+                type="button" 
+                onClick={goToPrevStep}
+                className="register-button-secondary"
+              >
+                Back
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={goToNextStep}
+                className="register-button-primary"
+              >
+                Next
+              </button>
+            </div>
+            
+            {/* Progress bar - step 3 */}
+            <div className="register-progress-container">
+              <div className="register-progress-bar">
+                <div 
+                  className="register-progress-fill" 
+                  style={{ width: `${(currentStep / 4) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className={getStepClasses(4)}>
+            <h3 className="register-step-title">Let's set a password for your account</h3>
+            
+            <div className="register-input-group">
+              <label htmlFor="password" className="register-label">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className="register-input"
+              />
+              <p className="register-helper-text">
+                Password must be at least 8 characters and include uppercase, lowercase, and a number.
+              </p>
+            </div>
+            
+            <div className="register-input-group">
+              <label htmlFor="confirmPassword" className="register-label">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
+                className="register-input"
+              />
+            </div>
+            
+            <div className="register-input-group">
+              <label className="register-terms-label">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="register-terms-checkbox"
+                  required
+                />
+                <span className="register-terms-text">
+                  I agree to the{' '}
+                  <Link to="/terms" className="register-link" target="_blank" rel="noopener noreferrer">
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link to="/mentor-agreement" className="register-link" target="_blank" rel="noopener noreferrer">
+                    User Agreement
+                  </Link>
+                </span>
+              </label>
+            </div>
+            
+            {error && <p className="register-error-message">{error}</p>}
+            {success && <p className="register-success-text">{success}</p>}
+            
+            <div className="register-button-group">
+              <button 
+                type="button" 
+                onClick={goToPrevStep}
+                className="register-button-secondary"
+              >
+                Back
+              </button>
+              
+              <button 
+                type="submit"
+                className="register-button-primary"
+                disabled={!termsAccepted}
+              >
+                Register
+              </button>
+            </div>
+            
+            {/* Progress bar - step 4 */}
+            <div className="register-progress-container">
+              <div className="register-progress-bar">
+                <div 
+                  className="register-progress-fill" 
+                  style={{ width: `${(currentStep / 4) * 100}%` }}
+                ></div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {error && <p className="text-red-600 mt-2">{error}</p>}
-        {success && <p className="text-green-600 mt-2">{success}</p>}
         
-        <div className="mt-4">
-          <label className="flex items-start space-x-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-1 h-4 w-4 text-[#e63946] border-gray-300 rounded focus:ring-[#e63946]"
-              required
-            />
-            <span className="text-sm text-gray-600">
-              I agree to the{' '}
-              <Link to="/terms" className="text-[#e63946] hover:underline" target="_blank" rel="noopener noreferrer">
-                Terms of Service
-              </Link>
-              {' '}and{' '}
-              <Link to="/mentor-agreement" className="text-[#e63946] hover:underline" target="_blank" rel="noopener noreferrer">
-                User Agreement
-              </Link>
-            </span>
-          </label>
-        </div>
-        
-        <button 
-          type="submit"
-          className="w-full py-3 px-4 bg-[#e63946] text-white text-base rounded-lg hover:brightness-110 transition-all cursor-pointer mt-6"
-          disabled={!termsAccepted}
-        >
-          Register
-        </button>
-
-        <p className="text-center text-gray-600 mt-4">
+        <p className="register-login-text">
           Already have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}
-            className="text-[#e63946] hover:underline focus:outline-none"
+            className="register-login-link"
           >
             Sign in
           </button>

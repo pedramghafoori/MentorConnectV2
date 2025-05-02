@@ -8,6 +8,7 @@ import '../../css/settings.css';
 import AccountDangerZone from './AccountDangerZone';
 import { FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
+import LANGUAGES from '../../lib/languages.json';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
@@ -27,28 +28,6 @@ const PREP_OPTIONS = [
 const INVOLVEMENT_OPTIONS = [
   { value: 'full-course', label: 'Full Course' },
   { value: 'exam-only', label: 'Exam Only' },
-];
-
-const LANGUAGE_OPTIONS = [
-  { value: 'en', label: 'English' },
-  { value: 'fr', label: 'French' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'de', label: 'German' },
-  { value: 'zh', label: 'Chinese' },
-  { value: 'ar', label: 'Arabic' },
-  { value: 'ru', label: 'Russian' },
-  { value: 'pt', label: 'Portuguese' },
-  { value: 'hi', label: 'Hindi' },
-  { value: 'it', label: 'Italian' },
-  { value: 'ja', label: 'Japanese' },
-  { value: 'ko', label: 'Korean' },
-  { value: 'fa', label: 'Persian' },
-  { value: 'tr', label: 'Turkish' },
-  { value: 'nl', label: 'Dutch' },
-  { value: 'pl', label: 'Polish' },
-  { value: 'sv', label: 'Swedish' },
-  { value: 'uk', label: 'Ukrainian' },
-  { value: 'he', label: 'Hebrew' },
 ];
 
 export default function SettingsPage() {
@@ -159,7 +138,7 @@ export default function SettingsPage() {
     if (fullUserData && Array.isArray(fullUserData.languages)) {
       setLanguages(
         fullUserData.languages.map(code =>
-          LANGUAGE_OPTIONS.find(opt => opt.value === code) || { value: code, label: code }
+          LANGUAGES.find(opt => opt.value === code) || { value: code, label: code }
         )
       );
     }
@@ -711,7 +690,7 @@ export default function SettingsPage() {
                     <div className="mb-3" style={{ maxWidth: 400 }}>
                       <Select
                         isMulti
-                        options={LANGUAGE_OPTIONS}
+                        options={LANGUAGES}
                         value={languages}
                         onChange={setLanguages}
                         isDisabled={languagesLoading}

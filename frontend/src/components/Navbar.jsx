@@ -219,33 +219,32 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
+      <header className="flex justify-between items-center py-4 sm:py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
         <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link to="/" className="text-2xl font-bold text-[#d33] tracking-tight font-['Inter',system-ui,sans-serif]">
+          <Link to="/" className="text-xl sm:text-2xl font-bold text-[#d33] tracking-tight font-['Inter',system-ui,sans-serif]">
             MentorConnect
           </Link>
-          <nav className="flex gap-4 items-center">
+          <nav className="flex gap-2 sm:gap-4 items-center">
             {/* Search Icon and Animated Search Box */}
             <div className="relative flex items-center" ref={searchRef}>
               {/* Search icon */}
               <button
-                className="p-2 rounded-full hover:bg-gray-100 transition mr-2"
+                className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
                 onClick={() => setShowSearch((v) => !v)}
                 aria-label="Search users"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
                 </svg>
               </button>
               {/* Filter icon */}
               {showSearch && (
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 transition mr-2"
+                  className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
                   onClick={() => setShowAdvancedSearch((v) => !v)}
                   aria-label="Advanced search"
                 >
-                  {/* Filter icon SVG (like Gmail) */}
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
                     <rect x="4" y="7" width="16" height="2" rx="1" fill="#555"/>
                     <rect x="7" y="11" width="10" height="2" rx="1" fill="#555"/>
                     <rect x="10" y="15" width="4" height="2" rx="1" fill="#555"/>
@@ -256,10 +255,19 @@ const Navbar = () => {
               <div
                 className={`transition-all duration-300 z-50`}
                 style={{
-                  width: showSearch ? 320 : 0,
+                  width: showSearch ? '100%' : 0,
+                  maxWidth: showSearch ? '320px' : 0,
                   opacity: showSearch ? 1 : 0,
                   pointerEvents: showSearch ? 'auto' : 'none',
                   marginLeft: showSearch ? 12 : 0,
+                  '@media (max-width: 640px)': {
+                    position: 'fixed',
+                    top: '80px',
+                    left: '0',
+                    right: '0',
+                    maxWidth: '100%',
+                    margin: '0 1rem',
+                  }
                 }}
               >
                 <div className="relative w-full">
@@ -271,7 +279,7 @@ const Navbar = () => {
                     className="rounded-full px-5 py-2 border border-gray-300 shadow bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
                     style={{
                       boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      width: showSearch ? 320 : 0,
+                      width: '100%',
                       transition: 'width 0.3s, opacity 0.3s',
                     }}
                     autoFocus={showSearch}
@@ -303,11 +311,15 @@ const Navbar = () => {
                         </label>
                       </div>
                       <div className="mb-2 font-semibold text-sm">Filter by Certifications</div>
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="flex flex-wrap gap-2 mb-4 max-h-48 overflow-y-auto">
                         {ALL_CERTIFICATIONS.map(cert => (
                           <button
                             key={cert.value}
-                            className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                            className={`px-2 py-1 rounded-full border text-xs sm:text-sm ${
+                              selectedCertifications.includes(cert.value)
+                                ? 'bg-[#d33] text-white border-[#d33]'
+                                : 'bg-gray-100 text-gray-700 border-gray-300'
+                            }`}
                             onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
                               ? selectedCertifications.filter(c => c !== cert.value)
                               : [...selectedCertifications, cert.value])}
@@ -320,11 +332,11 @@ const Navbar = () => {
                       </div>
                       <div className="flex justify-end gap-2">
                         <button
-                          className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm"
                           onClick={() => setSelectedCertifications([])}
                         >Clear</button>
                         <button
-                          className="px-4 py-2 rounded bg-[#d33] text-white hover:bg-[#c22]"
+                          className="px-4 py-2 rounded bg-[#d33] text-white hover:bg-[#c22] text-sm"
                           onClick={() => {
                             setShowAdvancedSearch(false);
                             if (searchMode === 'certs' && searchValue.trim() === '' && selectedCertifications.length > 0) {
@@ -335,7 +347,7 @@ const Navbar = () => {
                       </div>
                     </div>
                   )}
-                  {/* Search results dropdown (only show if not showing advanced search) */}
+                  {/* Search results dropdown */}
                   {!showAdvancedSearch && (
                     (searchMode === 'name' && searchValue.trim() !== '') ||
                     (searchMode === 'certs' && selectedCertifications.length > 0)
@@ -384,15 +396,15 @@ const Navbar = () => {
             {user && (
               <div className="relative flex items-center" ref={notifRef}>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 transition mr-2 relative"
+                  className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2 relative"
                   onClick={() => setShowNotifications((v) => !v)}
                   aria-label="Connection Requests"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6.002 6.002 0 0 0-4-5.659V5a2 2 0 1 0-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
                   </svg>
                   {connectionRequests.length > 0 && showNotifications && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
                 {/* Dropdown for connection requests */}
@@ -445,7 +457,7 @@ const Navbar = () => {
               <>
                 <Link 
                   to="/dashboard" 
-                  className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
+                  className="hidden sm:block text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
                 >
                   Find Mentors
                 </Link>
@@ -453,7 +465,7 @@ const Navbar = () => {
                 <div className="relative" ref={profileDropdownRef}>
                   <button
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                    className="relative w-10 h-10 rounded-full focus:outline-none ring-2 ring-gray-200 hover:ring-[#d33] transition-all duration-200 overflow-hidden"
+                    className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full focus:outline-none ring-2 ring-gray-200 hover:ring-[#d33] transition-all duration-200 overflow-hidden"
                   >
                     <ProfileDisplay />
                   </button>
@@ -505,13 +517,13 @@ const Navbar = () => {
               <>
                 <button 
                   onClick={handleOpenLogin}
-                  className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
+                  className="text-gray-800 font-semibold text-sm sm:text-lg hover:text-[#d33] hover:bg-gray-50 px-3 sm:px-5 py-1.5 sm:py-2 rounded-[9999px] transition-colors"
                 >
                   Login
                 </button>
                 <button 
                   onClick={handleOpenRegister}
-                  className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
+                  className="text-gray-800 font-semibold text-sm sm:text-lg hover:text-[#d33] hover:bg-gray-50 px-3 sm:px-5 py-1.5 sm:py-2 rounded-[9999px] transition-colors"
                 >
                   Register
                 </button>

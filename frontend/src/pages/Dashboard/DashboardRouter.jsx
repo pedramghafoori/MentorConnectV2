@@ -8,6 +8,7 @@ import Search from './mentee/Search';
 import MenteeRequests from './mentee/Requests';
 import MenteeSchedule from './mentee/Schedule';
 import UserSearchResults from './UserSearchResults';
+import BookingPage from './mentee/BookingPage';
 
 const DashboardRouter = () => {
   return (
@@ -20,6 +21,7 @@ const DashboardRouter = () => {
         <Route path="/mentee/search" element={<Search />} />
         <Route path="/mentee/requests" element={<MenteeRequests />} />
         <Route path="/mentee/schedule" element={<MenteeSchedule />} />
+        <Route path="/mentee/book/:mentorId" element={<BookingPage />} />
         <Route path="/search" element={<UserSearchResults />} />
       </Routes>
     </DashboardShell>

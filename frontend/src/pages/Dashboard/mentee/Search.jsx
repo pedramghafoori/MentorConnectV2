@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMentorSearch, useRequestMentorship } from '../../../hooks/useMentorship';
 
 const Search = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     expertise: '',
     availability: '',
@@ -14,6 +16,10 @@ const Search = () => {
     if (message) {
       requestMentorship({ mentorId, message });
     }
+  };
+
+  const handleBook = (mentorId) => {
+    navigate(`/dashboard/mentee/book/${mentorId}`);
   };
 
   return (
@@ -85,11 +91,22 @@ const Search = () => {
                 <h4 className="text-sm font-medium text-gray-900">Availability</h4>
                 <p className="mt-1 text-sm text-gray-600">{mentor.mentorProfile.availability}</p>
               </div>
+
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-gray-900">Session Fee</h4>
+                <p className="mt-1 text-sm text-gray-600">${mentor.mentorProfile.prepSupportFee} CAD</p>
+              </div>
               
-              <div className="mt-6">
+              <div className="mt-6 space-y-2">
+                <button
+                  onClick={() => handleBook(mentor.id)}
+                  className="w-full bg-[#d33] text-white px-4 py-2 rounded-md hover:bg-[#b22] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d33]"
+                >
+                  Book Session
+                </button>
                 <button
                   onClick={() => handleRequest(mentor.id)}
-                  className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                 >
                   Request Mentorship
                 </button>

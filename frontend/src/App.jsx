@@ -5,6 +5,9 @@ import DashboardRouter from './pages/Dashboard/DashboardRouter';
 import HomePage from './pages/Home/HomePage';
 import Navbar from './components/Navbar';
 import SettingsPage from './pages/Settings/SettingsPage.jsx';
+import Footer from './components/Footer';
+import TermsPage from './pages/Legal/TermsPage';
+import MentorAgreementPage from './pages/Legal/MentorAgreementPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -13,17 +16,20 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
-        <main>
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/dashboard/*" element={user ? <DashboardRouter /> : <Navigate to="/" />} />
             <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/mentor-agreement" element={<MentorAgreementPage />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </BrowserRouter>
   );

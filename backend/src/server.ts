@@ -19,7 +19,7 @@ const __dirname = dirname(__filename);
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Update this to your frontend URL in production
+  origin: ['http://localhost:5173', 'http://www.mentorconnectcanada.com', 'https://mentorconnect-ecc82a256094.herokuapp.com'],
   credentials: true,
 }));
 app.use(express.json());

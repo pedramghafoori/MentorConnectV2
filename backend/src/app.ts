@@ -15,7 +15,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://mentorconnect-ecc82a256094.herokuapp.com',
+    'https://www.mentorconnectcanada.com',
+    'https://mentorconnectcanada.com'
+  ],
   credentials: true,
 }));
 app.use(express.json());

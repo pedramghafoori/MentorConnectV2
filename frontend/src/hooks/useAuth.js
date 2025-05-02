@@ -2,14 +2,12 @@ import useUserStore from '../stores/userStore';
 import * as api from '../services/api';
 
 const useAuth = () => {
-  const { token, user, setToken, setUser } = useUserStore();
+  const { user, setUser } = useUserStore();
 
   const register = async (userData) => {
     try {
-      const { accessToken, refreshToken, message } = await api.register(userData);
-      setToken(accessToken);
-      // Optionally, fetch user profile here if needed
-      return { accessToken, refreshToken, message };
+      const { message } = await api.register(userData);
+      return { message };
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Unable to register');
     }
@@ -17,27 +15,29 @@ const useAuth = () => {
 
   const login = async (credentials) => {
     try {
-      const { token: newToken, user: newUser } = await api.login(credentials);
-      setToken(newToken);
+      const { user: newUser } = await api.login(credentials);
       setUser(newUser);
-      return { token: newToken, user: newUser };
+      return { user: newUser };
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Unable to login');
     }
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+      setUser(null);
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Unable to logout');
+    }
   };
 
   return {
     user,
-    token,
     register,
     login,
     logout,
-    isAuthenticated: !!token,
+    isAuthenticated: !!user,
   };
 };
 

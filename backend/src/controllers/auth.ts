@@ -80,9 +80,9 @@ export const login = async (req: Request, res: Response) => {
         // Set cookie
         res.cookie('token', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             sameSite: 'none',
-            domain: process.env.NODE_ENV === 'production' ? '.mentorconnectcanada.com' : undefined,
+            domain: process.env.NODE_ENV === 'production' ? 'mentorconnect-ecc82a256094.herokuapp.com' : undefined,
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -117,11 +117,11 @@ export const refreshToken = async (req: Request, res: Response) => {
 
 // Logout user
 export const logout = async (req: Request, res: Response) => {
-    // In a real application, you might want to blacklist the refresh token
     res.clearCookie('token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
+        domain: process.env.NODE_ENV === 'production' ? 'mentorconnect-ecc82a256094.herokuapp.com' : undefined,
     });
     res.json({ message: 'Logged out' });
 };

@@ -5,6 +5,7 @@ import menteeRoutes from './mentee.js';
 import { authenticateToken } from '../middleware/auth.js';
 import usersRoutes from './users.js';
 import courseRoutes from './course.js';
+import courseTypeRoutes from './courseType.js';
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use('/mentor', authenticateToken, mentorRoutes);
 router.use('/mentee', authenticateToken, menteeRoutes);
 router.use('/users', usersRoutes);
 router.use('/courses', courseRoutes);
+router.use('/course-types', courseTypeRoutes);
 
 export default router; 

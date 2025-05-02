@@ -28,6 +28,7 @@ export interface IUser extends Document {
   cancellationPolicyHours?: number;
   maxApprentices?: number;
   languages?: string[];
+  workplaces?: string[];
   collectsHST?: boolean;
   taxId?: string;
   allowFeatured?: boolean;
@@ -164,6 +165,10 @@ const userSchema = new Schema<IUser>({
     max: 10
   },
   languages: {
+    type: [String],
+    default: []
+  },
+  workplaces: {
     type: [String],
     default: []
   },

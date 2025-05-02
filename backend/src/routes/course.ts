@@ -25,6 +25,9 @@ router.get('/:id', getCourseById);
 // Update a course
 router.put('/:id', updateCourse);
 
+// Partial update a course
+router.patch('/:id', updateCourse);
+
 // Delete a course
 router.delete('/:id', deleteCourse);
 

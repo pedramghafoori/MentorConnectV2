@@ -364,4 +364,27 @@ router.get('/:userId/connections', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/users/:userId/review-summary - Get average rating and count of reviews for a user
+router.get('/:userId/review-summary', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const summary = await Review.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(userId) } },
+      { $group: {
+          _id: null,
+          avgRating: { $avg: '$rating' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    if (summary.length > 0) {
+      return res.json({ average: summary[0].avgRating, count: summary[0].count });
+    }
+    return res.json({ average: 0, count: 0 });
+  } catch (error) {
+    console.error('Error fetching review summary:', error);
+    res.status(500).json({ error: 'Failed to fetch review summary' });
+  }
+});
+
 export default router; 

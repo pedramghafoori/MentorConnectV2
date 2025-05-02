@@ -33,6 +33,53 @@ const formatCertificationName = (name) => {
     .replace(/_/g, ' ');
 };
 
+// Helper to display full language names from ISO codes
+const languageDisplayNames = typeof Intl.DisplayNames === 'function' ? new Intl.DisplayNames(['en'], { type: 'language' }) : null;
+const getLanguageName = (code) => {
+  if (languageDisplayNames) {
+    return languageDisplayNames.of(code);
+  }
+  const languageMap = {
+    en: 'English',
+    fa: 'Farsi',
+    es: 'Spanish',
+    fr: 'French',
+    de: 'German',
+    zh: 'Chinese',
+    ja: 'Japanese',
+    ru: 'Russian',
+    ar: 'Arabic',
+    hi: 'Hindi',
+    pt: 'Portuguese',
+    bn: 'Bengali',
+    pa: 'Punjabi',
+    jv: 'Javanese',
+    ko: 'Korean',
+    vi: 'Vietnamese',
+    it: 'Italian',
+    tr: 'Turkish',
+    pl: 'Polish',
+    uk: 'Ukrainian',
+    ro: 'Romanian',
+    nl: 'Dutch',
+    el: 'Greek',
+    hu: 'Hungarian',
+    sv: 'Swedish',
+    cs: 'Czech',
+    da: 'Danish',
+    fi: 'Finnish',
+    no: 'Norwegian',
+    th: 'Thai',
+    he: 'Hebrew',
+    id: 'Indonesian',
+    ms: 'Malay',
+    tl: 'Tagalog',
+    ur: 'Urdu',
+    // Add more languages as needed
+  };
+  return languageMap[code] || code;
+};
+
 export default function ProfilePage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -423,6 +470,12 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+          {data.languages?.length > 0 && (
+            <div className="mt-2 flex flex-col">
+              <span><span className="font-bold">Language:</span> {data.languages.map(getLanguageName).join(', ')}</span>
+              <span></span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -441,6 +494,23 @@ export default function ProfilePage() {
               />
             ) : (
               <div style={{ minHeight: 80, color: '#4a5568', fontSize: '1rem' }}>{data.about || <span className="text-gray-400">No bio provided.</span>}</div>
+            )}
+            
+            {/* Display workplaces if available */}
+            {data.workplaces && data.workplaces.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Teaching Experience</h3>
+                <div className="flex flex-wrap gap-2">
+                  {data.workplaces.map((workplace, index) => (
+                    <span 
+                      key={index} 
+                      className="bg-gray-100 px-3 py-1 rounded-full text-gray-700 text-sm"
+                    >
+                      {workplace}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </section>
 
@@ -520,6 +590,7 @@ export default function ProfilePage() {
               )}
             </div>
           </section>
+          
         </aside>
       </div>
 

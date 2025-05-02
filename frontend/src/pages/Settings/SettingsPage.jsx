@@ -6,7 +6,7 @@ import Select from 'react-select';
 import Container from '../../components/Container';
 import '../../css/settings.css';
 import AccountDangerZone from './AccountDangerZone';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 
 const menuItems = [
@@ -101,6 +101,12 @@ export default function SettingsPage() {
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState(null);
   const [pwSuccess, setPwSuccess] = useState(false);
+  const [ratingSummary, setRatingSummary] = useState({ average: 0, count: 0 });
+  const [workplaces, setWorkplaces] = useState([]);
+  const [newWorkplace, setNewWorkplace] = useState('');
+  const [workplacesLoading, setWorkplacesLoading] = useState(false);
+  const [workplacesError, setWorkplacesError] = useState(null);
+  const [workplacesSuccess, setWorkplacesSuccess] = useState(false);
 
   useEffect(() => {
     if (fullUserData) {
@@ -158,6 +164,24 @@ export default function SettingsPage() {
       );
     }
   }, [fullUserData]);
+
+  useEffect(() => {
+    if (fullUserData && fullUserData._id) {
+      axios.get(`/users/${fullUserData._id}/review-summary`)
+        .then(res => setRatingSummary(res.data))
+        .catch(err => console.error('Error loading review summary:', err));
+    }
+  }, [fullUserData]);
+
+  useEffect(() => {
+    if (fullUserData && Array.isArray(fullUserData.workplaces)) {
+      setWorkplaces(fullUserData.workplaces);
+    }
+  }, [fullUserData]);
+
+  const allowTwoApprentices = fullUserData?.role === 'MENTOR'
+    && ratingSummary.count >= 5
+    && ratingSummary.average >= 4.5;
 
   const handleToggle = async (field, value) => {
     await updateProfile({ [field]: value });
@@ -332,6 +356,55 @@ export default function SettingsPage() {
       setPwError(err.response?.data?.message || 'Failed to update password.');
     } finally {
       setPwLoading(false);
+    }
+  };
+
+  const handleAddWorkplace = async () => {
+    if (!newWorkplace.trim()) return;
+    
+    setWorkplacesLoading(true);
+    setWorkplacesError(null);
+    setWorkplacesSuccess(false);
+    
+    try {
+      const updatedWorkplaces = [...workplaces, newWorkplace.trim()];
+      await updateProfile({ workplaces: updatedWorkplaces });
+      setWorkplaces(updatedWorkplaces);
+      setNewWorkplace('');
+      setWorkplacesSuccess(true);
+      refetch();
+      setTimeout(() => setWorkplacesSuccess(false), 1500);
+    } catch (err) {
+      setWorkplacesError('Failed to save workplace. Please try again.');
+    } finally {
+      setWorkplacesLoading(false);
+    }
+  };
+
+  const handleRemoveWorkplace = async (index) => {
+    setWorkplacesLoading(true);
+    setWorkplacesError(null);
+    setWorkplacesSuccess(false);
+    
+    try {
+      const updatedWorkplaces = [...workplaces];
+      updatedWorkplaces.splice(index, 1);
+      await updateProfile({ workplaces: updatedWorkplaces });
+      setWorkplaces(updatedWorkplaces);
+      setWorkplacesSuccess(true);
+      refetch();
+      setTimeout(() => setWorkplacesSuccess(false), 1500);
+    } catch (err) {
+      setWorkplacesError('Failed to remove workplace. Please try again.');
+    } finally {
+      setWorkplacesLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddWorkplace();
     }
   };
 
@@ -593,6 +666,11 @@ export default function SettingsPage() {
                   </div>
                   <div className="settings-fee-group">
                     <div className="font-medium text-base mb-2">How many apprentices can you handle at once?</div>
+                    {!allowTwoApprentices ? (
+                      <p className="text-red-500 text-sm mt-1">
+                        To set more than 1 participant, you need at least 5 reviews and a minimum rating of 4.5+.
+                      </p>
+                    ) : (
                     <div className="settings-fee-input-row">
                       <div className="settings-input-spinner-row">
                         <button
@@ -604,7 +682,7 @@ export default function SettingsPage() {
                         <input
                           type="number"
                           min={1}
-                          max={10}
+                          max={2}
                           value={maxApprentices}
                           onChange={e => setMaxApprentices(Number(e.target.value))}
                           className="settings-input-number"
@@ -612,18 +690,19 @@ export default function SettingsPage() {
                         <button
                           type="button"
                           className="settings-spinner-btn"
-                          onClick={() => setMaxApprentices(prev => Math.min(10, prev + 1))}
+                          onClick={() => setMaxApprentices(prev => Math.min(2, prev + 1))}
                           tabIndex={-1}
                         >+</button>
                       </div>
                       <button
                         onClick={handleMaxApprenticesSave}
-                        disabled={maxApprenticesLoading}
+                        disabled={!allowTwoApprentices || maxApprenticesLoading}
                         className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
                       >
                         {maxApprenticesLoading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
+                    )}
                     {maxApprenticesError && <div className="text-red-500 text-sm mt-1">{maxApprenticesError}</div>}
                     {maxApprenticesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                   </div>
@@ -648,6 +727,47 @@ export default function SettingsPage() {
                     </button>
                     {languagesError && <div className="text-red-500 text-sm mt-1">{languagesError}</div>}
                     {languagesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
+                  </div>
+                  <div className="settings-fee-group">
+                    <div className="font-medium text-base mb-2">Places you've taught</div>
+                    <div className="mb-3" style={{ maxWidth: 400 }}>
+                      <div className="flex flex-col gap-2">
+                        {workplaces.map((workplace, index) => (
+                          <div key={index} className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-md">
+                            <span>{workplace}</span>
+                            <button 
+                              onClick={() => handleRemoveWorkplace(index)}
+                              className="text-gray-500 hover:text-red-500"
+                              disabled={workplacesLoading}
+                              aria-label="Remove workplace"
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        ))}
+                        
+                        <div className="flex mt-2">
+                          <input
+                            type="text"
+                            value={newWorkplace}
+                            onChange={(e) => setNewWorkplace(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Add workplace and press Enter"
+                            className="block flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:ring-[#d33] focus:border-[#d33]"
+                            disabled={workplacesLoading}
+                          />
+                          <button
+                            onClick={handleAddWorkplace}
+                            disabled={!newWorkplace.trim() || workplacesLoading}
+                            className="px-4 py-2 rounded-r-md bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    {workplacesError && <div className="text-red-500 text-sm mt-1">{workplacesError}</div>}
+                    {workplacesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
                   </div>
                 </div>
               </div>

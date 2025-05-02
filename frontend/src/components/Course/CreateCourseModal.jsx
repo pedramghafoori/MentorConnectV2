@@ -43,9 +43,22 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
       }
     }
   });
+  const [courseTypes, setCourseTypes] = useState([]);
+  const [ratingSummary, setRatingSummary] = useState({ average: 0, count: 0 });
 
   // Fetch mentor settings when component mounts
   useEffect(() => {
+    // Load course types with fee ranges
+    const loadCourseTypes = async () => {
+      try {
+        const res = await api.get('/course-types');
+        setCourseTypes(res.data);
+      } catch (error) {
+        console.error('Error loading course types:', error);
+      }
+    };
+    loadCourseTypes();
+
     const fetchMentorSettings = async () => {
       try {
         const profile = await getProfile();
@@ -77,6 +90,19 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
     if (user) {
       fetchMentorSettings();
     }
+
+    // Fetch user review summary for rating-based features
+    const loadRatingSummary = async () => {
+      if (user && user._id) {
+        try {
+          const res = await api.get(`/users/${user._id}/review-summary`);
+          setRatingSummary(res.data);
+        } catch (err) {
+          console.error('Error loading review summary:', err);
+        }
+      }
+    };
+    loadRatingSummary();
   }, [user]);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -135,6 +161,11 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
       }));
     }
   };
+
+  // Determine if mentor can set maxParticipants > 1 (requires at least 5 reviews and average rating >= 4.5)
+  const allowTwoParticipants = user?.role === 'MENTOR'
+    && ratingSummary.count >= 5
+    && ratingSummary.average >= 4.5;
 
   if (!isOpen) return null;
 
@@ -229,30 +260,53 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                         required
                       />
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Default: ${mentorSettings.prepSupportFee}
-                    </p>
                   </div>
 
-                  <div>
-                    <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
-                      Max Participants
-                    </label>
-                    <input
-                      type="number"
-                      id="maxParticipants"
-                      name="maxParticipants"
-                      value={formData.maxParticipants}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
-                      required
-                      min="1"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Default: {mentorSettings.maxApprentices}
+                  {/* Only show maxParticipants if allowed */}
+                  {allowTwoParticipants && (
+                    <div>
+                      <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
+                        Max Participants
+                      </label>
+                      <input
+                        type="number"
+                        id="maxParticipants"
+                        name="maxParticipants"
+                        value={formData.maxParticipants}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
+                        required
+                        min="1"
+                        max="2"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Profile Default: {mentorSettings.maxApprentices}
+                      </p>
+                    </div>
+                  )}
+                  {!allowTwoParticipants && (
+                    <p className="mt-1 text-xs text-red-500">
+                      To set more than 1 participant, you need at least 5 reviews and a minimum rating of 4.5+.
                     </p>
-                  </div>
+                  )}
                 </div>
+
+                {/* Fee range summary box */}
+                {formData.title && (() => {
+                  const selected = courseTypes.find(ct => ct.name === formData.title);
+                  if (!selected) return null;
+                  return (
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-gray-700">
+                        Based on our data, Mentors typically charge ${selected.feeRange.min} – ${selected.feeRange.max} for this course.
+                      </p>
+                      <p className="mt-2 text-gray-600">
+                        We encourage you to set a fee that fairly reflects the time you'll spend preparing your mentee.
+                      </p>
+                    </div>
+                  );
+                })()}
+
               </div>
             )}
 
@@ -496,7 +550,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
               {step < 3 ? (
                 <button
                   type="button"
-                  onClick={() => setStep(step + 1)}
+                  onClick={e => { e.preventDefault(); setStep(step + 1); }}
                   disabled={step === 1 && !formData.title}
                   className={`ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
                     step === 1 && !formData.title

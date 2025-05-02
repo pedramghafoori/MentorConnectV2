@@ -32,7 +32,6 @@ export default function ReviewsSection({ userId }) {
 
   return (
     <section className="mt-8">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Reviews</h2>
       {reviews.length === 0 ? (
         <div className="text-gray-500 text-center py-8">
           You don't have any reviews yet, any new reviews will immediately appear here for you to view.

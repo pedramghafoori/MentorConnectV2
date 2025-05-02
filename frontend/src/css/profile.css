@@ -391,6 +391,12 @@ body {
   .profile-name {
     font-size: 2rem;
   }
+  
+  .mentor-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    height: 1.8rem;
+  }
 }
 
 .connection-button {
@@ -429,4 +435,30 @@ body {
   height: 1rem;
   color: #9ca3af;
   transform: translateY(-1px);
+}
+
+/* Languages badges */
+.languages-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.language-badge {
+  background: linear-gradient(15deg, #d7d7d7, #bababa);
+  border-radius: 999px;
+  padding: 0.3rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.95rem;
+  color: #C2410C;
+  font-weight: 500;
+}
+
+.language-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 } 

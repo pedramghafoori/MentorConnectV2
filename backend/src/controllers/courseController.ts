@@ -97,8 +97,8 @@ export async function updateCourse(req: Request, res: Response) {
     }
 
     // Verify ownership
-    const userId = req.user?._id || req.user?.id;
-    if (course.mentorId.toString() !== userId?.toString()) {
+    const userId = req.user?.userId;
+    if (course.mentorId.toString() !== userId) {
       return res.status(403).json({ error: 'Not authorized to update this course' });
     }
 
@@ -123,8 +123,8 @@ export async function deleteCourse(req: Request, res: Response) {
     }
 
     // Verify ownership
-    const userId = req.user?._id || req.user?.id;
-    if (course.mentorId.toString() !== userId?.toString()) {
+    const userIdDel = req.user?.userId;
+    if (course.mentorId.toString() !== userIdDel) {
       return res.status(403).json({ error: 'Not authorized to delete this course' });
     }
 

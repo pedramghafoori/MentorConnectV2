@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { getProfile } from '../../features/profile/getProfile';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import "../../styles/calendar.css";
 
 const COURSE_OPTIONS = [
   'Bronze',
@@ -257,55 +258,54 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
             )}
 
             {step === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">
-                    Course Type
-                  </label>
-                  <div className="flex gap-6">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="isExamOnly"
-                        checked={!formData.schedule.isExamOnly}
-                        onChange={() => setFormData(prev => ({
-                          ...prev,
-                          schedule: {
-                            ...prev.schedule,
-                            isExamOnly: false,
-                            examDate: null,
-                            courseDates: []
-                          }
-                        }))}
-                        className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Full Course</span>
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                      Course Type
                     </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="isExamOnly"
-                        checked={formData.schedule.isExamOnly}
-                        onChange={() => setFormData(prev => ({
-                          ...prev,
-                          schedule: {
-                            ...prev.schedule,
-                            isExamOnly: true,
-                            examDate: null,
-                            courseDates: []
-                          }
-                        }))}
-                        className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Exam Only</span>
-                    </label>
+                    <div className="flex gap-6">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="isExamOnly"
+                          checked={!formData.schedule.isExamOnly}
+                          onChange={() => setFormData(prev => ({
+                            ...prev,
+                            schedule: {
+                              ...prev.schedule,
+                              isExamOnly: false,
+                              examDate: null,
+                              courseDates: []
+                            }
+                          }))}
+                          className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Full Course</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="isExamOnly"
+                          checked={formData.schedule.isExamOnly}
+                          onChange={() => setFormData(prev => ({
+                            ...prev,
+                            schedule: {
+                              ...prev.schedule,
+                              isExamOnly: true,
+                              examDate: null,
+                              courseDates: []
+                            }
+                          }))}
+                          className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Exam Only</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {formData.schedule.isExamOnly ? 'Exam Date' : 'Select Course Dates'}
-                  </label>
                   <DatePicker
                     selected={null}
                     onChange={(date) => {
@@ -336,50 +336,14 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                     monthsShown={1}
                     minDate={new Date()}
                     className="w-full"
-                    calendarClassName="rounded-lg shadow-lg border border-gray-200"
+                    calendarClassName="mentor-calendar"
                     dayClassName={(date) => {
                       const isSelected = formData.schedule.courseDates.some(
                         d => d.getTime() === date.getTime()
                       );
-                      return isSelected ? 'bg-[#d33] text-white rounded-full' : '';
+                      return isSelected ? 'mentor-calendar-selected' : 'mentor-calendar-day';
                     }}
                   />
-                  
-                  {!formData.schedule.isExamOnly && formData.schedule.courseDates.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-500 mb-2">Selected Dates:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.schedule.courseDates
-                          .filter(date => date instanceof Date && !isNaN(date))
-                          .map(date => (
-                          <span
-                            key={date.getTime()}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#d33] text-white"
-                          >
-                            {date.toLocaleDateString()}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newDates = formData.schedule.courseDates.filter(
-                                  d => d && d.getTime() !== date.getTime()
-                                );
-                                setFormData(prev => ({
-                                  ...prev,
-                                  schedule: {
-                                    ...prev.schedule,
-                                    courseDates: newDates
-                                  }
-                                }));
-                              }}
-                              className="ml-2 text-white hover:text-gray-200"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

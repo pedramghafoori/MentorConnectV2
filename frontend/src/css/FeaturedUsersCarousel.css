@@ -189,6 +189,21 @@
 }
 @media (max-width:700px){
     .featured-card{ width:160px; height:280px; padding:0; }
+    .featured-carousel-container {
+        max-width: 100%;
+        margin: 6rem auto 1.5rem;
+        padding: 0;
+        position: relative;
+        order: 2;
+        overflow-x: hidden !important;
+    }
+    .featured-carousel {
+        padding: 0 1rem;
+    }
+    .featured-cards-wrapper {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
     .carousel-profile-img-wrapper {
         height: 120px;
         width: 100%;
@@ -222,13 +237,6 @@
         padding: 0.8rem;
     }
     .featured-carousel-title{ font-size:3.5rem; }
-    .featured-carousel-container {
-        max-width: 100%;
-        margin: 6rem auto 1.5rem;
-        padding: 0 1rem;
-        position: relative;
-        order: 2;
-    }
 }
 
 /* ------- ensure outer cards aren't clipped by a global overflow-x:hidden ------- */

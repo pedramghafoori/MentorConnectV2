@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
 const RegisterForm = ({ onClose, onSwitchToLogin }) => {
@@ -16,6 +16,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [location, setLocation] = useState('Toronto, ON');
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const isStrongPassword = (pw) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
@@ -51,6 +52,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         heardAbout: heardAbout.join(','),
         city: location.split(',')[0].trim(),
         province: location.split(',')[1].trim(),
+        termsAccepted
       });
       setSuccess(res.message || 'Registration successful!');
       setTimeout(() => {
@@ -194,9 +196,32 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         {error && <p className="text-red-600 mt-2">{error}</p>}
         {success && <p className="text-green-600 mt-2">{success}</p>}
         
+        <div className="mt-4">
+          <label className="flex items-start space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="mt-1 h-4 w-4 text-[#e63946] border-gray-300 rounded focus:ring-[#e63946]"
+              required
+            />
+            <span className="text-sm text-gray-600">
+              I agree to the{' '}
+              <Link to="/terms" className="text-[#e63946] hover:underline" target="_blank" rel="noopener noreferrer">
+                Terms of Service
+              </Link>
+              {' '}and{' '}
+              <Link to="/mentor-agreement" className="text-[#e63946] hover:underline" target="_blank" rel="noopener noreferrer">
+                User Agreement
+              </Link>
+            </span>
+          </label>
+        </div>
+        
         <button 
           type="submit"
           className="w-full py-3 px-4 bg-[#e63946] text-white text-base rounded-lg hover:brightness-110 transition-all cursor-pointer mt-6"
+          disabled={!termsAccepted}
         >
           Register
         </button>

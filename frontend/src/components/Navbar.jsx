@@ -227,6 +227,13 @@ const Navbar = () => {
           <nav className="flex gap-2 sm:gap-4 items-center">
             {/* Search Icon and Animated Search Box */}
             <div className="relative flex items-center" ref={searchRef}>
+              {/* Backdrop overlay for mobile */}
+              {showSearch && (
+                <div 
+                  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 sm:hidden"
+                  onClick={() => setShowSearch(false)}
+                />
+              )}
               {/* Search icon */}
               <button
                 className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
@@ -253,33 +260,29 @@ const Navbar = () => {
               )}
               {/* Search bar and dropdown */}
               <div
-                className={`transition-all duration-300 z-50`}
+                className={`transition-all duration-300 z-50 ${
+                  showSearch 
+                    ? 'sm:relative sm:block fixed left-0 right-0 px-4 mt-4 sm:mt-0 sm:px-0' 
+                    : 'hidden'
+                }`}
                 style={{
                   width: showSearch ? '100%' : 0,
-                  maxWidth: showSearch ? '320px' : 0,
+                  maxWidth: showSearch ? (window.innerWidth >= 640 ? '320px' : '100%') : 0,
                   opacity: showSearch ? 1 : 0,
                   pointerEvents: showSearch ? 'auto' : 'none',
-                  marginLeft: showSearch ? 12 : 0,
-                  '@media (max-width: 640px)': {
-                    position: 'fixed',
-                    top: '80px',
-                    left: '0',
-                    right: '0',
-                    maxWidth: '100%',
-                    margin: '0 1rem',
-                  }
+                  marginLeft: window.innerWidth >= 640 ? (showSearch ? 12 : 0) : 0,
+                  top: window.innerWidth >= 640 ? 'auto' : '72px'
                 }}
               >
-                <div className="relative w-full">
+                <div className="relative w-full max-w-[90%] mx-auto sm:max-w-none">
                   <input
                     type="text"
                     value={searchValue}
                     onChange={e => setSearchValue(e.target.value)}
                     placeholder="Search by name or LSS ID"
-                    className="rounded-full px-5 py-2 border border-gray-300 shadow bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
+                    className="rounded-full px-5 py-2 border border-gray-300 shadow-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
                     style={{
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      width: '100%',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       transition: 'width 0.3s, opacity 0.3s',
                     }}
                     autoFocus={showSearch}
@@ -352,7 +355,7 @@ const Navbar = () => {
                     (searchMode === 'name' && searchValue.trim() !== '') ||
                     (searchMode === 'certs' && selectedCertifications.length > 0)
                   ) && (
-                    <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
+                    <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-[calc(100vh-200px)] overflow-y-auto z-50">
                       {searchLoading && (
                         <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
                       )}

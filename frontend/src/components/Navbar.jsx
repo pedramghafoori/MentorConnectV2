@@ -464,6 +464,18 @@ const Navbar = () => {
                 >
                   Find Mentors
                 </Link>
+                {/* Post Course Button - Only visible for mentors */}
+                {user.role === 'MENTOR' && (
+                  <Link 
+                    to="/courses/new" 
+                    className="hidden sm:flex items-center gap-2 text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Post Course
+                  </Link>
+                )}
                 {/* Profile Picture and Dropdown */}
                 <div className="relative" ref={profileDropdownRef}>
                   <button
@@ -488,6 +500,18 @@ const Navbar = () => {
                             </svg>
                             <span>Profile</span>
                           </Link>
+                          {user.role === 'MENTOR' && (
+                            <Link
+                              to="/courses/my-courses"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
+                              onClick={() => setShowProfileDropdown(false)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                              </svg>
+                              <span>My Courses</span>
+                            </Link>
+                          )}
                           <Link
                             to="/settings"
                             className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"

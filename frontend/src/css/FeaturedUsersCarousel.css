@@ -68,7 +68,7 @@
 
 .featured-card[data-position='left'] {
     transform: translateX(-50%) scale(0.85) skewY(2deg);
-    opacity: 0.68;
+    opacity: 0.9;
     z-index: 1;
     filter: blur(1px) brightness(0.95);
     pointer-events: auto;

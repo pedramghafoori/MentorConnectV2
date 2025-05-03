@@ -11,7 +11,9 @@ const ensureLocalDir = (dir: string) => {
 };
 
 export const makeStorageFactory = () => {
+  console.log('NODE_ENV:', process.env.NODE_ENV);
   if (process.env.NODE_ENV === 'production') {
+    console.log('Using DigitalOcean Spaces for storage');
     const s3Client = new S3Client({
       endpoint: process.env.DO_SPACES_ENDPOINT,
       region: process.env.DO_SPACES_REGION,
@@ -34,6 +36,7 @@ export const makeStorageFactory = () => {
       }
     });
   } else {
+    console.log('Using local storage for uploads');
     const uploadDir = path.resolve('uploads/avatars');
     ensureLocalDir(uploadDir);
 

@@ -277,20 +277,19 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSaveProfilePicture = async (blob) => {
+  const handleSaveProfilePicture = async (originalFileOrBlob, cropSettings) => {
     setIsUploading(true);
     try {
-      // Convert blob to File object
-      const file = new File([blob], 'profile-picture.jpg', { type: 'image/jpeg' });
-      
-      // First upload the image
+      // 1. Upload the original image
+      const file = new File([originalFileOrBlob], 'profile-picture.jpg', { type: 'image/jpeg' });
       const imageUrl = await uploadPicture(file);
-      
-      // Then update the profile with the new image URL
+
+      // 2. Save the crop settings and image URL to the user profile
       await mutation.mutateAsync({
-        avatarUrl: imageUrl
+        avatarUrl: imageUrl,
+        avatarCrop: cropSettings, // { offset, scale, rotate }
       });
-      
+
       setShowProfileEditor(false);
       setSelectedImage(null);
     } catch (error) {
@@ -299,6 +298,10 @@ export default function ProfilePage() {
       setIsUploading(false);
     }
   };
+
+  // Get crop settings from user data
+  const crop = data?.avatarCrop || { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
+  const size = 160; // or 40 for small avatar
 
   return (
     <Container>
@@ -314,13 +317,35 @@ export default function ProfilePage() {
               }}
             >
               {(data?.profilePicture || data?.avatarUrl) ? (
-                <img
-                  src={data?.profilePicture || data?.avatarUrl}
-                  alt="Profile"
-                  className="w-40 h-40 rounded-full object-cover"
-                />
+                <div
+                  style={{
+                    width: size,
+                    height: size,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    background: '#eee',
+                  }}
+                >
+                  <img
+                    src={data?.profilePicture || data?.avatarUrl}
+                    alt="Profile"
+                    style={{
+                      width: `${size * crop.scale}px`,
+                      height: `${size * crop.scale}px`,
+                      transform: `
+                        translate(${crop.offset.x}px, ${crop.offset.y}px)
+                        rotate(${crop.rotate}deg)
+                      `,
+                      objectFit: 'cover',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
+                </div>
               ) : (
-                <AvatarFallback firstName={data?.firstName} size={160} />
+                <AvatarFallback firstName={data?.firstName} size={size} />
               )}
             </div>
           ) : (
@@ -329,13 +354,35 @@ export default function ProfilePage() {
               onClick={() => setShowImageModal(true)}
             >
               {(data?.profilePicture || data?.avatarUrl) ? (
-                <img
-                  src={data?.profilePicture || data?.avatarUrl}
-                  alt={`${data?.firstName} ${data?.lastName}'s profile`}
-                  className="w-40 h-40 rounded-full object-cover"
-                />
+                <div
+                  style={{
+                    width: size,
+                    height: size,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    background: '#eee',
+                  }}
+                >
+                  <img
+                    src={data?.profilePicture || data?.avatarUrl}
+                    alt={`${data?.firstName} ${data?.lastName}'s profile`}
+                    style={{
+                      width: `${size * crop.scale}px`,
+                      height: `${size * crop.scale}px`,
+                      transform: `
+                        translate(${crop.offset.x}px, ${crop.offset.y}px)
+                        rotate(${crop.rotate}deg)
+                      `,
+                      objectFit: 'cover',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
+                </div>
               ) : (
-                <AvatarFallback firstName={data?.firstName} size={160} />
+                <AvatarFallback firstName={data?.firstName} size={size} />
               )}
             </div>
           )}

@@ -37,6 +37,14 @@ export interface IUser extends Document {
   deletionRequestedAt?: Date | null;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  avatarCrop: {
+    offset: {
+      x: number;
+      y: number;
+    };
+    scale: number;
+    rotate: number;
+  };
 }
 
 const certificationSchema = new Schema({
@@ -203,6 +211,14 @@ const userSchema = new Schema<IUser>({
   resetPasswordExpires: {
     type: Date,
     default: undefined
+  },
+  avatarCrop: {
+    offset: {
+      x: { type: Number, default: 0 },
+      y: { type: Number, default: 0 }
+    },
+    scale: { type: Number, default: 1 },
+    rotate: { type: Number, default: 0 }
   }
 }, {
   timestamps: true

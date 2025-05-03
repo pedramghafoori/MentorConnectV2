@@ -180,20 +180,42 @@ const Navbar = () => {
   const ProfileDisplay = () => {
     const displayData = fullUserData || user;
     if (!displayData) return null;
-
+    const crop = displayData.avatarCrop || { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
+    const size = 40;
     if (displayData.profilePicture || displayData.avatarUrl) {
       return (
-        <img
-          src={displayData.profilePicture || displayData.avatarUrl}
-          alt={`${displayData.firstName || 'User'}'s profile`}
-          className="w-full h-full object-cover"
-          onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
-        />
+        <div
+          style={{
+            width: size,
+            height: size,
+            borderRadius: '50%',
+            overflow: 'hidden',
+            position: 'relative',
+            background: '#eee',
+          }}
+        >
+          <img
+            src={displayData.profilePicture || displayData.avatarUrl}
+            alt={`${displayData.firstName || 'User'}'s profile`}
+            style={{
+              width: `${size * crop.scale}px`,
+              height: `${size * crop.scale}px`,
+              transform: `
+                translate(${crop.offset.x}px, ${crop.offset.y}px)
+                rotate(${crop.rotate}deg)
+              `,
+              objectFit: 'cover',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+        </div>
       );
     } else {
       return (
         <div className="w-full h-full flex items-center justify-center">
-          <AvatarFallback firstName={displayData.firstName} size={40} />
+          <AvatarFallback firstName={displayData.firstName} size={size} />
         </div>
       );
     }

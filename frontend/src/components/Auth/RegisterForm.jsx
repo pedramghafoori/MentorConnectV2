@@ -17,6 +17,10 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [animationDirection, setAnimationDirection] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
   
+  // Add animation restart state
+  const [typingReset, setTypingReset] = useState(false);
+  const [typingComplete, setTypingComplete] = useState(false);
+  
   // Form field states
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -82,6 +86,26 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       }
     }
   };
+
+  // Add handler for typing animation reset
+  useEffect(() => {
+    setTypingReset(true);
+    setTypingComplete(false);
+    
+    const resetTimer = setTimeout(() => {
+      setTypingReset(false);
+    }, 50);
+    
+    // Add timer to set typing as complete after animation finishes
+    const completeTimer = setTimeout(() => {
+      setTypingComplete(true);
+    }, 4000); // Match this with your animation duration
+    
+    return () => {
+      clearTimeout(resetTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [currentStep]);
 
   const goToNextStep = async () => {
     if (currentStep === 1 && (!firstName.trim() || !lastName.trim())) {
@@ -320,10 +344,23 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     <div className="register-container">
       <h2 className="register-title">Create account</h2>
       
+      {/* Progress bar moved here */}
+      <div className="register-progress-container">
+        <div className="register-progress-bar">
+          <div 
+            className="register-progress-fill" 
+            style={{ width: `${(currentStep / 4) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+      
+      
+      
       <form onSubmit={handleSubmit} className="register-form">
         <div className="relative">
           <div className={getStepClasses(1)}>
-            <h3 className="register-step-title">Its great to meet you! Please tell us your name</h3>
+            <h3 className="register-step-title">We're excited to have you here!</h3>
+            
             
             <div className="register-input-group">
               <label htmlFor="firstName" className="register-label">First Name</label>
@@ -357,15 +394,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               Next
             </button>
             
-            {/* Progress bar - step 1 */}
-            <div className="register-progress-container">
-              <div className="register-progress-bar">
-                <div 
-                  className="register-progress-fill" 
-                  style={{ width: `${(currentStep / 4) * 100}%` }}
-                ></div>
-              </div>
-            </div>
+            {/* Progress bar removed from step 1 */}
           </div>
           
           <div className={getStepClasses(2)}>
@@ -373,6 +402,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             
             <div className="register-input-group">
               <label htmlFor="lssId" className="register-label">LSS ID</label>
+              
               <input
                 id="lssId"
                 type="text"
@@ -436,15 +466,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               </button>
             </div>
             
-            {/* Progress bar - step 2 */}
-            <div className="register-progress-container">
-              <div className="register-progress-bar">
-                <div 
-                  className="register-progress-fill" 
-                  style={{ width: `${(currentStep / 4) * 100}%` }}
-                ></div>
-              </div>
-            </div>
+            {/* Progress bar removed from step 2 */}
           </div>
           
           <div className={getStepClasses(3)}>
@@ -596,15 +618,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               </button>
             </div>
             
-            {/* Progress bar - step 3 */}
-            <div className="register-progress-container">
-              <div className="register-progress-bar">
-                <div 
-                  className="register-progress-fill" 
-                  style={{ width: `${(currentStep / 4) * 100}%` }}
-                ></div>
-              </div>
-            </div>
+            {/* Progress bar removed from step 3 */}
           </div>
           
           <div className={getStepClasses(4)}>
@@ -680,15 +694,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               </button>
             </div>
             
-            {/* Progress bar - step 4 */}
-            <div className="register-progress-container">
-              <div className="register-progress-bar">
-                <div 
-                  className="register-progress-fill" 
-                  style={{ width: `${(currentStep / 4) * 100}%` }}
-                ></div>
-              </div>
-            </div>
+            {/* Progress bar removed from step 4 */}
           </div>
         </div>
         

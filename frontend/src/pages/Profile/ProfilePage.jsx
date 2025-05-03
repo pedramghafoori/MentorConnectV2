@@ -300,8 +300,19 @@ export default function ProfilePage() {
   };
 
   // Get crop settings from user data
-  const crop = data?.avatarCrop || { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
-  const size = 160; // or 40 for small avatar
+  const defaultCrop = { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
+  const savedCrop = data?.avatarCrop || defaultCrop;
+  const relativeOffset = savedCrop.offset || defaultCrop.offset;
+  const scale = savedCrop.scale || defaultCrop.scale;
+  const rotate = savedCrop.rotate || defaultCrop.rotate;
+
+  const size = 160; // Size of the avatar on Profile Page
+
+  // Convert relative offset to pixels for this size
+  const pixelOffset = {
+    x: relativeOffset.x * size,
+    y: relativeOffset.y * size,
+  };
 
   return (
     <Container>
@@ -312,6 +323,7 @@ export default function ProfilePage() {
             <div 
               className="cursor-pointer transition-transform hover:scale-105"
               onClick={() => {
+                // Pass the relative crop settings to the editor
                 setSelectedImage(data?.profilePicture || data?.avatarUrl);
                 setShowProfileEditor(true);
               }}
@@ -331,16 +343,14 @@ export default function ProfilePage() {
                     src={data?.profilePicture || data?.avatarUrl}
                     alt="Profile"
                     style={{
-                      width: `${size * crop.scale}px`,
-                      height: `${size * crop.scale}px`,
-                      transform: `
-                        translate(${crop.offset.x}px, ${crop.offset.y}px)
-                        rotate(${crop.rotate}deg)
-                      `,
-                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
                       position: 'absolute',
-                      top: 0,
-                      left: 0,
+                      top: '50%',
+                      left: '50%',
+                      // Use calculated pixel offset
+                      transform: `translate(-50%, -50%) translate(${pixelOffset.x}px, ${pixelOffset.y}px) scale(${scale}) rotate(${rotate}deg)`
                     }}
                   />
                 </div>
@@ -368,16 +378,14 @@ export default function ProfilePage() {
                     src={data?.profilePicture || data?.avatarUrl}
                     alt={`${data?.firstName} ${data?.lastName}'s profile`}
                     style={{
-                      width: `${size * crop.scale}px`,
-                      height: `${size * crop.scale}px`,
-                      transform: `
-                        translate(${crop.offset.x}px, ${crop.offset.y}px)
-                        rotate(${crop.rotate}deg)
-                      `,
-                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
                       position: 'absolute',
-                      top: 0,
-                      left: 0,
+                      top: '50%',
+                      left: '50%',
+                      // Use calculated pixel offset
+                      transform: `translate(-50%, -50%) translate(${pixelOffset.x}px, ${pixelOffset.y}px) scale(${scale}) rotate(${rotate}deg)`
                     }}
                   />
                 </div>
@@ -668,8 +676,10 @@ export default function ProfilePage() {
             setSelectedImage(null);
           }}
           onChangePicture={(newImage) => setSelectedImage(newImage)}
+          // Pass the saved (relative) crop settings as initialCrop
+          initialCrop={data?.avatarCrop || null} 
           onDelete={async () => {
-            await mutation.mutateAsync({ avatarUrl: null });
+            await mutation.mutateAsync({ avatarUrl: null, avatarCrop: null }); // Clear crop on delete
             setShowProfileEditor(false);
             setSelectedImage(null);
           }}

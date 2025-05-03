@@ -180,8 +180,23 @@ const Navbar = () => {
   const ProfileDisplay = () => {
     const displayData = fullUserData || user;
     if (!displayData) return null;
-    const crop = displayData.avatarCrop || { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
-    const size = 40;
+
+    // Default crop if none saved
+    const defaultCrop = { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
+    // Get saved relative crop settings
+    const savedCrop = displayData.avatarCrop || defaultCrop;
+    const relativeOffset = savedCrop.offset || defaultCrop.offset;
+    const scale = savedCrop.scale || defaultCrop.scale;
+    const rotate = savedCrop.rotate || defaultCrop.rotate;
+
+    const size = 40; // Size of the avatar in Navbar
+
+    // Convert relative offset to pixels for this size
+    const pixelOffset = {
+      x: relativeOffset.x * size,
+      y: relativeOffset.y * size,
+    };
+
     if (displayData.profilePicture || displayData.avatarUrl) {
       return (
         <div
@@ -198,19 +213,14 @@ const Navbar = () => {
             src={displayData.profilePicture || displayData.avatarUrl}
             alt={`${displayData.firstName || 'User'}'s profile`}
             style={{
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '100%',
-              maxHeight: '100%',
-              transform: `
-                translate(${crop.offset.x}px, ${crop.offset.y}px)
-                rotate(${crop.rotate}deg)
-                translate(-50%, -50%)
-              `,
-              objectFit: 'cover',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
               position: 'absolute',
               top: '50%',
               left: '50%',
+              // Use the calculated pixelOffset for this size
+              transform: `translate(-50%, -50%) translate(${pixelOffset.x}px, ${pixelOffset.y}px) scale(${scale}) rotate(${rotate}deg)`
             }}
           />
         </div>

@@ -3,10 +3,17 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { canvasPreview } from './utils/canvasPreview';
 
-const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDelete }) => {
-  const [scale, setScale] = useState(1);
-  const [rotate, setRotate] = useState(0);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDelete, initialCrop }) => {
+  const editorSize = 320; // Define editor size constant
+
+  // Convert initial relative offset to pixels for editor state
+  const initialPixelOffset = initialCrop?.offset 
+    ? { x: initialCrop.offset.x * editorSize, y: initialCrop.offset.y * editorSize } 
+    : { x: 0, y: 0 };
+
+  const [scale, setScale] = useState(initialCrop?.scale || 1);
+  const [rotate, setRotate] = useState(initialCrop?.rotate || 0);
+  const [offset, setOffset] = useState(initialPixelOffset); // Use pixel offset internally
   const imgRef = useRef(null);
   const fileInputRef = useRef(null);
   const dragging = useRef(false);
@@ -27,7 +34,8 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDele
     if (!dragging.current) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
-    setOffset({ x: lastOffset.current.x + dx, y: lastOffset.current.y + dy });
+    const newPixelOffset = { x: lastOffset.current.x + dx, y: lastOffset.current.y + dy };
+    setOffset(clampOffset(newPixelOffset, scale));
   };
   const handleMouseUp = () => {
     dragging.current = false;
@@ -48,10 +56,78 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDele
     reader.readAsDataURL(file);
   };
 
+  // Helper to get image natural size and fit it in the circle
+  const getDefaultOffsetAndScale = (img) => {
+    if (!img) return { offset: { x: 0, y: 0 }, scale: 1 };
+    const containerSize = 320;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = Math.min(containerSize / iw, containerSize / ih);
+    // Center the image
+    const x = 0;
+    const y = 0;
+    return { offset: { x, y }, scale };
+  };
+
+  // Only apply default fit/center if no initialCrop
+  React.useEffect(() => {
+    // Use pixel offset for default calculation as well
+    if (imgRef.current && imageLoaded && !initialCrop) {
+      const { offset: defaultPixelOffset, scale: defaultScale } = getDefaultOffsetAndScale(imgRef.current);
+      setOffset(defaultPixelOffset);
+      setScale(defaultScale);
+    }
+    // eslint-disable-next-line
+  }, [imageLoaded, initialCrop]);
+
+  // Clamp function continues to work with pixel offsets
+  const clampOffset = (pixelOffset, scale) => {
+    if (!imgRef.current) return pixelOffset;
+    const containerSize = editorSize; // Use editorSize
+    const iw = imgRef.current.naturalWidth * scale;
+    const ih = imgRef.current.naturalHeight * scale;
+    const minX = Math.min(0, containerSize / 2 - iw / 2);
+    const maxX = Math.max(0, iw / 2 - containerSize / 2);
+    const minY = Math.min(0, containerSize / 2 - ih / 2);
+    const maxY = Math.max(0, ih / 2 - containerSize / 2);
+    return {
+      x: Math.max(minX, Math.min(pixelOffset.x, maxX)),
+      y: Math.max(minY, Math.min(pixelOffset.y, maxY)),
+    };
+  };
+
+  // Update offset (pixels) when dragging or zooming
+  React.useEffect(() => {
+    setOffset((prevPixelOffset) => clampOffset(prevPixelOffset, scale));
+    // eslint-disable-next-line
+  }, [scale]);
+
+  // Fetch image as blob if editing an existing image (URL)
+  React.useEffect(() => {
+    if (image && typeof image === 'string' && !originalFile && imageLoaded) {
+      // Only fetch if it's a URL (not a data URL or File)
+      if (!image.startsWith('data:')) {
+        fetch(image)
+          .then(res => res.blob())
+          .then(blob => {
+            // Try to preserve the file type and name
+            const file = new File([blob], 'profile-picture', { type: blob.type });
+            setOriginalFile(file);
+          });
+      }
+    }
+    // eslint-disable-next-line
+  }, [image, imageLoaded]);
+
+  // Convert pixel offset to relative offset ON SAVE
   async function onDownloadCropClick() {
     if (!originalFile || !imageLoaded) return;
+    const relativeOffset = {
+      x: offset.x / editorSize,
+      y: offset.y / editorSize,
+    };
     onSave(originalFile, {
-      offset,
+      offset: relativeOffset, // Save relative offset
       scale,
       rotate
     });
@@ -113,17 +189,16 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDele
                   src={image}
                   alt="Profile preview"
                   style={{
-                    width: 'auto',
-                    height: 'auto',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    transform: `translate(${offset.x}px, ${offset.y}px) rotate(${rotate}deg)`,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
                     userSelect: 'none',
                     pointerEvents: 'none',
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    transform: `translate(${offset.x}px, ${offset.y}px) rotate(${rotate}deg) translate(-50%, -50%)`,
+                    // Use the internal pixel offset state for editor preview
+                    transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${scale}) rotate(${rotate}deg)`
                   }}
                   draggable={false}
                   onLoad={() => setImageLoaded(true)}

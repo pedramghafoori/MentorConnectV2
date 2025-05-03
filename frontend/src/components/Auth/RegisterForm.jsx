@@ -380,23 +380,37 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   // Helper to get preview (cropped or fallback)
   const getAvatarPreview = () => {
     if (profileImage && avatarPreviewUrl) {
+      // Use avatarCrop state which should hold relative offset
+      const defaultCrop = { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
+      const savedCrop = avatarCrop || defaultCrop;
+      const relativeOffset = savedCrop.offset || defaultCrop.offset;
+      const scale = savedCrop.scale || defaultCrop.scale;
+      const rotate = savedCrop.rotate || defaultCrop.rotate;
+
+      const size = 80; // Size of the avatar in RegisterForm
+
+      // Convert relative offset to pixels for this size
+      const pixelOffset = {
+        x: relativeOffset.x * size,
+        y: relativeOffset.y * size,
+      };
+
       return (
-        <div className="register-avatar-preview">
+        <div className="register-avatar-preview" style={{ 
+          width: size, height: size, borderRadius: '50%', overflow: 'hidden', position: 'relative', background: '#f0f0f0'
+        }}>
           <img
             src={avatarPreviewUrl}
             alt="Profile preview"
             style={{
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '100%',
-              maxHeight: '100%',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              background: '#f0f0f0',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
               position: 'absolute',
               top: '50%',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              // Use calculated pixel offset
+              transform: `translate(-50%, -50%) translate(${pixelOffset.x}px, ${pixelOffset.y}px) scale(${scale}) rotate(${rotate}deg)`
             }}
           />
         </div>
@@ -404,7 +418,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     }
     // Fallback avatar
     return (
-      <div className="register-avatar-preview">
+      <div className="register-avatar-preview" style={{ 
+        width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', position: 'relative', background: 'transparent'
+      }}>
         <AvatarFallback
           firstName={firstName}
           size={80}
@@ -414,9 +430,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   };
 
   // Handle image/crop from editor
-  const handlePictureSave = (file, crop, previewUrl) => {
+  const handlePictureSave = (file, relativeCrop, previewUrl) => {
     setProfileImage(file);
-    setAvatarCrop(crop);
+    setAvatarCrop(relativeCrop); // Store the relative crop
     setAvatarPreviewUrl(previewUrl);
     setShowPictureEditor(false);
   };
@@ -756,11 +772,10 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                 onClose={() => setShowPictureEditor(false)}
                 onSave={handlePictureSave}
                 onDelete={handlePictureDelete}
-                initialImage={profileImage}
+                initialImage={profileImage ? avatarPreviewUrl : null}
                 initialCrop={avatarCrop}
                 firstName={firstName}
                 lastName={lastName}
-                size={160}
               />
             )}
           </div>

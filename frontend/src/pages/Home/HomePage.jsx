@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import Modal from '../../components/Modal';
@@ -7,6 +7,8 @@ import RegisterForm from '../../components/Auth/RegisterForm';
 import "../../css/HomePage.css";
 import mentorHero from "../../assets/mentor-hero1.png";
 import FeaturedUsersCarousel from './FeaturedUsersCarousel';
+import CanadaMentorMap from "../../../components/CanadaMentorMap.jsx";
+import { cityCoordinates } from '../../../components/cityCoordinates';
 
 // Define new certification sections and mapping
 const EXAMINER_CERTS = [
@@ -29,6 +31,7 @@ const HomePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedCertifications, setSelectedCertifications] = useState([]);
+  const [mentorUsers, setMentorUsers] = useState([]);
 
   const toggleStream = (option) => {
     setStreams(prev =>
@@ -71,6 +74,33 @@ const HomePage = () => {
     const certObjects = selectedCertifications.map(certValue => ({ type: certValue }));
     navigate(`/dashboard/search?certifications=${encodeURIComponent(JSON.stringify(certObjects))}&city=${encodeURIComponent(city)}`);
   };
+
+  useEffect(() => {
+    // Fetch all users with city, province, and avatarUrl
+    fetch('/api/users')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setMentorUsers(data.filter(u => u.city && u.province && u.avatarUrl));
+        } else {
+          setMentorUsers([]);
+          console.error('API did not return an array:', data);
+        }
+      });
+  }, []);
+
+  const usersWithCoords = mentorUsers
+    .map(user => {
+      const key = `${user.city},${user.province}`;
+      const coords = cityCoordinates[key];
+      if (!coords) return null;
+      return {
+        ...user,
+        latitude: coords.lat,
+        longitude: coords.lng,
+      };
+    })
+    .filter(Boolean);
 
   return (
     <div className="home-container">
@@ -172,6 +202,13 @@ const HomePage = () => {
 
         {/* Featured Carousel at the end for mobile stacking */}
         <FeaturedUsersCarousel />
+        {/* Mentor Map Section */}
+        <div style={{ margin: '3rem 0' }}>
+          <h2 style={{ textAlign: 'center', fontWeight: 700, fontSize: '2.2rem', marginBottom: '1.5rem' }}>
+            Mentors Across Canada
+          </h2>
+          <CanadaMentorMap users={usersWithCoords} />
+        </div>
       </div>
 
       {/* Auth Modals */}

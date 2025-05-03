@@ -386,4 +386,25 @@ router.get('/:userId/review-summary', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/users - Get all users, optionally filter by location
+router.get('/', async (req, res) => {
+  try {
+    let filter = {};
+    if (req.query.withLocation) {
+      filter = {
+        city: { $exists: true, $ne: '' },
+        province: { $exists: true, $ne: '' },
+        avatarUrl: { $exists: true, $ne: '' }
+      };
+    }
+    console.log('[GET /api/users] filter:', filter);
+    const users = await User.find(filter).select('firstName lastName avatarUrl city province _id');
+    console.log(`[GET /api/users] found users: ${users.length}`);
+    res.json(users);
+  } catch (error) {
+    console.error('[GET /api/users] Error:', error);
+    res.status(500).json({ message: 'Error fetching users', error });
+  }
+});
+
 export default router; 

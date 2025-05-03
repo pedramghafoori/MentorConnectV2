@@ -14,7 +14,7 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-s
 // Register a new user
 export const register = async (req: Request, res: Response) => {
     try {
-        const { email, password, role, city, province, aboutMe, lssId, firstName, lastName, termsAccepted } = req.body;
+        const { email, password, role, city, province, aboutMe, lssId, firstName, lastName, termsAccepted, languages, workplaces, certifications } = req.body;
         const userRole = role || 'MENTEE';
 
         // Check if terms are accepted
@@ -42,7 +42,10 @@ export const register = async (req: Request, res: Response) => {
             aboutMe,
             lssId,
             firstName,
-            lastName
+            lastName,
+            languages,
+            workplaces,
+            certifications
         });
 
         await user.save();

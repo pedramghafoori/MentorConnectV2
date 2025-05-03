@@ -55,6 +55,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [showLanguageSuggestions, setShowLanguageSuggestions] = useState(false);
   const languageInputRef = useRef(null);
 
+  const [certifications, setCertifications] = useState([]);
+
   const isStrongPassword = (pw) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
 
@@ -130,19 +132,22 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       setIsLssIdValid(true);
       
       try {
-        // Only fetch certifications if not already fetched
         if (!certificationsFetched) {
           setIsLoading(true);
           setError('');
-          
-          // Call the LSS scraper to fetch certifications
-          const response = await axios.post('/api/lss/fetchCertifications', { lssId });
-          
-          // Mark as fetched if successful
-          if (response.data.success) {
-            setCertificationsFetched(true);
+          // Fetch certifications using the same endpoint as the profile page
+          const response = await axios.post('/lss/certifications', { lssId });
+          if (response.data && response.data.certifications) {
+            // Transform to array of { type, years }
+            const certArray = Object.entries(response.data.certifications)
+              .filter(([_, cert]) => cert.hasCredential)
+              .map(([category, cert]) => ({
+                type: category,
+                years: cert.yearsOfExperience
+              }));
+            setCertifications(certArray);
           }
-          
+          setCertificationsFetched(true);
           setIsLoading(false);
         }
       } catch (err) {
@@ -203,6 +208,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         province: location.value.split(',')[1]?.trim() || '',
         languages: languages.map(lang => lang.value),
         workplaces,
+        certifications,
         termsAccepted
       });
       

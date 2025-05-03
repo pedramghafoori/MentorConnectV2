@@ -27,7 +27,7 @@ router.post('/me/profile-picture', authenticateToken, upload.single('file'), asy
   }
 
   try {
-    const file = req.file;
+    const file = req.file as Express.Multer.File & { location?: string };
     if (!file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
@@ -47,7 +47,12 @@ router.post('/me/profile-picture', authenticateToken, upload.single('file'), asy
     }
 
     // Update user with new profile picture URL
-    const newAvatarUrl = `/uploads/${file.filename}`;
+    let newAvatarUrl;
+    if (process.env.NODE_ENV === 'production') {
+      newAvatarUrl = file.location; // multer-s3 provides this
+    } else {
+      newAvatarUrl = `/uploads/${file.filename}`;
+    }
     user.avatarUrl = newAvatarUrl;
     await user.save();
 

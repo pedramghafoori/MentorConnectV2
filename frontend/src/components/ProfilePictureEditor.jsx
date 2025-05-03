@@ -3,7 +3,7 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { canvasPreview } from './utils/canvasPreview';
 
-const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture }) => {
+const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDelete }) => {
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState();
   const [scale, setScale] = useState(1);
@@ -135,19 +135,19 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture }) => {
           </ReactCrop>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between mb-2">
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={onCancel}
             className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Change Picture
+            Cancel
           </button>
           <div className="flex gap-4">
             <button
-              onClick={onCancel}
+              onClick={() => fileInputRef.current?.click()}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              Cancel
+              Change Picture
             </button>
             <button
               onClick={onDownloadCropClick}
@@ -156,6 +156,16 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture }) => {
               Save
             </button>
           </div>
+        </div>
+        <div className="mb-4">
+          <button
+            onClick={onDelete}
+            className="text-sm text-red-600 hover:underline focus:outline-none bg-transparent p-0"
+            style={{ marginTop: '0.5rem' }}
+            type="button"
+          >
+            Delete Picture
+          </button>
         </div>
 
         <input

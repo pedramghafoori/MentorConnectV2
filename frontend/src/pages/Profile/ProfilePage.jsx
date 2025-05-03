@@ -323,11 +323,15 @@ export default function ProfilePage() {
               className="cursor-pointer transition-transform hover:scale-105"
               onClick={() => setShowImageModal(true)}
             >
-              <img
-                src={data?.profilePicture || data?.avatarUrl}
-                alt={`${data?.firstName} ${data?.lastName}'s profile`}
-                className="w-40 h-40 rounded-full object-cover"
-              />
+              {data?.profilePicture || data?.avatarUrl ? (
+                <img
+                  src={data?.profilePicture || data?.avatarUrl}
+                  alt={`${data?.firstName} ${data?.lastName}'s profile`}
+                  className="w-40 h-40 rounded-full object-cover"
+                />
+              ) : (
+                <AvatarFallback firstName={data?.firstName} size={56} />
+              )}
             </div>
           )}
         </div>
@@ -612,6 +616,9 @@ export default function ProfilePage() {
             setSelectedImage(null);
           }}
           onChangePicture={(newImage) => setSelectedImage(newImage)}
+          onDelete={() => {
+            setSelectedImage(null);
+          }}
         />
       )}
     </div>

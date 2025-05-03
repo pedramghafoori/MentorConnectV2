@@ -3,6 +3,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
 import fs from 'fs';
+import { Request } from 'express';
 
 const ensureLocalDir = (dir: string) => {
   if (!fs.existsSync(dir)) {
@@ -27,10 +28,10 @@ export const makeStorageFactory = () => {
       s3: s3Client,
       bucket: process.env.DO_SPACES_BUCKET,
       acl: 'public-read',
-      metadata: (req, file, cb) => {
+      metadata: (req: Request, file: Express.Multer.File, cb: (error: any, metadata?: any) => void) => {
         cb(null, { fieldName: file.fieldname });
       },
-      key: (req, file, cb) => {
+      key: (req: Request, file: Express.Multer.File, cb: (error: any, key?: string) => void) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, `avatars/${uniqueSuffix}${path.extname(file.originalname)}`);
       }
@@ -41,10 +42,10 @@ export const makeStorageFactory = () => {
     ensureLocalDir(uploadDir);
 
     return multer.diskStorage({
-      destination: (req, file, cb) => {
+      destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
         cb(null, uploadDir);
       },
-      filename: (req, file, cb) => {
+      filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
       }

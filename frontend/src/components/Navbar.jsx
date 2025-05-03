@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '../features/profile/updateProfile';
 import Container from './Container.jsx';
 import CreateCourseModal from './Course/CreateCourseModal';
+import AvatarFallback from './AvatarFallback';
 
 const ALL_CERTIFICATIONS = [
   { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
@@ -180,33 +181,22 @@ const Navbar = () => {
     const displayData = fullUserData || user;
     if (!displayData) return null;
 
-    const initial = displayData.firstName ? displayData.firstName[0].toUpperCase() : 'U';
-    
-    if (imageLoadError) {
+    if (displayData.profilePicture || displayData.avatarUrl) {
       return (
-        <div className="w-full h-full flex items-center justify-center bg-[#d33] text-white text-lg font-semibold">
-          {initial}
-        </div>
-      );
-    }
-
-    return (
-      <>
         <img
           src={displayData.profilePicture || displayData.avatarUrl}
           alt={`${displayData.firstName || 'User'}'s profile`}
           className="w-full h-full object-cover"
-          onError={() => setImageLoadError(true)}
+          onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
         />
-        {/* Backup initials display while image loads */}
-        <div 
-          className="absolute inset-0 flex items-center justify-center bg-[#d33] text-white text-lg font-semibold transition-opacity duration-200" 
-          style={{ opacity: imageLoadError ? 1 : 0 }}
-        >
-          {initial}
+      );
+    } else {
+      return (
+        <div className="w-full h-full flex items-center justify-center">
+          <AvatarFallback firstName={displayData.firstName} size={40} />
         </div>
-      </>
-    );
+      );
+    }
   };
 
   // Settings toggles handlers

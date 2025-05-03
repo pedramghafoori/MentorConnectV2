@@ -8,6 +8,7 @@ import AvatarUpload from '../../features/profile/AvatarUpload';
 import ReviewsSection from '../../features/profile/ReviewsSection';
 import ImageModal from '../../components/ImageModal';
 import ProfilePictureEditor from '../../components/ProfilePictureEditor';
+import AvatarFallback from '../../components/AvatarFallback';
 import '../../css/profile.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { uploadPicture } from '../../features/profile/uploadPicture';
@@ -312,25 +313,29 @@ export default function ProfilePage() {
                 setShowProfileEditor(true);
               }}
             >
-              <img
-                src={data?.profilePicture || data?.avatarUrl}
-                alt="Profile"
-                className="w-40 h-40 rounded-full object-cover"
-              />
+              {(data?.profilePicture || data?.avatarUrl) ? (
+                <img
+                  src={data?.profilePicture || data?.avatarUrl}
+                  alt="Profile"
+                  className="w-40 h-40 rounded-full object-cover"
+                />
+              ) : (
+                <AvatarFallback firstName={data?.firstName} size={160} />
+              )}
             </div>
           ) : (
             <div 
               className="cursor-pointer transition-transform hover:scale-105"
               onClick={() => setShowImageModal(true)}
             >
-              {data?.profilePicture || data?.avatarUrl ? (
+              {(data?.profilePicture || data?.avatarUrl) ? (
                 <img
                   src={data?.profilePicture || data?.avatarUrl}
                   alt={`${data?.firstName} ${data?.lastName}'s profile`}
                   className="w-40 h-40 rounded-full object-cover"
                 />
               ) : (
-                <AvatarFallback firstName={data?.firstName} size={56} />
+                <AvatarFallback firstName={data?.firstName} size={160} />
               )}
             </div>
           )}
@@ -616,7 +621,9 @@ export default function ProfilePage() {
             setSelectedImage(null);
           }}
           onChangePicture={(newImage) => setSelectedImage(newImage)}
-          onDelete={() => {
+          onDelete={async () => {
+            await mutation.mutateAsync({ avatarUrl: null });
+            setShowProfileEditor(false);
             setSelectedImage(null);
           }}
         />

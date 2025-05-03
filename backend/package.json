@@ -13,6 +13,7 @@
     "@aws-sdk/client-s3": "^3.530.0",
     "@prisma/client": "^5.15.0",
     "@types/mongoose": "^5.11.97",
+    "aws-sdk": "^2.1692.0",
     "bcryptjs": "^2.4.3",
     "chromedriver": "^135.0.4",
     "cookie-parser": "^1.4.7",

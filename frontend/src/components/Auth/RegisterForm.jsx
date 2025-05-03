@@ -7,6 +7,8 @@ import CANADIAN_CITIES from '../../lib/cities.json';
 import LANGUAGES from '../../lib/languages.json';
 import axios from 'axios';
 import './RegisterForm.css';
+import ProfilePictureEditor from '../../components/ProfilePictureEditor';
+import AvatarFallback from '../../components/AvatarFallback';
 
 const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const { register } = useAuth();
@@ -56,6 +58,12 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const languageInputRef = useRef(null);
 
   const [certifications, setCertifications] = useState([]);
+
+  // Add state for profile picture
+  const [profileImage, setProfileImage] = useState(null); // File or null
+  const [avatarCrop, setAvatarCrop] = useState(null); // { offset, scale, rotate } or null
+  const [showPictureEditor, setShowPictureEditor] = useState(false);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState('');
 
   const isStrongPassword = (pw) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
@@ -157,6 +165,17 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       }
     }
     
+    if (currentStep === 4) {
+      setError('');
+      setAnimationDirection('slide-left');
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentStep(prev => prev + 1);
+        setIsAnimating(false);
+      }, 300);
+      return;
+    }
+    
     setError('');
     setAnimationDirection('slide-left');
     setIsAnimating(true);
@@ -196,6 +215,16 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     }
     
     try {
+      let avatarUrl = '';
+      if (profileImage) {
+        // Upload image to backend (assume /users/avatar endpoint returns URL)
+        const formData = new FormData();
+        formData.append('avatar', profileImage);
+        const uploadRes = await axios.post('/users/avatar', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        avatarUrl = uploadRes.data.url;
+      }
       const res = await register({
         lssId,
         firstName,
@@ -209,7 +238,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         languages: languages.map(lang => lang.value),
         workplaces,
         certifications,
-        termsAccepted
+        termsAccepted,
+        avatar: avatarUrl,
+        avatarCrop: avatarCrop || null,
       });
       
       setSuccess(res.message || 'Registration successful!');
@@ -346,6 +377,56 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     };
   }, []);
 
+  // Helper to get preview (cropped or fallback)
+  const getAvatarPreview = () => {
+    if (profileImage && avatarPreviewUrl) {
+      return (
+        <div className="register-avatar-preview">
+          <img
+            src={avatarPreviewUrl}
+            alt="Profile preview"
+            style={{
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '100%',
+              maxHeight: '100%',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              background: '#f0f0f0',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+        </div>
+      );
+    }
+    // Fallback avatar
+    return (
+      <div className="register-avatar-preview">
+        <AvatarFallback
+          firstName={firstName}
+          size={80}
+        />
+      </div>
+    );
+  };
+
+  // Handle image/crop from editor
+  const handlePictureSave = (file, crop, previewUrl) => {
+    setProfileImage(file);
+    setAvatarCrop(crop);
+    setAvatarPreviewUrl(previewUrl);
+    setShowPictureEditor(false);
+  };
+  const handlePictureDelete = () => {
+    setProfileImage(null);
+    setAvatarCrop(null);
+    setAvatarPreviewUrl('');
+    setShowPictureEditor(false);
+  };
+
   return (
     <div className="register-container">
       <h2 className="register-title">Create account</h2>
@@ -355,7 +436,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         <div className="register-progress-bar">
           <div 
             className="register-progress-fill" 
-            style={{ width: `${(currentStep / 4) * 100}%` }}
+            style={{ width: `${(currentStep / 5) * 100}%` }}
           ></div>
         </div>
       </div>
@@ -628,6 +709,63 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
           </div>
           
           <div className={getStepClasses(4)}>
+            <h3 className="register-step-title">Add a profile picture (optional)</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+              {getAvatarPreview()}
+              <button
+                type="button"
+                className="register-button-secondary"
+                style={{ marginTop: 8 }}
+                onClick={() => setShowPictureEditor(true)}
+              >
+                {profileImage ? 'Edit Picture' : 'Upload Picture'}
+              </button>
+              {profileImage && (
+                <button
+                  type="button"
+                  className="register-link"
+                  style={{ color: '#d00', marginTop: 4 }}
+                  onClick={handlePictureDelete}
+                >
+                  Remove Picture
+                </button>
+              )}
+              <p className="register-helper-text" style={{ marginTop: 8 }}>
+                You can skip this step and add a picture later in your profile settings.
+              </p>
+            </div>
+            <div className="register-button-group">
+              <button 
+                type="button" 
+                onClick={goToPrevStep}
+                className="register-button-secondary"
+              >
+                Back
+              </button>
+              <button 
+                type="button" 
+                onClick={goToNextStep}
+                className="register-button-primary"
+              >
+                Next
+              </button>
+            </div>
+            {showPictureEditor && (
+              <ProfilePictureEditor
+                open={showPictureEditor}
+                onClose={() => setShowPictureEditor(false)}
+                onSave={handlePictureSave}
+                onDelete={handlePictureDelete}
+                initialImage={profileImage}
+                initialCrop={avatarCrop}
+                firstName={firstName}
+                lastName={lastName}
+                size={160}
+              />
+            )}
+          </div>
+          
+          <div className={getStepClasses(5)}>
             <h3 className="register-step-title">Let's set a password for your account</h3>
             
             <div className="register-input-group">
@@ -700,7 +838,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               </button>
             </div>
             
-            {/* Progress bar removed from step 4 */}
+            {/* Progress bar removed from step 5 */}
           </div>
         </div>
         

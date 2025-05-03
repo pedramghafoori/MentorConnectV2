@@ -198,16 +198,19 @@ const Navbar = () => {
             src={displayData.profilePicture || displayData.avatarUrl}
             alt={`${displayData.firstName || 'User'}'s profile`}
             style={{
-              width: `${size * crop.scale}px`,
-              height: `${size * crop.scale}px`,
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '100%',
+              maxHeight: '100%',
               transform: `
                 translate(${crop.offset.x}px, ${crop.offset.y}px)
                 rotate(${crop.rotate}deg)
+                translate(-50%, -50%)
               `,
               objectFit: 'cover',
               position: 'absolute',
-              top: 0,
-              left: 0,
+              top: '50%',
+              left: '50%',
             }}
           />
         </div>

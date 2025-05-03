@@ -113,11 +113,17 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDele
                   src={image}
                   alt="Profile preview"
                   style={{
-                    width: 320 * scale,
-                    height: 320 * scale,
+                    width: 'auto',
+                    height: 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
                     transform: `translate(${offset.x}px, ${offset.y}px) rotate(${rotate}deg)`,
                     userSelect: 'none',
                     pointerEvents: 'none',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(${offset.x}px, ${offset.y}px) rotate(${rotate}deg) translate(-50%, -50%)`,
                   }}
                   draggable={false}
                   onLoad={() => setImageLoaded(true)}

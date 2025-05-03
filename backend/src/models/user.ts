@@ -149,7 +149,7 @@ const userSchema = new Schema<IUser>({
   },
   expectedMenteeInvolvement: {
     type: String,
-    enum: ['', 'full-apprentice', 'exam-only'],
+    enum: ['', 'full-course', 'exam-only'],
     default: ''
   },
   prepSupportFee: {

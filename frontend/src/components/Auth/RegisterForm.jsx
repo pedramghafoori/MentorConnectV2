@@ -467,28 +467,28 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             
             <div className="register-input-group">
               <label htmlFor="firstName" className="register-label">First Name</label>
-              <input
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
+          <input
+            id="firstName"
+            type="text"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
                 className="register-input"
-                required
-              />
-            </div>
-            
+            required
+          />
+        </div>
+
             <div className="register-input-group">
               <label htmlFor="lastName" className="register-label">Last Name</label>
-              <input
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
+          <input
+            id="lastName"
+            type="text"
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
                 className="register-input"
-                required
-              />
-            </div>
-            
+            required
+          />
+        </div>
+
             <button 
               type="button" 
               onClick={goToNextStep}
@@ -506,14 +506,14 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             <div className="register-input-group">
               <label htmlFor="lssId" className="register-label">LSS ID</label>
               
-              <input
-                id="lssId"
-                type="text"
-                value={lssId}
+          <input
+            id="lssId"
+            type="text"
+            value={lssId}
                 onChange={handleLssIdChange}
                 className={`register-input ${!isLssIdValid ? 'register-input-invalid' : ''}`}
                 maxLength={6}
-                required
+            required
               />
               <p className="register-helper-text">
                 We will use this to verify your profile and fetch your certifications for you.
@@ -523,32 +523,32 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   LSS ID must be exactly 6 characters long.
                 </p>
               )}
-            </div>
-            
+        </div>
+
             <div className="register-input-group">
               <label htmlFor="email" className="register-label">Email</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
                 className="register-input"
-                required
-              />
-            </div>
-            
+            required
+          />
+        </div>
+
             <div className="register-input-group">
               <label htmlFor="phone" className="register-label">Phone Number</label>
-              <input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
+          <input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
                 className="register-input"
-                required
-              />
-            </div>
-            
+            required
+          />
+        </div>
+
             <div className="register-button-group">
               <button 
                 type="button" 
@@ -778,42 +778,42 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                 lastName={lastName}
               />
             )}
-          </div>
-          
+        </div>
+
           <div className={getStepClasses(5)}>
             <h3 className="register-step-title">Let's set a password for your account</h3>
             
             <div className="register-input-group">
               <label htmlFor="password" className="register-label">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
                 className="register-input"
-              />
+          />
               <p className="register-helper-text">
                 Password must be at least 8 characters and include uppercase, lowercase, and a number.
               </p>
-            </div>
-            
+        </div>
+
             <div className="register-input-group">
               <label htmlFor="confirmPassword" className="register-label">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                required
+          <input
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
                 className="register-input"
-              />
-            </div>
-            
+          />
+        </div>
+
             <div className="register-input-group">
               <label className="register-terms-label">
-                <input
-                  type="checkbox"
+                  <input
+                    type="checkbox"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
                   className="register-terms-checkbox"
@@ -828,10 +828,10 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   <Link to="/mentor-agreement" className="register-link" target="_blank" rel="noopener noreferrer">
                     User Agreement
                   </Link>
-                </span>
-              </label>
-            </div>
-            
+                  </span>
+                </label>
+        </div>
+
             {error && <p className="register-error-message">{error}</p>}
             {success && <p className="register-success-text">{success}</p>}
             
@@ -843,20 +843,20 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               >
                 Back
               </button>
-              
-              <button 
-                type="submit"
+        
+        <button 
+          type="submit"
                 className="register-button-primary"
                 disabled={!termsAccepted}
-              >
-                Register
-              </button>
+        >
+          Register
+        </button>
             </div>
             
             {/* Progress bar removed from step 5 */}
           </div>
         </div>
-        
+
         <p className="register-login-text">
           Already have an account?{' '}
           <button

@@ -5,7 +5,7 @@ export default function Container({ children, style = {}, ...props }) {
   return (
     <div
       style={{
-        maxWidth: '1280px',
+        maxWidth: '1600px',
         margin: '0 auto',
         paddingLeft: '1.5rem',
         paddingRight: '1.5rem',

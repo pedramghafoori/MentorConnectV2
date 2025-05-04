@@ -111,21 +111,24 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Check if user is logged in and is a mentor
     if (!user || user.role !== 'MENTOR') {
-      console.error('User must be logged in as a mentor to create a course');
+      console.error('User must be logged in as a mentor to create an opportunity');
       return;
     }
 
     try {
-      const response = await api.post('/courses', {
-        ...formData,
-        mentorId: user._id
+      const response = await api.post('/opportunities', {
+        title: formData.title,
+        notes: formData.notes || '',
+        city: user.city,
+        price: formData.price,
+        createdAt: new Date(),
+        mentor: user._id
       });
 
       onClose();
     } catch (error) {
-      console.error('Error creating course:', error);
+      console.error('Error creating opportunity:', error);
     }
   };
 
@@ -176,7 +179,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
         <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Create New Course</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Create New Opportunity</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -214,7 +217,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
               <div className="space-y-6">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                    Course
+                    Opportunity
                   </label>
                   <select
                     id="title"
@@ -224,11 +227,26 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
                     required
                   >
-                    <option value="">Select a course</option>
+                    <option value="">Select a opportunity</option>
                     {COURSE_OPTIONS.map(course => (
                       <option key={course} value={course}>{course}</option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                    Notes (optional)
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    value={formData.notes || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
+                    placeholder="Add any notes about this opportunity (optional)"
+                    rows={3}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -298,7 +316,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                   return (
                     <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-gray-700">
-                        Based on our data, Mentors typically charge ${selected.feeRange.min} – ${selected.feeRange.max} for this course.
+                        Based on our data, Mentors typically charge ${selected.feeRange.min} – ${selected.feeRange.max} for this opportunity.
                       </p>
                       <p className="mt-2 text-gray-600">
                         We encourage you to set a fee that fairly reflects the time you'll spend preparing your mentee.
@@ -315,7 +333,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-4">
-                      Course Type
+                      Opportunity Type
                     </label>
                     <div className="flex gap-6">
                       <label className="flex items-center">
@@ -334,7 +352,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                           }))}
                           className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
                         />
-                        <span className="ml-2 text-sm text-gray-700">Full Course</span>
+                        <span className="ml-2 text-sm text-gray-700">Full Opportunity</span>
                       </label>
                       <label className="flex items-center">
                         <input
@@ -565,7 +583,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                   type="submit"
                   className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#d33] hover:bg-[#c22] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d33]"
                 >
-                  Create Course
+                  Create Opportunity
                 </button>
               )}
             </div>

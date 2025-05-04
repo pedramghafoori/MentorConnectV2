@@ -10,11 +10,14 @@ import MenteeSchedule from './mentee/Schedule';
 import UserSearchResults from './UserSearchResults';
 import BookingPage from './mentee/BookingPage';
 import MyCourses from './mentor/MyCourses';
+import Dashboard from './Dashboard';
 
 const DashboardRouter = () => {
   return (
     <DashboardShell>
       <Routes>
+        <Route index element={<Dashboard />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/mentor/requests" element={<Requests />} />
         <Route path="/mentor/mentees" element={<Mentees />} />
         <Route path="/mentor/mentors" element={<Mentors />} />

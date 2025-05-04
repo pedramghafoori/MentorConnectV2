@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 import { FaTimes } from 'react-icons/fa';
 import Select from 'react-select';
 import CANADIAN_CITIES from '../../lib/cities.json';

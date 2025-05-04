@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProfilePage from './pages/Profile/ProfilePage';
-import DashboardRouter from './pages/Dashboard/DashboardRouter';
+import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import HomePage from './pages/Home/HomePage';
 import Navbar from './components/Navbar';
 import SettingsPage from './pages/Settings/SettingsPage.jsx';
@@ -24,7 +24,7 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
-            <Route path="/dashboard/*" element={user ? <DashboardRouter /> : <Navigate to="/" />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
             <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/mentor-agreement" element={<MentorAgreementPage />} />

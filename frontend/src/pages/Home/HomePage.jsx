@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal';
 import LoginForm from '../../components/Auth/LoginForm';
 import RegisterForm from '../../components/Auth/RegisterForm';
@@ -9,6 +9,7 @@ import mentorHero from "../../assets/mentor-hero1.png";
 import FeaturedUsersCarousel from './FeaturedUsersCarousel';
 import CanadaMentorMap from "../../../components/CanadaMentorMap.jsx";
 import { cityCoordinates } from '../../../components/cityCoordinates';
+import Container from '../../components/Container';
 
 // Define new certification sections and mapping
 const EXAMINER_CERTS = [
@@ -104,112 +105,114 @@ const HomePage = () => {
 
   return (
     <div className="home-container">
-      <div className="content-wrapper">
-        {/* Search Card */}
-        <div className="search-card">
-          <div className="search-card-inner">
-            <h1 className="search-title">
-              Find Mentors Near You
-            </h1>
-            <p className="search-description">
-              Whether you're seeking guidance on a subject, career advice, or skill development—find your mentor here.
-            </p>
+      <Container>
+        <div className="content-wrapper">
+          {/* Search Card */}
+          <div className="search-card">
+            <div className="search-card-inner">
+              <h1 className="search-title">
+                Find Mentors Near You
+              </h1>
+              <p className="search-description">
+                Whether you're seeking guidance on a subject, career advice, or skill development—find your mentor here.
+              </p>
 
-            <form onSubmit={handleSearch} className="search-form">
-              {/* Examiners Section */}
-              <div className="form-section cert-section examiner-section">
-                <label className="form-label mb-2">Examiner Mentors</label>
-                <div className="flex gap-2 flex-wrap mb-2">
-                  {EXAMINER_CERTS.map(cert => (
+              <form onSubmit={handleSearch} className="search-form">
+                {/* Examiners Section */}
+                <div className="form-section cert-section examiner-section">
+                  <label className="form-label mb-2">Examiner Mentors</label>
+                  <div className="flex gap-2 flex-wrap mb-2">
+                    {EXAMINER_CERTS.map(cert => (
+                      <button
+                        key={cert.value}
+                        type="button"
+                        className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                        onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
+                          ? selectedCertifications.filter(c => c !== cert.value)
+                          : [...selectedCertifications, cert.value])}
+                      >
+                        {cert.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Separator */}
+                <div className="cert-separator" />
+                {/* Instructor Trainers Section */}
+                <div className="form-section cert-section it-section">
+                  <label className="form-label mb-2">Instructor Trainers</label>
+                  <div className="flex gap-2 flex-wrap mb-2">
+                    {IT_CERTS.map(cert => (
+                      <button
+                        key={cert.value}
+                        type="button"
+                        className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
+                        onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
+                          ? selectedCertifications.filter(c => c !== cert.value)
+                          : [...selectedCertifications, cert.value])}
+                      >
+                        {cert.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Location Section */}
+                <div className="form-section location-section">
+                  <label className="form-label">Location</label>
+                  <div className="location-row">
                     <button
-                      key={cert.value}
                       type="button"
-                      className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
-                      onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
-                        ? selectedCertifications.filter(c => c !== cert.value)
-                        : [...selectedCertifications, cert.value])}
+                      onClick={handleLocate}
+                      disabled={locating}
+                      className="locate-button"
                     >
-                      {cert.label}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="locate-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
                     </button>
-                  ))}
-                </div>
-              </div>
-              {/* Separator */}
-              <div className="cert-separator" />
-              {/* Instructor Trainers Section */}
-              <div className="form-section cert-section it-section">
-                <label className="form-label mb-2">Instructor Trainers</label>
-                <div className="flex gap-2 flex-wrap mb-2">
-                  {IT_CERTS.map(cert => (
-                    <button
-                      key={cert.value}
-                      type="button"
-                      className={`px-3 py-1 rounded-full border text-sm ${selectedCertifications.includes(cert.value) ? 'bg-[#d33] text-white border-[#d33]' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
-                      onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
-                        ? selectedCertifications.filter(c => c !== cert.value)
-                        : [...selectedCertifications, cert.value])}
+                    <select
+                      value={city}
+                      onChange={e => setCity(e.target.value)}
+                      className="location-select"
                     >
-                      {cert.label}
-                    </button>
-                  ))}
+                      <option>Toronto</option>
+                      <option>Ottawa</option>
+                      <option>Vancouver</option>
+                      <option>Calgary</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              {/* Location Section */}
-              <div className="form-section location-section">
-                <label className="form-label">Location</label>
-                <div className="location-row">
-                  <button
-                    type="button"
-                    onClick={handleLocate}
-                    disabled={locating}
-                    className="locate-button"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="locate-icon" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                  <select
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    className="location-select"
-                  >
-                    <option>Toronto</option>
-                    <option>Ottawa</option>
-                    <option>Vancouver</option>
-                    <option>Calgary</option>
-                  </select>
-                </div>
-              </div>
-              {/* Search Button */}
-              <button
-                type="submit"
-                className="search-button mt-4"
-              >
-                Search
-              </button>
-            </form>
+                {/* Search Button */}
+                <button
+                  type="submit"
+                  className="search-button mt-4"
+                >
+                  Search
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Hero Image */}
+          <div className="hero-image-container">
+            <img
+              src={mentorHero}
+              alt="Mentor guiding student beside pool"
+              className="hero-image"
+            />
+          </div>
+
+          {/* Featured Carousel at the end for mobile stacking */}
+          <FeaturedUsersCarousel />
+          {/* Mentor Map Section */}
+          <div style={{ margin: '3rem 0' }}>
+            <h2 style={{ textAlign: 'center', fontWeight: 700, fontSize: '2.2rem', marginBottom: '1.5rem' }}>
+              Mentors Across Canada
+            </h2>
+            <CanadaMentorMap users={usersWithCoords} />
           </div>
         </div>
-
-        {/* Hero Image */}
-        <div className="hero-image-container">
-          <img
-            src={mentorHero}
-            alt="Mentor guiding student beside pool"
-            className="hero-image"
-          />
-        </div>
-
-        {/* Featured Carousel at the end for mobile stacking */}
-        <FeaturedUsersCarousel />
-        {/* Mentor Map Section */}
-        <div style={{ margin: '3rem 0' }}>
-          <h2 style={{ textAlign: 'center', fontWeight: 700, fontSize: '2.2rem', marginBottom: '1.5rem' }}>
-            Mentors Across Canada
-          </h2>
-          <CanadaMentorMap users={usersWithCoords} />
-        </div>
-      </div>
+      </Container>
 
       {/* Auth Modals */}
       <Modal isOpen={showLoginModal} onClose={handleCloseModals}>

@@ -398,7 +398,7 @@ router.get('/', async (req, res) => {
       };
     }
     console.log('[GET /api/users] filter:', filter);
-    const users = await User.find(filter).select('firstName lastName avatarUrl city province _id');
+    const users = await User.find(filter).select('firstName lastName avatarUrl city province _id certifications');
     console.log(`[GET /api/users] found users: ${users.length}`);
     res.json(users);
   } catch (error) {

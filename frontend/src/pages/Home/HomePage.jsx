@@ -204,14 +204,12 @@ const HomePage = () => {
 
           {/* Featured Carousel at the end for mobile stacking */}
           <FeaturedUsersCarousel />
-          {/* Mentor Map Section */}
-          <div style={{ margin: '3rem 0' }}>
-            <h2 style={{ textAlign: 'center', fontWeight: 700, fontSize: '2.2rem', marginBottom: '1.5rem' }}>
-              Mentors Across Canada
-            </h2>
-            <CanadaMentorMap users={usersWithCoords} />
-          </div>
         </div>
+        {/* Mentor Map Section - always last */}
+
+          
+          <CanadaMentorMap users={usersWithCoords} />
+
       </Container>
 
       {/* Auth Modals */}

@@ -20,15 +20,12 @@ const CanadaMentorMap = ({ users, width = 700, height = 500 }) => {
 
   return (
     <div style={{ width: 900, margin: '0 auto', textAlign: 'center' }}>
-      <h2 style={{ fontWeight: 700, fontSize: '2.5rem', marginBottom: 24 }}>Mentors Across Canada</h2>
+      <h2 style={{ fontWeight: 700, fontSize: '2.5rem', marginBottom: 30 }}>Mentors Across Canada</h2>
       <div style={{
         position: 'relative',
         width: 900,
         height: 600,
         margin: '0 auto',
-        background: '#f8f9fa',
-        borderRadius: 24,
-        boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
         overflow: 'hidden',
       }}>
         <img

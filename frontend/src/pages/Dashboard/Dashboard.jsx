@@ -3,60 +3,54 @@ import { useAuth } from '../../context/AuthContext';
 import MentorGrid from '../../../components/MentorGrid.jsx';
 import OpportunityGrid from '../../../components/OpportunityGrid.jsx';
 import '../../css/Dashboard.css';
+import { useLocation } from 'react-router-dom';
 
 export default function Dashboard() {
   console.log('Dashboard component mounted');
   
   const { user, loading } = useAuth();
-  console.log('useAuth result:', { user, loading });
-  
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const cityParam = params.get('city');
+  const certParam = params.get('certification');
+
   const [opportunities, setOpportunities] = useState([]);
   const [mentors, setMentors] = useState([]);
   const [activeTab, setActiveTab] = useState('mentors');
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
-    console.log('Dashboard useEffect triggered', { loading, user });
-    
-    if (loading) {
-      console.log('Still loading, skipping fetch');
-      return;
-    }
-    
-    if (!user) {
-      console.log('No user, skipping fetch');
-      return;
-    }
-    
-    if (!user.city) {
-      console.log('No user city, skipping fetch');
+    if (loading) return;
+
+    // Allow fetch if cityParam exists, even if user is not logged in
+    const cityToUse = cityParam || user?.city;
+    if (!cityToUse) {
+      setOpportunities([]);
+      setMentors([]);
       return;
     }
 
-    // Create new AbortController for this fetch
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
     const fetchData = async () => {
-      console.log('Fetching data for city:', user.city);
-      
+      console.log('Fetching data for city:', cityToUse, 'certification:', certParam);
       try {
         // Fetch opportunities
         const opportunitiesRes = await fetch(
-          `/api/opportunities?city=${encodeURIComponent(user.city)}`,
+          `/api/opportunities?city=${encodeURIComponent(cityToUse)}`,
           { signal }
         );
         const opportunitiesData = await opportunitiesRes.json();
-        console.log('Fetched opportunities:', opportunitiesData);
         setOpportunities(Array.isArray(opportunitiesData) ? opportunitiesData : []);
 
-        // Fetch mentors
-        const mentorsRes = await fetch(
-          `/api/users?city=${encodeURIComponent(user.city)}`,
-          { signal }
-        );
+        // Build mentor query
+        let mentorUrl = `/api/users?city=${encodeURIComponent(cityToUse)}`;
+        if (certParam) {
+          mentorUrl += `&certification=${encodeURIComponent(certParam)}`;
+        }
+        const mentorsRes = await fetch(mentorUrl, { signal });
         const mentorsData = await mentorsRes.json();
-        console.log('Raw mentors data:', mentorsData);
         setMentors(Array.isArray(mentorsData) ? mentorsData : []);
       } catch (err) {
         if (err.name === 'AbortError') {
@@ -69,22 +63,18 @@ export default function Dashboard() {
 
     fetchData();
 
-    // Cleanup function
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [loading, user]);
+  }, [loading, user, cityParam, certParam]);
 
-  if (loading) {
-    console.log('Showing loading state');
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
-  if (!user) {
-    console.log('No user, showing error state');
-    return <div>Please log in to view the dashboard</div>;
+  // Only show login/search prompt if neither user nor city param
+  if (!user && !cityParam) {
+    return <div>Please search for a city or log in to view mentors and opportunities.</div>;
   }
 
   const showOpportunitiesTab = opportunities.length >= 1;

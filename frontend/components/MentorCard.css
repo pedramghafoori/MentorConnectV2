@@ -111,4 +111,36 @@
   width: 100%;
   display: flex;
   justify-content: flex-start;
+}
+
+.examiner-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f4ea;
+  color: #217a4a;
+  font-weight: 600;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  padding: 0.18rem 0.7rem 0.18rem 0.5rem;
+
+  margin: 0.6rem auto 0.1rem auto;
+  margin-left: 0.1px;
+  box-shadow: 0 1px 3px rgba(33,122,74,0.07);
+  gap: 0.4rem;
+  width: fit-content;
+}
+
+.examiner-badge .checkmark {
+  font-size: 1em;
+  color: #217a4a;
+  margin-right: 0.2em;
+}
+
+.mentor-card-avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 } 

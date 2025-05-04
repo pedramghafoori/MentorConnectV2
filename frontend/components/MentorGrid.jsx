@@ -41,11 +41,16 @@ export default function MentorGrid({ mentors, opportunitiesByMentor }) {
 
         return (
           <div className="mentor-card" key={mentor._id}>
-            <img
-              src={mentor.avatarUrl || '/default-avatar.png'}
-              alt={mentor.firstName}
-              className="mentor-card-avatar"
-            />
+            <div className="mentor-card-avatar-col">
+              <img
+                src={mentor.avatarUrl || '/default-avatar.png'}
+                alt={mentor.firstName}
+                className="mentor-card-avatar"
+              />
+              <div className="examiner-badge">
+                <span className="checkmark">&#10003;</span> Examiner Mentor
+              </div>
+            </div>
             <div className="mentor-card-info">
               <div className="mentor-card-header">
                 <span className="mentor-card-name">{mentor.firstName} {mentor.lastName}</span>

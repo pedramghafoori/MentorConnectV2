@@ -73,6 +73,7 @@ const Navbar = () => {
   };
 
   const handleOpenLogin = () => {
+    localStorage.setItem('redirectAfterLogin', window.location.href);
     setShowRegisterModal(false);
     setShowLoginModal(true);
   };
@@ -243,6 +244,15 @@ const Navbar = () => {
       queryClient.invalidateQueries(['user', user._id]);
     }
   };
+
+  useEffect(() => {
+    function handleGlobalLoginModal(e) {
+      setShowRegisterModal(false);
+      setShowLoginModal(true);
+    }
+    window.addEventListener('open-login-modal', handleGlobalLoginModal);
+    return () => window.removeEventListener('open-login-modal', handleGlobalLoginModal);
+  }, []);
 
   return (
     <>

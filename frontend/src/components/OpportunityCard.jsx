@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import locationPin from '../assets/icons/location-pin.png';
 import calendarIcon from '../assets/icons/calendar.svg';
 import clipboardIcon from '../assets/icons/clipboard.svg';
 import ReusableModal from './ReusableModal';
 
 export default function OpportunityCard({ opportunity }) {
+  const { user } = useAuth();
   const [mentorModalOpen, setMentorModalOpen] = useState(false);
   const mentor = opportunity.mentor || {};
   const facility = opportunity.facility || {};
@@ -93,7 +95,19 @@ export default function OpportunityCard({ opportunity }) {
                 </svg>
                 <span className="opportunity-card-detail-text">{opportunity.price ? `$${opportunity.price}` : 'N/A'}</span>
               </div>
-              <button className="opportunity-card-apply-btn">Apply</button>
+              {user && <button className="opportunity-card-apply-btn">Apply</button>}
+              {!user && (
+                <button
+                  className="opportunity-card-apply-btn"
+                  onClick={() => {
+                    localStorage.setItem('redirectAfterLogin', window.location.href);
+                    window.dispatchEvent(new Event('open-login-modal'));
+                  }}
+                  style={{ fontWeight: 700 }}
+                >
+                  Sign in to apply
+                </button>
+              )}
             </div>
           </div>
           <div className="opportunity-card-mentor">

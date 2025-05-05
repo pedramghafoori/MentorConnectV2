@@ -22,7 +22,13 @@ export default function LoginForm({ onClose, onSwitchToRegister }) {
     try {
       await login({ email, password }, () => {
         onClose && onClose();
-        navigate('/dashboard');
+        const redirectUrl = localStorage.getItem('redirectAfterLogin');
+        if (redirectUrl) {
+          localStorage.removeItem('redirectAfterLogin');
+          window.location.href = redirectUrl;
+        } else {
+          navigate('/dashboard');
+        }
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

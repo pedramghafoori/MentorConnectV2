@@ -69,6 +69,7 @@
 .opportunity-card-bottom {
   width: 100%;
   padding: 0 2rem;
+  margin-bottom: 1rem;
 }
 
 .opportunity-card:hover {
@@ -318,7 +319,7 @@
   }
   
   .opportunity-card-bottom {
-    padding: 0;
+    padding: 0 1rem;
   }
   .opportunity-card-main,
   .opportunity-card-expectations,
@@ -366,9 +367,144 @@
     font-size: 1rem;
     padding: 0.5rem 0;
   }
+  .prep-requirements-container {
+    gap: 0.6rem;
+  }
+  .prep-requirement-pill {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
 }
 
 .piggy-bank-icon {
   filter: grayscale(1) brightness(0.7);
   /* Optionally, adjust opacity or use invert(1) if needed for your SVG */
+}
+
+.prep-requirements-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.prep-requirement-pill {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.prep-requirement-pill img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.responsibilities-heading {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+  margin-top: 0.5rem;
+}
+
+.prep-requirements-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.prep-requirement-pill {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 0.5rem 1.3rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px 0 #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.prep-requirement-pill img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
+
+.opportunity-bottom-row {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.notes-box {
+  flex: 2;
+  background: linear-gradient(135deg, #f8fbff 80%, #eaf3fa 100%);
+  border: 2px solid #2563eb;
+  border-radius: 1.5rem;
+  padding: 1.5rem 2rem;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  font-size: 1.08rem;
+  color: #222;
+}
+
+.notes-title {
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+}
+
+.apply-btn-large {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #2563eb;
+  background: #fff;
+  color: #111;
+  font-weight: 700;
+  border-radius: 2rem;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: 70px;
+  margin-left: auto;
+  margin-right: 0;
+  outline: none;
+  box-shadow: none;
+  width: 100%;
+  max-width: 350px;
+}
+.apply-btn-large:hover {
+  background: #f0f6ff;
+}
+
+@media (max-width: 900px) {
+  .opportunity-bottom-row {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .notes-box, .apply-btn-large {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+  .notes-box {
+    min-height: 90px;
+    padding: 1.2rem 1rem;
+  }
+  .opportunity-card-bottom {
+    padding: 0 1rem;
+  }
 } 

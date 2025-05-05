@@ -101,7 +101,28 @@ export default function OpportunityCard({ opportunity }) {
         </div>
       </div>
       <div className="opportunity-card-bottom">
-        {/* Bottom section content will go here */}
+        <div className="responsibilities-heading">Mentees Responsibilities</div>
+        <div className="prep-requirements-container">
+          <img src={clipboardIcon} alt="Requirements" style={{width: '32px', height: '32px', opacity: 0.8, marginRight: '0.5rem'}} />
+          {prepReqs.length > 0 ? (
+            prepReqs.map((req, i) => (
+              <div key={i} className="prep-requirement-pill">
+                {req}
+              </div>
+            ))
+          ) : (
+            <div className="prep-requirement-pill">
+              No requirements listed
+            </div>
+          )}
+        </div>
+        <div className="opportunity-bottom-row">
+          <div className="notes-box">
+            <div className="notes-title">Notes from mentor</div>
+            <div>{opportunity.notes || '[Notes]'}</div>
+          </div>
+          <button className="apply-btn-large">Apply</button>
+        </div>
       </div>
     </div>
   );

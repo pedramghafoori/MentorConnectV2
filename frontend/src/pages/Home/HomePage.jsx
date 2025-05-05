@@ -33,6 +33,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [selectedCertifications, setSelectedCertifications] = useState([]);
   const [mentorUsers, setMentorUsers] = useState([]);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1000);
 
   const toggleStream = (option) => {
     setStreams(prev =>
@@ -89,6 +90,12 @@ const HomePage = () => {
           console.error('API did not return an array:', data);
         }
       });
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1000);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const usersWithCoords = mentorUsers
@@ -207,10 +214,7 @@ const HomePage = () => {
           <FeaturedUsersCarousel />
         </div>
         {/* Mentor Map Section - always last */}
-
-          
-          <CanadaMentorMap users={usersWithCoords} />
-
+        {isDesktop && <CanadaMentorMap users={usersWithCoords} />}
       </Container>
 
       {/* Auth Modals */}

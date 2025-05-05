@@ -10,15 +10,16 @@
 
 /* big hero image on the right */
 .hero-image-container {
-  max-width: 1400px;
+  max-width: 100vw;
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  height: 300px;
+  height: 220px;
   margin: 0 auto 1.5rem auto;
   border-radius: 18px;
   order: 1;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .hero-image {
@@ -34,24 +35,30 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 1rem 1.5rem;
-  max-width: 100%;
+  padding: 1rem 0.5rem;
+  max-width: 100vw;
   margin: 0 auto;
   position: relative;
+  box-sizing: border-box;
 }
 
 .search-card {
   position: relative;
   width: 100%;
+  max-width: 100vw;
   margin: 0 auto;
   order: 2;
   z-index: 10;
+  box-sizing: border-box;
 }
 
 .search-card-inner {
   padding: 1.2rem 1rem;
   border-radius: 18px;
-  background-color: rgb(255, 255, 255);
+  background: rgba(255, 255, 255); /* seaglass effect */
+  /*backdrop-filter: blur(16px) saturate(180%);
+  /*: blur(16px) saturate(180%);
+  /* border: 1px solid rgba(255,255,255,0.18); */
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
@@ -64,6 +71,7 @@
 @media (min-width: 1000px) {
   .content-wrapper {
     padding: 3rem 1rem;
+    max-width: 100%;
   }
   
   .hero-image-container {
@@ -293,4 +301,16 @@
 .it-section {
   margin-top: -0.5rem; /* or any value you want */
   margin-bottom: -0.5rem;
+}
+
+/* Prevent horizontal scroll on mobile */
+body, html {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.home-container {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden;
 } 

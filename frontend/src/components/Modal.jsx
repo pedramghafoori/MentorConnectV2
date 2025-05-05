@@ -21,7 +21,7 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose}></div>
       <div className="flex min-h-full items-center justify-center p-4">
         <div 
           className="relative w-full max-w-[600px] transform rounded-2xl bg-white p-8 shadow-xl transition-all"

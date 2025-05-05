@@ -83,7 +83,20 @@ router.post('/', authenticateToken, async (req, res) => {
     if (req.user.role !== 'MENTOR') {
       return res.status(403).json({ message: 'Only mentors can post opportunities.' });
     }
-    const { title, description, city, price, organization, facility, status } = req.body;
+    // Destructure all relevant fields from the request body
+    const {
+      title,
+      description,
+      city,
+      price,
+      organization,
+      facility,
+      status,
+      notes,
+      schedule,
+      prepRequirements,
+      createdAt
+    } = req.body;
     const opportunity = new Opportunity({
       title,
       description,
@@ -92,10 +105,18 @@ router.post('/', authenticateToken, async (req, res) => {
       organization,
       facility,
       status,
-      createdAt: new Date(),
+      notes,
+      schedule,
+      prepRequirements,
+      createdAt: createdAt ? new Date(createdAt) : new Date(),
       mentor: req.user.userId
     });
     await opportunity.save();
+    // Populate mentor and facility for consistency
+    await opportunity.populate([
+      { path: 'mentor', select: 'firstName lastName avatarUrl certifications' },
+      { path: 'facility' }
+    ]);
     res.status(201).json(opportunity);
   } catch (error) {
     res.status(500).json({ message: 'Error creating opportunity', error });

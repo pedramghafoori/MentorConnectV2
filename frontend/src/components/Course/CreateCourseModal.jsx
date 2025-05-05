@@ -202,11 +202,18 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
         city: user.city,
         price: formData.price,
         facility: selectedFacility ? selectedFacility._id : null,
-        schedule: formData.schedule,
+        schedule: {
+          isExamOnly: formData.schedule.isExamOnly,
+          examDate: formData.schedule.examDate || null,
+          courseDates: Array.isArray(formData.schedule.courseDates) ? formData.schedule.courseDates : [],
+        },
         status,
         mentor: user._id,
-        prepRequirements: formData.defaultSettings.customSettings.prepRequirements
+        prepRequirements: Array.isArray(formData.defaultSettings.customSettings.prepRequirements)
+          ? formData.defaultSettings.customSettings.prepRequirements
+          : [],
       };
+      console.log('Opportunity payload:', payload);
       if (initialOpportunity) {
         await api.patch(`/opportunities/${initialOpportunity._id}`, payload);
       } else {

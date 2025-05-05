@@ -50,6 +50,11 @@ export default function OpportunityCard({ opportunity }) {
           <div className="opportunity-card-main">
             <div className="opportunity-card-header">
               <span className="opportunity-card-title">{getDisplayTitle(opportunity.title)}</span>
+              {opportunity.opid && (
+                <div className="opportunity-id">
+                  {opportunity.opid}
+                </div>
+              )}
             </div>
             <div className="opportunity-card-details">
               <div className="opportunity-card-detail-row">

@@ -21,6 +21,7 @@ export interface IOpportunity extends Document {
   };
   prepRequirements: string[];
   deletedAt: Date;
+  opid: string;
 }
 
 const opportunitySchema = new Schema<IOpportunity>({
@@ -44,6 +45,27 @@ const opportunitySchema = new Schema<IOpportunity>({
   },
   prepRequirements: [{ type: String, required: false }],
   deletedAt: { type: Date, default: null },
+  opid: { type: String, required: true, unique: true, index: true },
+});
+
+// Auto-generate opid before saving
+opportunitySchema.pre('validate', async function (next) {
+  if (this.isNew && !this.opid) {
+    // Find the highest existing opid number
+    const last = await (this.constructor as any)
+      .findOne({ opid: /^OPID-\d{5}$/ })
+      .sort({ opid: -1 })
+      .select('opid');
+    let nextNum = 1;
+    if (last && last.opid) {
+      const match = last.opid.match(/OPID-(\d{5})/);
+      if (match) {
+        nextNum = parseInt(match[1], 10) + 1;
+      }
+    }
+    this.opid = `OPID-${String(nextNum).padStart(5, '0')}`;
+  }
+  next();
 });
 
 export const Opportunity = mongoose.model<IOpportunity>('Opportunity', opportunitySchema); 

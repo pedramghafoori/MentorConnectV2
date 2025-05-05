@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './MentorCard.css';
+import { useAuth } from '../src/context/AuthContext';
 
 const formatCertificationName = (name) => {
   if (!name) return '';
@@ -19,8 +20,47 @@ const formatCertificationName = (name) => {
     .replace(/_/g, ' ');
 };
 
+const StarRating = ({ rating }) => {
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 !== 0;
+
+  for (let i = 0; i < 5; i++) {
+    if (i < fullStars) {
+      stars.push(<span key={i} className="star filled">★</span>);
+    } else if (i === fullStars && hasHalfStar) {
+      stars.push(<span key={i} className="star half-filled">★</span>);
+    } else {
+      stars.push(<span key={i} className="star empty">★</span>);
+    }
+  }
+
+  return <div className="star-rating">{stars}</div>;
+};
+
+const ReviewList = ({ reviews }) => {
+  return (
+    <div className="review-list">
+      {reviews.map((review, index) => (
+        <div key={index} className="review-item">
+          <div className="review-header">
+            <span className="reviewer-name">{review.reviewerName}</span>
+            <span className="review-date">{new Date(review.date).toLocaleDateString()}</span>
+          </div>
+          <div className="review-rating">
+            <StarRating rating={review.rating} />
+          </div>
+          <p className="review-text">{review.text}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function MentorGrid({ mentors, opportunitiesByMentor }) {
   const [expanded, setExpanded] = useState({});
+  const [savedMentors, setSavedMentors] = useState(new Set());
+  const { user } = useAuth();
 
   const handleToggle = (mentorId) => {
     setExpanded((prev) => ({
@@ -29,15 +69,45 @@ export default function MentorGrid({ mentors, opportunitiesByMentor }) {
     }));
   };
 
+  const handleSaveMentor = async (mentorId) => {
+    if (!user) return;
+    try {
+      if (savedMentors.has(mentorId)) {
+        await api.delete(`/api/saved-mentors/${mentorId}`);
+        setSavedMentors(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(mentorId);
+          return newSet;
+        });
+      } else {
+        await api.post('/api/saved-mentors', { mentorId });
+        setSavedMentors(prev => new Set(prev).add(mentorId));
+      }
+    } catch (error) {
+      console.error('Error saving mentor:', error);
+    }
+  };
+
+  const findSimilarMentors = (mentor, allMentors) => {
+    const similarMentors = allMentors.filter(m => {
+      if (m._id === mentor._id) return false;
+      const mentorCerts = new Set(mentor.certifications?.map(c => c.type) || []);
+      const mCerts = new Set(m.certifications?.map(c => c.type) || []);
+      const commonCerts = [...mentorCerts].filter(cert => mCerts.has(cert));
+      return commonCerts.length > 0;
+    }).slice(0, 3);
+    return similarMentors;
+  };
+
   return (
     <div className="mentor-list">
       {mentors.map(mentor => {
         const certs = Array.isArray(mentor.certifications) ? mentor.certifications : [];
-        // Sort certifications by years descending
         const sortedCerts = [...certs].sort((a, b) => (b.years || 0) - (a.years || 0));
         const showAll = expanded[mentor._id];
         const certsToShow = showAll ? sortedCerts : sortedCerts.slice(0, 3);
         const maxYears = certs.length > 0 ? Math.max(...certs.map(cert => cert.years || 0)) : null;
+        const similarMentors = findSimilarMentors(mentor, mentors);
 
         return (
           <div className="mentor-card" key={mentor._id}>
@@ -96,6 +166,51 @@ export default function MentorGrid({ mentors, opportunitiesByMentor }) {
                   </div>
                 )}
               </div>
+              <div className="mentor-card-actions">
+                <button className="action-button contact">Contact</button>
+                <button className="action-button book">Book Session</button>
+                {user && (
+                  <button 
+                    className={`action-button save ${savedMentors.has(mentor._id) ? 'saved' : ''}`}
+                    onClick={() => handleSaveMentor(mentor._id)}
+                  >
+                    {savedMentors.has(mentor._id) ? 'Saved' : 'Save'}
+                  </button>
+                )}
+              </div>
+              <div className="mentor-card-ratings">
+                <StarRating rating={mentor.averageRating || 0} />
+                <button 
+                  className="reviews-link"
+                  onClick={() => handleToggle(mentor._id)}
+                >
+                  {mentor.reviews?.length || 0} reviews
+                </button>
+              </div>
+              {expanded[mentor._id] && mentor.reviews && (
+                <div className="mentor-card-reviews">
+                  <ReviewList reviews={mentor.reviews} />
+                </div>
+              )}
+              {similarMentors.length > 0 && (
+                <div className="similar-mentors">
+                  <h4>Similar Mentors</h4>
+                  <div className="similar-mentors-list">
+                    {similarMentors.map(similar => (
+                      <div key={similar._id} className="similar-mentor">
+                        <img 
+                          src={similar.avatarUrl || '/default-avatar.png'} 
+                          alt={similar.firstName}
+                          className="similar-mentor-avatar"
+                        />
+                        <span className="similar-mentor-name">
+                          {similar.firstName} {similar.lastName}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );

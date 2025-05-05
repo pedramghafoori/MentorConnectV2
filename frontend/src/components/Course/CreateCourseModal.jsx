@@ -16,14 +16,34 @@ const COURSE_OPTIONS = [
   'NL IT'
 ];
 
-const CreateCourseModal = ({ isOpen, onClose }) => {
+const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [mentorSettings, setMentorSettings] = useState({
     prepSupportFee: 0,
     maxApprentices: 1
   });
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(initialOpportunity ? {
+    title: initialOpportunity.title,
+    price: initialOpportunity.price || 0,
+    maxParticipants: initialOpportunity.maxParticipants || 1,
+    schedule: initialOpportunity.schedule || {
+      isExamOnly: false,
+      examDate: null,
+      courseDates: []
+    },
+    defaultSettings: {
+      useProfileDefaults: true,
+      customSettings: {
+        price: initialOpportunity.price || 0,
+        prepSupportFee: initialOpportunity.prepSupportFee || 0,
+        cancellationPolicyHours: 48,
+        maxApprentices: initialOpportunity.maxApprentices || 1,
+        prepRequirements: initialOpportunity.prepRequirements || []
+      }
+    },
+    notes: initialOpportunity.notes || ''
+  } : {
     title: '',
     price: 0,
     maxParticipants: 1,
@@ -45,6 +65,23 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
   });
   const [courseTypes, setCourseTypes] = useState([]);
   const [ratingSummary, setRatingSummary] = useState({ average: 0, count: 0 });
+  const [organizations, setOrganizations] = useState([]);
+  const [organizationInput, setOrganizationInput] = useState('');
+  const [organizationType, setOrganizationType] = useState('');
+  const [facilityInput, setFacilityInput] = useState('');
+  const [facilitySuggestions, setFacilitySuggestions] = useState([]);
+  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [showFacilityForm, setShowFacilityForm] = useState(false);
+  const [newFacility, setNewFacility] = useState({
+    name: '',
+    organization: '',
+    address: '',
+    city: ''
+  });
+  const [calendarError, setCalendarError] = useState('');
+  const [status, setStatus] = useState('draft');
+  const [facilityError, setFacilityError] = useState('');
+  const totalSteps = 4;
 
   // Fetch mentor settings when component mounts
   useEffect(() => {
@@ -105,30 +142,79 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
     loadRatingSummary();
   }, [user]);
 
+  // Fetch organizations when component mounts
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await api.get('/opportunities/organizations');
+        setOrganizations(response.data.map(org => org._id));
+      } catch (error) {
+        console.error('Error fetching organizations:', error);
+      }
+    };
+    fetchOrganizations();
+  }, []);
+
+  // Facility autocomplete effect
+  useEffect(() => {
+    if (facilityInput.length < 2) {
+      setFacilitySuggestions([]);
+      return;
+    }
+    const fetchFacilities = async () => {
+      try {
+        const res = await api.get(`/facilities?search=${encodeURIComponent(facilityInput)}`);
+        setFacilitySuggestions(res.data);
+      } catch (err) {
+        setFacilitySuggestions([]);
+      }
+    };
+    fetchFacilities();
+  }, [facilityInput]);
+
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const prepRequirementOptions = ['lesson-plan', 'exam-plan', 'scenarios', 'must-sees'];
+  const prepRequirementOptions = ['lesson-plan', 'exam-plan', 'scenarios', 'must-sees template'];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!user || user.role !== 'MENTOR') {
       console.error('User must be logged in as a mentor to create an opportunity');
       return;
     }
-
+    // Final calendar validation before submit
+    if (formData.schedule.isExamOnly) {
+      if (!formData.schedule.examDate) {
+        setStep(2);
+        setCalendarError('Please select exactly one date for the exam.');
+        return;
+      }
+    } else {
+      if (!formData.schedule.courseDates || formData.schedule.courseDates.length < 2) {
+        setStep(2);
+        setCalendarError('Please select all session dates for this course.');
+        return;
+      }
+    }
     try {
-      const response = await api.post('/opportunities', {
+      const payload = {
         title: formData.title,
         notes: formData.notes || '',
         city: user.city,
         price: formData.price,
-        createdAt: new Date(),
-        mentor: user._id
-      });
-
+        facility: selectedFacility ? selectedFacility._id : null,
+        schedule: formData.schedule,
+        status,
+        mentor: user._id,
+        prepRequirements: formData.defaultSettings.customSettings.prepRequirements
+      };
+      if (initialOpportunity) {
+        await api.patch(`/opportunities/${initialOpportunity._id}`, payload);
+      } else {
+        await api.post('/opportunities', { ...payload, createdAt: new Date() });
+      }
       onClose();
     } catch (error) {
-      console.error('Error creating opportunity:', error);
+      console.error('Error saving opportunity:', error);
     }
   };
 
@@ -170,6 +256,76 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
     && ratingSummary.count >= 5
     && ratingSummary.average >= 4.5;
 
+  useEffect(() => {
+    if (step === 2) {
+      if (formData.schedule.isExamOnly) {
+        if (!formData.schedule.examDate) {
+          setCalendarError('Please select the exam date.');
+        } else {
+          setCalendarError('');
+        }
+      } else {
+        if (!formData.schedule.courseDates || formData.schedule.courseDates.length < 2) {
+          setCalendarError('Please select all session dates for this course.');
+        } else {
+          setCalendarError('');
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.schedule.isExamOnly, formData.schedule.examDate, formData.schedule.courseDates, step]);
+
+  useEffect(() => {
+    if (initialOpportunity) {
+      // Convert dates to JS Date objects
+      let examDate = initialOpportunity.schedule?.examDate
+        ? new Date(initialOpportunity.schedule.examDate)
+        : null;
+      let courseDates = Array.isArray(initialOpportunity.schedule?.courseDates)
+        ? initialOpportunity.schedule.courseDates.map(d => new Date(d))
+        : [];
+
+      // Prefer root-level prepRequirements, fallback to nested if present
+      const prepReqs = initialOpportunity.prepRequirements
+        || initialOpportunity.defaultSettings?.customSettings?.prepRequirements
+        || [];
+
+      setFormData({
+        title: initialOpportunity.title,
+        price: initialOpportunity.price || 0,
+        maxParticipants: initialOpportunity.maxParticipants || 1,
+        schedule: {
+          ...initialOpportunity.schedule,
+          examDate,
+          courseDates,
+        },
+        defaultSettings: {
+          useProfileDefaults: true,
+          customSettings: {
+            price: initialOpportunity.price || 0,
+            prepSupportFee: initialOpportunity.prepSupportFee || 0,
+            cancellationPolicyHours: 48,
+            maxApprentices: initialOpportunity.maxApprentices || 1,
+            prepRequirements: prepReqs
+          }
+        },
+        notes: initialOpportunity.notes || ''
+      });
+
+      // Set selectedFacility if available
+      if (initialOpportunity.facility && typeof initialOpportunity.facility === 'object') {
+        setSelectedFacility(initialOpportunity.facility);
+        setFacilityInput(initialOpportunity.facility.name);
+      } else {
+        setSelectedFacility(null);
+        setFacilityInput('');
+      }
+
+      // Set status from initialOpportunity
+      setStatus(initialOpportunity.status || 'draft');
+    }
+  }, [initialOpportunity]);
+
   if (!isOpen) return null;
 
   return (
@@ -193,7 +349,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
           {/* Progress Steps */}
           <div className="mb-8">
             <div className="flex justify-between items-center">
-              {[1, 2, 3].map((stepNumber) => (
+              {[1, 2, 3, 4].map((stepNumber) => (
                 <div key={stepNumber} className="flex-1">
                   <div
                     className={`h-2 rounded-full transition-colors ${
@@ -203,8 +359,10 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                   <span className={`mt-2 text-sm ${
                     step >= stepNumber ? 'text-[#d33]' : 'text-gray-500'
                   }`}>
-                    {stepNumber === 1 ? 'Basic Info' : 
-                     stepNumber === 2 ? 'Schedule' : 'Settings'}
+                    {stepNumber === 1 ? 'Basic Info' :
+                     stepNumber === 2 ? 'Schedule' :
+                     stepNumber === 3 ? 'Preparation Expectations' :
+                     'Summary and Confirmation'}
                   </span>
                 </div>
               ))}
@@ -217,7 +375,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
               <div className="space-y-6">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                    Opportunity
+                    Course type
                   </label>
                   <select
                     id="title"
@@ -227,7 +385,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
                     required
                   >
-                    <option value="">Select a opportunity</option>
+                    <option value="">Select a course type</option>
                     {COURSE_OPTIONS.map(course => (
                       <option key={course} value={course}>{course}</option>
                     ))}
@@ -235,51 +393,166 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div>
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                    Notes (optional)
+                  <label htmlFor="facility" className="block text-sm font-medium text-gray-700">
+                    Facility
                   </label>
-                  <textarea
-                    id="notes"
-                    name="notes"
-                    value={formData.notes || ''}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
-                    placeholder="Add any notes about this opportunity (optional)"
-                    rows={3}
+                  <input
+                    type="text"
+                    id="facility"
+                    value={selectedFacility ? selectedFacility.name : facilityInput}
+                    onChange={e => {
+                      setFacilityInput(e.target.value);
+                      setSelectedFacility(null);
+                      setShowFacilityForm(false);
+                      setFacilityError('');
+                    }}
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
+                    placeholder="Start typing to search..."
+                    autoComplete="off"
+                    disabled={showFacilityForm}
+                    required
+                    aria-invalid={!!facilityError}
                   />
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                      Price
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
+                  {facilityInput && !selectedFacility && !showFacilityForm && (
+                    <div className="bg-white border border-gray-200 rounded shadow mt-1 max-h-40 overflow-y-auto z-50 relative">
+                      {facilitySuggestions.map(fac => (
+                        <div
+                          key={fac._id}
+                          className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setSelectedFacility(fac);
+                            setFacilityInput(fac.name);
+                          }}
+                        >
+                          <div className="font-medium">{fac.name}</div>
+                          <div className="text-xs text-gray-500">{fac.organization} — {fac.address}, {fac.city}</div>
+                        </div>
+                      ))}
+                      <div className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600 font-medium" onClick={() => {
+                        setShowFacilityForm(true);
+                        setNewFacility({ name: facilityInput, organization: '', address: '', city: '' });
+                      }}>
+                        + Add a new facility
                       </div>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        id="price"
-                        name="price"
-                        value={formData.price}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9.]/g, '');
-                          if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                            setFormData(prev => ({
-                              ...prev,
-                              price: value
-                            }));
+                    </div>
+                  )}
+                  {showFacilityForm && (
+                    <div className="mt-4 p-4 border rounded bg-gray-50">
+                      <div className="mb-2">
+                        <label className="block text-xs font-medium text-gray-700">Facility Name</label>
+                        <input
+                          className="w-full border rounded px-3 py-2"
+                          placeholder="Facility Name"
+                          value={newFacility.name}
+                          onChange={e => setNewFacility(f => ({ ...f, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-xs font-medium text-gray-700">Organization</label>
+                        <input
+                          className="w-full border rounded px-3 py-2"
+                          placeholder="Organization"
+                          value={newFacility.organization}
+                          onChange={e => setNewFacility(f => ({ ...f, organization: e.target.value }))}
+                        />
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-xs font-medium text-gray-700">Address</label>
+                        <input
+                          className="w-full border rounded px-3 py-2"
+                          placeholder="Address"
+                          value={newFacility.address}
+                          onChange={e => setNewFacility(f => ({ ...f, address: e.target.value }))}
+                        />
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-xs font-medium text-gray-700">City</label>
+                        <input
+                          className="w-full border rounded px-3 py-2"
+                          placeholder="City"
+                          value={newFacility.city}
+                          onChange={e => setNewFacility(f => ({ ...f, city: e.target.value }))}
+                        />
+                      </div>
+                      <button
+                        className="mt-2 bg-[#d33] text-white px-4 py-2 rounded"
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const res = await api.post('/facilities', newFacility);
+                            setSelectedFacility(res.data);
+                            setFacilityInput(res.data.name);
+                            setShowFacilityForm(false);
+                            setNewFacility({ name: '', organization: '', address: '', city: '' });
+                          } catch (err) {
+                            alert('Error creating facility');
                           }
                         }}
-                        className="block w-full pl-7 pr-12 rounded-md border border-gray-300 focus:border-[#d33] focus:ring-[#d33] sm:text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        required
-                      />
+                      >
+                        Save Facility
+                      </button>
+                      <button
+                        className="ml-2 text-gray-500 underline"
+                        type="button"
+                        onClick={() => setShowFacilityForm(false)}
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  </div>
+                  )}
+                  {facilityError && (
+                    <div className="text-red-500 text-sm mt-2">{facilityError}</div>
+                  )}
+                </div>
 
+                {/* Price field */}
+                <div>
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                    Price (optional)
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      id="price"
+                      name="price"
+                      value={formData.price}
+                      onChange={e => {
+                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          setFormData(prev => ({
+                            ...prev,
+                            price: value
+                          }));
+                        }
+                      }}
+                      className="block w-full pl-7 pr-12 rounded-md border border-gray-300 focus:border-[#d33] focus:ring-[#d33] sm:text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Fee range summary box moved here */}
+                {formData.title && (() => {
+                  const selected = courseTypes.find(ct => ct.name === formData.title);
+                  if (!selected) return null;
+                  return (
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-gray-600">
+                        Based on our data, mentors typically charge <span className="font-medium">${selected.feeRange.min} – ${selected.feeRange.max}</span> for {selected.name} courses.
+                      </p>
+                      <p className="mt-4 text-xs text-gray-600">
+                        We encourage you to set a fee that fairly reflects the time you'll spend preparing your mentee.
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {/* Only show maxParticipants if allowed */}
                   {allowTwoParticipants && (
                     <div>
@@ -302,29 +575,8 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                       </p>
                     </div>
                   )}
-                  {!allowTwoParticipants && (
-                    <p className="mt-1 text-xs text-red-500">
-                      To set more than 1 participant, you need at least 5 reviews and a minimum rating of 4.5+.
-                    </p>
-                  )}
+                  
                 </div>
-
-                {/* Fee range summary box */}
-                {formData.title && (() => {
-                  const selected = courseTypes.find(ct => ct.name === formData.title);
-                  if (!selected) return null;
-                  return (
-                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-gray-700">
-                        Based on our data, Mentors typically charge ${selected.feeRange.min} – ${selected.feeRange.max} for this opportunity.
-                      </p>
-                      <p className="mt-2 text-gray-600">
-                        We encourage you to set a fee that fairly reflects the time you'll spend preparing your mentee.
-                      </p>
-                    </div>
-                  );
-                })()}
-
               </div>
             )}
 
@@ -377,44 +629,68 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="w-full">
-                  <DatePicker
-                    selected={null}
-                    onChange={(date) => {
-                      if (!date) return;
-                      
-                      setFormData(prev => {
-                        const currentDates = prev.schedule.courseDates;
-                        const dateTime = date.getTime();
-                        
-                        // Check if the date is already selected
-                        const dateExists = currentDates.some(d => d.getTime() === dateTime);
-                        
-                        // If date exists, remove it; if not, add it
-                        const newDates = dateExists
-                          ? currentDates.filter(d => d.getTime() !== dateTime)
-                          : [...currentDates, date];
-                        
-                        return {
+                  {formData.schedule.isExamOnly ? (
+                    <DatePicker
+                      selected={formData.schedule.examDate}
+                      onChange={date => {
+                        setFormData(prev => ({
                           ...prev,
                           schedule: {
                             ...prev.schedule,
-                            courseDates: newDates.sort((a, b) => a - b)
+                            examDate: date instanceof Date && !isNaN(date) ? date : null,
+                            courseDates: []
                           }
-                        };
-                      });
-                    }}
-                    inline
-                    monthsShown={1}
-                    minDate={new Date()}
-                    className="w-full"
-                    calendarClassName="mentor-calendar"
-                    dayClassName={(date) => {
-                      const isSelected = formData.schedule.courseDates.some(
-                        d => d.getTime() === date.getTime()
-                      );
-                      return isSelected ? 'mentor-calendar-selected' : 'mentor-calendar-day';
-                    }}
-                  />
+                        }));
+                        setCalendarError('');
+                      }}
+                      inline
+                      minDate={new Date()}
+                      className="w-full"
+                      calendarClassName="mentor-calendar"
+                      dayClassName={date =>
+                        formData.schedule.examDate && date.getTime() === formData.schedule.examDate.getTime()
+                          ? 'mentor-calendar-selected'
+                          : 'mentor-calendar-day'
+                      }
+                    />
+                  ) : (
+                    <DatePicker
+                      selected={null}
+                      onChange={date => {
+                        if (!date) return;
+                        setFormData(prev => {
+                          const currentDates = prev.schedule.courseDates;
+                          const dateTime = date.getTime();
+                          const dateExists = currentDates.some(d => d.getTime() === dateTime);
+                          const newDates = dateExists
+                            ? currentDates.filter(d => d.getTime() !== dateTime)
+                            : [...currentDates, date];
+                          return {
+                            ...prev,
+                            schedule: {
+                              ...prev.schedule,
+                              courseDates: newDates.sort((a, b) => a - b),
+                              examDate: null
+                            }
+                          };
+                        });
+                        setCalendarError('');
+                      }}
+                      inline
+                      minDate={new Date()}
+                      className="w-full"
+                      calendarClassName="mentor-calendar"
+                      dayClassName={date => {
+                        const isSelected = formData.schedule.courseDates.some(
+                          d => d.getTime() === date.getTime()
+                        );
+                        return isSelected ? 'mentor-calendar-selected' : 'mentor-calendar-day';
+                      }}
+                    />
+                  )}
+                  {calendarError && (
+                    <div className="text-red-500 text-sm mt-2 text-center">{calendarError}</div>
+                  )}
                 </div>
               </div>
             )}
@@ -422,135 +698,104 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
             {step === 3 && (
               <div className="space-y-6">
                 <div>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.defaultSettings.useProfileDefaults}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        defaultSettings: {
-                          ...prev.defaultSettings,
-                          useProfileDefaults: e.target.checked
-                        }
-                      }))}
-                      className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300 rounded"
-                    />
-                    <span className="text-sm font-medium text-gray-700">
-                      Use profile default settings
-                    </span>
+                  <label className="block text-sm font-medium text-gray-700 mb-0">
+                    Prep Requirements
                   </label>
-                </div>
-
-                {!formData.defaultSettings.useProfileDefaults && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="customLocation" className="block text-sm font-medium text-gray-700">
-                          Custom Location
-                        </label>
-                        <input
-                          type="text"
-                          id="customLocation"
-                          name="defaultSettings.customSettings.location"
-                          value={formData.defaultSettings.customSettings.location}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="prepSupportFee" className="block text-sm font-medium text-gray-700">
-                          Prep Support Fee
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 sm:text-sm">$</span>
-                          </div>
-                          <input
-                            type="number"
-                            id="prepSupportFee"
-                            name="defaultSettings.customSettings.prepSupportFee"
-                            value={formData.defaultSettings.customSettings.prepSupportFee}
-                            onChange={handleInputChange}
-                            className="block w-full pl-7 pr-12 rounded-md border border-gray-300 focus:border-[#d33] focus:ring-[#d33] sm:text-sm"
-                            min="0"
-                            step="0.01"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="cancellationPolicyHours" className="block text-sm font-medium text-gray-700">
-                          Cancellation Policy (hours)
-                        </label>
-                        <input
-                          type="number"
-                          id="cancellationPolicyHours"
-                          name="defaultSettings.customSettings.cancellationPolicyHours"
-                          value={formData.defaultSettings.customSettings.cancellationPolicyHours}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
-                          min="1"
-                          max="168"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="maxApprentices" className="block text-sm font-medium text-gray-700">
-                          Max Apprentices
-                        </label>
-                        <input
-                          type="number"
-                          id="maxApprentices"
-                          name="defaultSettings.customSettings.maxApprentices"
-                          value={formData.defaultSettings.customSettings.maxApprentices}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
-                          min="1"
-                          max="10"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Prep Requirements
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {prepRequirementOptions.map(req => (
-                          <button
-                            key={req}
-                            type="button"
-                            onClick={() => {
-                              const reqs = formData.defaultSettings.customSettings.prepRequirements;
-                              setFormData(prev => ({
-                                ...prev,
-                                defaultSettings: {
-                                  ...prev.defaultSettings,
-                                  customSettings: {
-                                    ...prev.defaultSettings.customSettings,
-                                    prepRequirements: reqs.includes(req)
-                                      ? reqs.filter(r => r !== req)
-                                      : [...reqs, req]
-                                  }
-                                }
-                              }));
-                            }}
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              formData.defaultSettings.customSettings.prepRequirements.includes(req)
-                                ? 'bg-[#d33] text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            {req}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                  <p className="text-xs text-gray-500 mb-2">Select all options you would like your apprentice to prepare.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {prepRequirementOptions.map(req => (
+                      <button
+                        key={req}
+                        type="button"
+                        onClick={() => {
+                          const reqs = formData.defaultSettings.customSettings.prepRequirements;
+                          setFormData(prev => ({
+                            ...prev,
+                            defaultSettings: {
+                              ...prev.defaultSettings,
+                              customSettings: {
+                                ...prev.defaultSettings.customSettings,
+                                prepRequirements: reqs.includes(req)
+                                  ? reqs.filter(r => r !== req)
+                                  : [...reqs, req]
+                              }
+                            }
+                          }));
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          formData.defaultSettings.customSettings.prepRequirements.includes(req)
+                            ? 'bg-[#d33] text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {req}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                    Additional notes (optional)
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    value={formData.notes || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#d33] focus:outline-none focus:ring-[#d33] sm:text-sm"
+                    placeholder="Add any notes about this opportunity"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Summary</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700">
+                  <div className="mb-2"><span className="font-medium">Course type:</span> {formData.title}</div>
+                  <div className="mb-2"><span className="font-medium">Facility:</span> {selectedFacility ? selectedFacility.name : ''}</div>
+                  <div className="mb-2"><span className="font-medium">Price:</span> {formData.price ? `$${formData.price}` : 'N/A'}</div>
+                  <div className="mb-2"><span className="font-medium">Dates:</span> {formData.schedule.isExamOnly
+                    ? (formData.schedule.examDate ? formData.schedule.examDate.toLocaleDateString() : 'N/A')
+                    : (formData.schedule.courseDates && formData.schedule.courseDates.length > 0
+                        ? formData.schedule.courseDates.map(d => d.toLocaleDateString()).join(', ')
+                        : 'N/A')}
+                  </div>
+                  <div className="mb-2"><span className="font-medium">Opportunity type:</span> {formData.schedule.isExamOnly ? 'Exam Only' : 'Full Opportunity'}</div>
+                  <div className="mb-2"><span className="font-medium">Prep Requirements:</span> {formData.defaultSettings.customSettings.prepRequirements.length > 0
+                    ? formData.defaultSettings.customSettings.prepRequirements.join(', ')
+                    : 'None'}</div>
+                  <div className="mb-2"><span className="font-medium">Notes:</span> {formData.notes || 'None'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Status</label>
+                  <div className="flex gap-6 mb-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="draft"
+                        checked={status === 'draft'}
+                        onChange={() => setStatus('draft')}
+                        className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Draft</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="published"
+                        checked={status === 'published'}
+                        onChange={() => setStatus('published')}
+                        className="h-4 w-4 text-[#d33] focus:ring-[#d33] border-gray-300"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Published</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -565,10 +810,34 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
                   Previous
                 </button>
               )}
-              {step < 3 ? (
+              {step < totalSteps ? (
                 <button
                   type="button"
-                  onClick={e => { e.preventDefault(); setStep(step + 1); }}
+                  onClick={e => {
+                    e.preventDefault();
+                    if (step === 1) {
+                      if (!selectedFacility) {
+                        setFacilityError('Please select a facility for this course.');
+                        return;
+                      }
+                    }
+                    if (step === 2) {
+                      // Calendar validation
+                      if (formData.schedule.isExamOnly) {
+                        if (!formData.schedule.examDate) {
+                          setCalendarError('Please select the exam date.');
+                          return;
+                        }
+                      } else {
+                        if (!formData.schedule.courseDates || formData.schedule.courseDates.length < 2) {
+                          setCalendarError('Please select all session dates for this course.');
+                          return;
+                        }
+                      }
+                      setCalendarError('');
+                    }
+                    setStep(step + 1);
+                  }}
                   disabled={step === 1 && !formData.title}
                   className={`ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
                     step === 1 && !formData.title
@@ -596,7 +865,8 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
 
 CreateCourseModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  initialOpportunity: PropTypes.object
 };
 
 export default CreateCourseModal; 

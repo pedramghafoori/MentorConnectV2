@@ -72,8 +72,9 @@ const HomePage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (selectedCertifications.length === 0) return;
-    const certObjects = selectedCertifications.map(certValue => ({ type: certValue }));
-    navigate(`/dashboard/search?certifications=${encodeURIComponent(JSON.stringify(certObjects))}&city=${encodeURIComponent(city)}`);
+    // Take the first certification since the Dashboard component expects a single certification
+    const certification = selectedCertifications[0];
+    navigate(`/dashboard?certification=${encodeURIComponent(certification)}&city=${encodeURIComponent(city)}`);
   };
 
   useEffect(() => {

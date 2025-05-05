@@ -41,25 +41,17 @@ const CanadaMentorMap = ({ users, width = 700, height = 500 }) => {
               title={`${user.firstName} ${user.lastName}`}
               style={{
                 position: 'absolute',
-                left: x - 32,
-                top: y - 32,
-                width: 64,
-                height: 64,
+                left: x - 8,
+                top: y - 8,
+                width: 16,
+                height: 16,
                 borderRadius: '50%',
-                border: '3px solid #fff',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                overflow: 'hidden',
-                background: '#eee',
+                background: '#e63946',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 zIndex: 2 + i,
                 transition: 'transform 0.2s',
               }}
-            >
-              <img
-                src={user.avatarUrl}
-                alt={user.firstName}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
+            />
           );
         })}
       </div>

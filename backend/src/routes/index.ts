@@ -7,6 +7,7 @@ import usersRoutes from './users.js';
 import courseRoutes from './course.js';
 import courseTypeRoutes from './courseType.js';
 import opportunityRoutes from './opportunity.js';
+import facilityRoutes from './facility.js';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/users', usersRoutes);
 router.use('/courses', courseRoutes);
 router.use('/course-types', courseTypeRoutes);
 router.use('/opportunities', opportunityRoutes);
+router.use('/facilities', facilityRoutes);
 
 export default router; 

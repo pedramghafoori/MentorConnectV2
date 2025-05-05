@@ -141,4 +141,163 @@
   align-items: center;
   justify-content: center;
   height: 100%;
+}
+
+/* Star Rating */
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star {
+  color: #d1d5db;
+  font-size: 1.2rem;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.star.half-filled {
+  background: linear-gradient(90deg, #fbbf24 50%, #d1d5db 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Quick Action Buttons */
+.mentor-card-actions {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.action-button {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-button:hover {
+  background: #f3f4f6;
+}
+
+.action-button.contact {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+.action-button.book {
+  color: #16a34a;
+  border-color: #16a34a;
+}
+
+.action-button.save {
+  color: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.action-button.save.saved {
+  background: #7c3aed;
+  color: white;
+}
+
+/* Ratings and Reviews */
+.mentor-card-ratings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.reviews-link {
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reviews-link:hover {
+  text-decoration: underline;
+}
+
+.review-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 12px;
+  padding-right: 8px;
+}
+
+.review-item {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.reviewer-name {
+  font-weight: 600;
+}
+
+.review-date {
+  color: #6b7280;
+}
+
+.review-text {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Similar Mentors */
+.similar-mentors {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.similar-mentors h4 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.similar-mentors-list {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.similar-mentor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.similar-mentor-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.similar-mentor-name {
+  font-size: 0.8rem;
+  text-align: center;
+  color: #374151;
 } 

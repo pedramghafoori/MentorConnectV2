@@ -48,7 +48,7 @@
   border: 2px solid #e5e7eb;
   border-radius: 2rem;
   background: #fff;
-  padding: 2.5rem 2.5rem 2.5rem 2.5rem;
+  padding: 0 0 2.5rem 0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   width: 100%;
   max-width: 100%;
@@ -77,11 +77,13 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.opportunity-title {
-  font-size: 1.25rem;
+.opportunity-card-ribbon-title {
+  font-size: 2rem;
   font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1rem;
+  color: #ffffff;
+
+  margin-left: 1rem;
+
 }
 
 .opportunity-notes {
@@ -306,8 +308,9 @@
   .opportunity-card {
     flex-direction: column;
     align-items: stretch;
-    padding: 1.2rem 0.7rem;
-    border-radius: 1.2rem;
+    border-radius: 2rem;
+    margin: 0 auto 1.2rem auto;
+    
     margin: 0 auto 1.2rem auto;
     min-width: 0;
     max-width: 100vw;
@@ -376,6 +379,14 @@
     font-size: 0.9rem;
     padding: 0.4rem 0.8rem;
   }
+  .opportunity-card-ribbon {
+    padding: 0rem 0;
+    min-height: 44px;
+    margin-bottom: 0rem;
+  }
+  .opportunity-card-inner {
+    padding: 0 0.7rem;
+  }
 }
 
 .piggy-bank-icon {
@@ -408,10 +419,17 @@
   opacity: 0.7;
 }
 
+.details-heading {
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+}
+
 .responsibilities-heading {
   font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 0.7rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
   margin-top: 0.5rem;
 }
 
@@ -431,11 +449,11 @@
 }
 
 .prep-requirement-pill {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #fd00503b;
+  color: #ff0000;
   padding: 0.25rem 1.3rem;
   border-radius: 9999px;
-  border: 0.25px solid #e5e7eb;
+  border: 0.25px solid #c52155;
   font-size: 1rem;
   font-weight: 500;
   
@@ -557,14 +575,15 @@
     display: block;
   }
 }
-.opportunity-id{
+.opportunity-card-ribbon-opid{
   font-size: 0.8rem;
   font-weight: 400;
-  color: #959595;
-  margin-bottom: 1.1rem;
-  margin-top: -0.8rem;
+  color: #f0efef;
+  margin-bottom: 0rem;
+  margin-top: -0.4rem;
   text-align: left;
-  margin-left: 0.5rem;
+  margin-left: 1.1rem;
+
 }
 
 @keyframes fadeInScale {
@@ -574,4 +593,21 @@
 @keyframes fadeOutScale {
   from { opacity: 1; transform: scale(1);}
   to { opacity: 0; transform: scale(0.95);}
+}
+
+.opportunity-card-ribbon {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: linear-gradient(10deg, #0d2655 0%, #5eaaff 100%);
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  padding: 1.2rem 0;
+  min-height: 56px;
+  
+  margin-bottom: 1.2rem;
+}
+
+.opportunity-card-inner {
+  padding: 0 2.5rem;
 } 

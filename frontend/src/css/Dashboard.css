@@ -415,6 +415,14 @@
   margin-top: 0.5rem;
 }
 
+.responsibilities-support-text {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 1.1rem;
+  margin-top: -0.3rem;
+  font-weight: 400;
+}
+
 .prep-requirements-container {
   display: flex;
   flex-wrap: wrap;
@@ -532,4 +540,29 @@
     padding-top: 1.2rem;
     box-sizing: border-box;
   }
+  .opportunity-card-title,
+  .opportunity-card-mentor-label,
+  .opportunity-card-mentor-name,
+  .opportunity-card-mentor-years 
+  {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+  .opportunity-card-mentor-avatar {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95);}
+  to { opacity: 1; transform: scale(1);}
+}
+@keyframes fadeOutScale {
+  from { opacity: 1; transform: scale(1);}
+  to { opacity: 0; transform: scale(0.95);}
 } 

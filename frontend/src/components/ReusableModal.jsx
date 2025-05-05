@@ -7,7 +7,10 @@ const ReusableModal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
       <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className={`relative bg-white rounded-2xl shadow-xl w-full ${maxWidth} p-6`}>
+        <div
+          className={`relative bg-white rounded-2xl shadow-xl w-full ${maxWidth} p-6`}
+          onClick={e => e.stopPropagation()}
+        >
           <div className="flex justify-between items-center mb-6">
             {title && <h2 className="text-2xl font-bold text-gray-900">{title}</h2>}
             <button

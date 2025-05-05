@@ -79,20 +79,6 @@ export default function OpportunityCard({ opportunity }) {
             <button className="opportunity-card-apply-btn">Apply</button>
           </div>
         </div>
-        <div className="opportunity-card-expectations">
-          <div className="opportunity-card-clipboard">
-            <img src={clipboardIcon} alt="Expectations" />
-          </div>
-          <div className="opportunity-card-expectation-list">
-            {prepReqs.length > 0 ? (
-              prepReqs.map((req, i) => (
-                <div key={i} className="opportunity-card-expectation">{req}</div>
-              ))
-            ) : (
-              <div className="opportunity-card-expectation">No expectations listed</div>
-            )}
-          </div>
-        </div>
         <div className="opportunity-card-mentor">
           <div className="opportunity-card-mentor-label">About the Mentor</div>
           <img src={mentor.avatarUrl || '/default-avatar.png'} alt="Mentor" className="opportunity-card-mentor-avatar" />
@@ -121,7 +107,7 @@ export default function OpportunityCard({ opportunity }) {
             <div className="notes-title">Notes from mentor</div>
             <div>{opportunity.notes || '[Notes]'}</div>
           </div>
-          <button className="apply-btn-large">Apply</button>
+          
         </div>
       </div>
     </div>

@@ -68,7 +68,7 @@
 
 .opportunity-card-bottom {
   width: 100%;
-  padding: 0 2rem;
+  padding: 0;
   margin-bottom: 1rem;
 }
 
@@ -425,11 +425,12 @@
 .prep-requirement-pill {
   background: #f3f4f6;
   color: #6b7280;
-  padding: 0.5rem 1.3rem;
+  padding: 0.25rem 1.3rem;
   border-radius: 9999px;
+  border: 0.25px solid #e5e7eb;
   font-size: 1rem;
   font-weight: 500;
-  box-shadow: 0 2px 8px 0 #e5e7eb;
+  
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -507,7 +508,7 @@
     padding: 1.2rem 1rem;
   }
   .opportunity-card-bottom {
-    padding: 0 1rem;
+    padding: 0;
   }
   .opportunity-card-top {
     flex-direction: column;

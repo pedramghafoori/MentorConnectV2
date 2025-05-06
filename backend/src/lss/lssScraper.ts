@@ -1,6 +1,8 @@
 import { Builder, By, until, WebDriver, WebElement } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import chromedriver from 'chromedriver';
+import path from 'path';
+import os from 'os';
 
 // Initialize chromedriver
 chromedriver.start();
@@ -14,13 +16,22 @@ export interface Award {
 
 export async function getDriver(): Promise<WebDriver> {
   const options = new chrome.Options();
-  // Use headless Chrome in production, visible in dev
+  
+  // Always use headless mode in production (Heroku)
   if (process.env.NODE_ENV === 'production') {
-    options.addArguments('--headless');
+    options.addArguments('--headless=new');
     options.addArguments('--disable-dev-shm-usage');
     options.addArguments('--no-sandbox');
     options.addArguments('--disable-gpu');
+    options.addArguments('--disable-software-rasterizer');
+    options.addArguments('--disable-extensions');
+    options.addArguments('--single-process');
+    options.addArguments('--no-zygote');
+    // Use a unique user data directory in /tmp (Heroku's ephemeral filesystem)
+    const userDataDir = path.join(os.tmpdir(), `chrome-${Date.now()}`);
+    options.addArguments(`--user-data-dir=${userDataDir}`);
   }
+  
   return await new Builder()
     .forBrowser('chrome')
     .setChromeOptions(options)

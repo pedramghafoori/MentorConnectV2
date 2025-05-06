@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getDriver, fetchCertificationsForLssId } from './lssScraper.js';
 import { User } from '../models/user.js';
+import chromedriver from 'chromedriver';
 
 // Define certification categories and their corresponding awards
 const CERTIFICATION_CATEGORIES = {
@@ -154,6 +155,18 @@ export const getCertifications = async (req: Request, res: Response) => {
     console.error('Error in getCertifications:', error);
     res.status(500).json({ error: 'Error fetching certifications', details: error });
   } finally {
-    if (driver) await driver.quit();
+    if (driver) {
+      try {
+        await driver.quit();
+      } catch (error) {
+        console.error('Error quitting driver:', error);
+      }
+    }
+    // Stop ChromeDriver process
+    try {
+      chromedriver.stop();
+    } catch (error) {
+      console.error('Error stopping ChromeDriver:', error);
+    }
   }
 }; 

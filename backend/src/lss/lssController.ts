@@ -13,7 +13,8 @@ const CERTIFICATION_CATEGORIES = {
   EXAMINER_BRONZE: ['Examiner - Bronze Cross'],
   INSTRUCTOR_TRAINER_LIFESAVING: ['Instructor Trainer - Lifesaving'],
   INSTRUCTOR_TRAINER_NL: ['Instructor Trainer - National Lifeguard'],
-  INSTRUCTOR_TRAINER_FIRST_AID: ['Instructor Trainer - Standard First Aid']
+  INSTRUCTOR_TRAINER_FIRST_AID: ['Instructor Trainer - Standard First Aid'],
+  INSTRUCTOR_TRAINER_SWIM: ['Instructor Trainer - Swim']
 };
 
 // Special certification that grants mentor status
@@ -33,119 +34,119 @@ interface CertificationResponse {
 
 export const getCertifications = async (req: Request, res: Response) => {
   const { lssId } = req.body;
-  let driver = null;
-
+  
   if (!lssId) {
     return res.status(400).json({ error: 'LSS ID is required' });
   }
-
+  
+  console.log(`Starting certification fetch for LSS ID: ${lssId}`);
+  
   try {
-    console.log('Starting certification fetch for LSS ID:', lssId);
-    
-    // Get driver
     console.log('Getting Chrome driver...');
-    driver = await getDriver();
+    const browser = await getDriver();
     console.log('Chrome driver obtained successfully');
-
-    // Fetch certifications
+    
     console.log('Fetching certifications...');
-    const result = await fetchCertificationsForLssId(driver, lssId);
+    const result = await fetchCertificationsForLssId(browser, lssId);
     console.log('Certifications fetched:', result);
+    
+    if (result) {
+      // Process awards into certification categories
+      const processedCertifications: Record<string, ProcessedCertification> = {};
+      let isMentor = false;
 
-    if (!result) {
-      return res.status(404).json({ error: 'No certifications found' });
-    }
-
-    // Process awards into certification categories
-    const processedCertifications: Record<string, ProcessedCertification> = {};
-    let isMentor = false;
-
-    // Initialize all categories as not having credentials
-    Object.keys(CERTIFICATION_CATEGORIES).forEach(category => {
-      processedCertifications[category] = {
-        category,
-        hasCredential: false,
-        yearsOfExperience: 0,
-        earliestDate: null
-      };
-    });
-
-    // Process each award
-    result.awards.forEach(award => {
-      if (!award.name) return;
-
-      // Check for mentor certification
-      if (award.name.includes(MENTOR_CERTIFICATION)) {
-        isMentor = true;
-      }
-
-      // Find matching category
-      for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
-        if (validAwards.some(validAward => award.name?.includes(validAward))) {
-          const years = award.daysLeft ? Math.floor(award.daysLeft / 365) : 0;
-          processedCertifications[category] = {
-            category,
-            hasCredential: true,
-            yearsOfExperience: years,
-            earliestDate: award.issued
-          };
-          break;
-        }
-      }
-    });
-
-    // If user is authenticated, update their certifications
-    if (req.user?.id) {
-      console.log('User is authenticated, updating certifications...');
-      try {
-        // Transform to array of { type, years }
-        const certificationObjects = Object.entries(processedCertifications)
-          .filter(([_, cert]) => cert.hasCredential)
-          .map(([category, cert]) => ({
-            type: category,
-            years: cert.yearsOfExperience
-          }));
-
-        // Create update object
-        const updateData: any = {
-          certifications: certificationObjects
+      // Initialize all categories as not having credentials
+      Object.keys(CERTIFICATION_CATEGORIES).forEach(category => {
+        processedCertifications[category] = {
+          category,
+          hasCredential: false,
+          yearsOfExperience: 0,
+          earliestDate: null
         };
-        
-        // Add role update if user is a mentor
-        if (isMentor) {
-          updateData.role = 'MENTOR';
+      });
+
+      // Process each award
+      result.awards.forEach(award => {
+        if (!award.name) return;
+
+        // Check for mentor certification
+        if (award.name.includes(MENTOR_CERTIFICATION)) {
+          isMentor = true;
         }
 
-        // Update user in MongoDB
-        await User.findByIdAndUpdate(req.user.id, updateData);
-        
-        console.log('User certifications updated successfully');
-      } catch (dbError) {
-        console.error('Error updating user certifications:', dbError);
-        // Don't fail the request if DB update fails
-      }
-    }
+        // Find matching category
+        for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
+          if (validAwards.some(validAward => award.name?.includes(validAward))) {
+            // Calculate years of experience for this specific certification
+            let yearsOfExperience = 0;
+            if (award.issued) {
+              const issueDate = new Date(award.issued);
+              const today = new Date();
+              const diffTime = Math.abs(today.getTime() - issueDate.getTime());
+              yearsOfExperience = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+              console.log(`Calculated ${yearsOfExperience} years for ${award.name} from ${issueDate.toISOString()}`);
+            }
 
-    // Return processed certifications
-    return res.json({
-      certifications: processedCertifications,
-      isMentor
-    });
+            processedCertifications[category] = {
+              category,
+              hasCredential: true,
+              yearsOfExperience,
+              earliestDate: award.issued
+            };
+            break;
+          }
+        }
+      });
+
+      // Calculate overall years of experience based on earliest certification
+      let earliestDate: Date | null = null;
+      result.awards.forEach(award => {
+        if (award.issued) {
+          const issueDate = new Date(award.issued);
+          if (!earliestDate || issueDate.getTime() < earliestDate.getTime()) {
+            earliestDate = issueDate;
+          }
+        }
+      });
+      
+      const overallYearsOfExperience = earliestDate 
+        ? Math.floor((new Date().getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+        : 0;
+      
+      console.log('Overall years of experience:', overallYearsOfExperience);
+      
+      // Update the user's years of experience and certifications in the database
+      await User.findOneAndUpdate(
+        { lssId },
+        { 
+          $set: { 
+            yearsOfExperience: overallYearsOfExperience,
+            certifications: Object.entries(processedCertifications)
+              .filter(([_, cert]) => cert.hasCredential)
+              .map(([category, cert]) => ({
+                type: category,
+                years: cert.yearsOfExperience
+              })),
+            isMentor
+          }
+        },
+        { new: true }
+      );
+      
+      res.json({ 
+        certifications: processedCertifications,
+        isMentor,
+        yearsOfExperience: overallYearsOfExperience
+      });
+    } else {
+      res.status(404).json({ error: 'No certifications found' });
+    }
+    
+    console.log('Quitting Chrome driver...');
+    await browser.close();
+    console.log('Chrome driver quit successfully');
   } catch (error) {
     console.error('Error in getCertifications:', error);
-    return res.status(500).json({ 
-      error: 'Error fetching certifications',
-      details: error
-    });
-  } finally {
-    if (driver) {
-      try {
-        console.log('Quitting Chrome driver...');
-        await driver.close();
-        console.log('Chrome driver quit successfully');
-      } catch (quitError) {
-        console.error('Error quitting Chrome driver:', quitError);
-      }
-    }
+    res.status(500).json({ error: 'Failed to fetch certifications' });
   }
 }; 

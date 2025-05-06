@@ -27,7 +27,6 @@
     "nodemailer": "^6.10.1",
     "selenium-webdriver": "^4.31.0",
     "stripe": "^18.1.0",
-    "uuid": "^11.1.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {

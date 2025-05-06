@@ -452,42 +452,40 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         <div className="register-progress-bar">
           <div 
             className="register-progress-fill" 
-            style={{ width: `${(currentStep / 5) * 100}%` }}
+            style={{ width: `${(currentStep / 4) * 100}%` }}
           ></div>
         </div>
       </div>
       
-      
-      
       <form onSubmit={handleSubmit} className="register-form">
         <div className="relative">
+          {/* Step 1: Basic Information */}
           <div className={getStepClasses(1)}>
             <h3 className="register-step-title">We're excited to have you here!</h3>
             
-            
             <div className="register-input-group">
               <label htmlFor="firstName" className="register-label">First Name</label>
-          <input
-            id="firstName"
-            type="text"
-            value={firstName}
-            onChange={e => setFirstName(e.target.value)}
+              <input
+                id="firstName"
+                type="text"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
                 className="register-input"
-            required
-          />
-        </div>
+                required
+              />
+            </div>
 
             <div className="register-input-group">
               <label htmlFor="lastName" className="register-label">Last Name</label>
-          <input
-            id="lastName"
-            type="text"
-            value={lastName}
-            onChange={e => setLastName(e.target.value)}
+              <input
+                id="lastName"
+                type="text"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
                 className="register-input"
-            required
-          />
-        </div>
+                required
+              />
+            </div>
 
             <button 
               type="button" 
@@ -496,24 +494,22 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             >
               Next
             </button>
-            
-            {/* Progress bar removed from step 1 */}
           </div>
           
+          {/* Step 2: Contact Information */}
           <div className={getStepClasses(2)}>
             <h3 className="register-step-title">More information</h3>
             
             <div className="register-input-group">
               <label htmlFor="lssId" className="register-label">LSS ID</label>
-              
-          <input
-            id="lssId"
-            type="text"
-            value={lssId}
+              <input
+                id="lssId"
+                type="text"
+                value={lssId}
                 onChange={handleLssIdChange}
                 className={`register-input ${!isLssIdValid ? 'register-input-invalid' : ''}`}
                 maxLength={6}
-            required
+                required
               />
               <p className="register-helper-text">
                 We will use this to verify your profile and fetch your certifications for you.
@@ -523,31 +519,31 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   LSS ID must be exactly 6 characters long.
                 </p>
               )}
-        </div>
+            </div>
 
             <div className="register-input-group">
               <label htmlFor="email" className="register-label">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 className="register-input"
-            required
-          />
-        </div>
+                required
+              />
+            </div>
 
             <div className="register-input-group">
               <label htmlFor="phone" className="register-label">Phone Number</label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
+              <input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
                 className="register-input"
-            required
-          />
-        </div>
+                required
+              />
+            </div>
 
             <div className="register-button-group">
               <button 
@@ -568,10 +564,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                 {isLoading ? 'Fetching...' : 'Next'}
               </button>
             </div>
-            
-            {/* Progress bar removed from step 2 */}
           </div>
           
+          {/* Step 3: Additional Information */}
           <div className={getStepClasses(3)}>
             <h3 className="register-step-title">Tell us a little bit more about yourself</h3>
             <p className="register-subtitle">You can always edit this information later in settings</p>
@@ -720,100 +715,43 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                 Next
               </button>
             </div>
-            
-            {/* Progress bar removed from step 3 */}
           </div>
           
+          {/* Step 4: Password and Terms */}
           <div className={getStepClasses(4)}>
-            <h3 className="register-step-title">Add a profile picture (optional)</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-              {getAvatarPreview()}
-              <button
-                type="button"
-                className="register-button-secondary"
-                style={{ marginTop: 8 }}
-                onClick={() => setShowPictureEditor(true)}
-              >
-                {profileImage ? 'Edit Picture' : 'Upload Picture'}
-              </button>
-              {profileImage && (
-                <button
-                  type="button"
-                  className="register-link"
-                  style={{ color: '#d00', marginTop: 4 }}
-                  onClick={handlePictureDelete}
-                >
-                  Remove Picture
-                </button>
-              )}
-              <p className="register-helper-text" style={{ marginTop: 8 }}>
-                You can skip this step and add a picture later in your profile settings.
-              </p>
-            </div>
-            <div className="register-button-group">
-              <button 
-                type="button" 
-                onClick={goToPrevStep}
-                className="register-button-secondary"
-              >
-                Back
-              </button>
-              <button 
-                type="button" 
-                onClick={goToNextStep}
-                className="register-button-primary"
-              >
-                Next
-              </button>
-            </div>
-            {showPictureEditor && (
-              <ProfilePictureEditor
-                open={showPictureEditor}
-                onClose={() => setShowPictureEditor(false)}
-                onSave={handlePictureSave}
-                onDelete={handlePictureDelete}
-                initialImage={profileImage ? avatarPreviewUrl : null}
-                initialCrop={avatarCrop}
-                firstName={firstName}
-                lastName={lastName}
-              />
-            )}
-        </div>
-
-          <div className={getStepClasses(5)}>
             <h3 className="register-step-title">Let's set a password for your account</h3>
             
             <div className="register-input-group">
               <label htmlFor="password" className="register-label">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
                 className="register-input"
-          />
+              />
               <p className="register-helper-text">
                 Password must be at least 8 characters and include uppercase, lowercase, and a number.
               </p>
-        </div>
+            </div>
 
             <div className="register-input-group">
               <label htmlFor="confirmPassword" className="register-label">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            required
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
                 className="register-input"
-          />
-        </div>
+              />
+            </div>
 
             <div className="register-input-group">
               <label className="register-terms-label">
-                  <input
-                    type="checkbox"
+                <input
+                  type="checkbox"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
                   className="register-terms-checkbox"
@@ -828,9 +766,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   <Link to="/mentor-agreement" className="register-link" target="_blank" rel="noopener noreferrer">
                     User Agreement
                   </Link>
-                  </span>
-                </label>
-        </div>
+                </span>
+              </label>
+            </div>
 
             {error && <p className="register-error-message">{error}</p>}
             {success && <p className="register-success-text">{success}</p>}
@@ -843,17 +781,15 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               >
                 Back
               </button>
-        
-        <button 
-          type="submit"
+              
+              <button 
+                type="submit"
                 className="register-button-primary"
                 disabled={!termsAccepted}
-        >
-          Register
-        </button>
+              >
+                Register
+              </button>
             </div>
-            
-            {/* Progress bar removed from step 5 */}
           </div>
         </div>
 

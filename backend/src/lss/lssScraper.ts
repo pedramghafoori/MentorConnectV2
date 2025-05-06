@@ -28,9 +28,22 @@ export async function getDriver(): Promise<WebDriver> {
     options.addArguments('--disable-extensions');
     options.addArguments('--single-process');
     options.addArguments('--no-zygote');
-    // Use a truly unique user data directory
-    const userDataDir = path.join(os.tmpdir(), `chrome-${uuidv4()}`);
-    options.addArguments(`--user-data-dir=${userDataDir}`);
+    
+    // Additional stability flags
+    options.addArguments('--remote-debugging-port=9222');
+    options.addArguments('--disable-background-networking');
+    options.addArguments('--disable-background-timer-throttling');
+    options.addArguments('--disable-client-side-phishing-detection');
+    options.addArguments('--disable-default-apps');
+    options.addArguments('--disable-hang-monitor');
+    options.addArguments('--disable-popup-blocking');
+    options.addArguments('--disable-prompt-on-repost');
+    options.addArguments('--metrics-recording-only');
+    options.addArguments('--no-first-run');
+    options.addArguments('--safebrowsing-disable-auto-update');
+    options.addArguments('--disable-web-security');
+    options.addArguments('--allow-running-insecure-content');
+    options.addArguments('--window-size=1920,1080');
   }
   
   return await new Builder()

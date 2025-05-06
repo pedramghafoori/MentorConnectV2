@@ -204,6 +204,16 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     setError('');
     setSuccess('');
     
+    // Add debug logging
+    console.log('Password validation:', {
+      password,
+      hasLowercase: /[a-z]/.test(password),
+      hasUppercase: /[A-Z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasMinLength: password.length >= 8,
+      isValid: isStrongPassword(password)
+    });
+    
     if (!isStrongPassword(password)) {
       setError('Password must be at least 8 characters and include uppercase, lowercase, and a number.');
       return;

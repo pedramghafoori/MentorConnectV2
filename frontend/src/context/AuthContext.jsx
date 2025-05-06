@@ -35,6 +35,18 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
+  const register = async (userData) => {
+    try {
+      const response = await api.post('/auth/register', userData);
+      setUser(response.data.user);
+      // After registration, fetch full profile
+      await fetchFullUserProfile();
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const login = async (credentials, onSuccess) => {
     try {
       const response = await api.post('/auth/login', credentials);
@@ -57,7 +69,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

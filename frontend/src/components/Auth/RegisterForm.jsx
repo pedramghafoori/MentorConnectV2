@@ -143,8 +143,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         if (!certificationsFetched) {
           setIsLoading(true);
           setError('');
-          // Fetch certifications using the same endpoint as the profile page
-          const response = await axios.post('/lss/certifications', { lssId });
+          // Fetch certifications using the correct API endpoint
+          const response = await axios.post('/api/lss/certifications', { lssId });
           if (response.data && response.data.certifications) {
             // Transform to array of { type, years }
             const certArray = Object.entries(response.data.certifications)

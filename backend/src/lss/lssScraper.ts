@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer';
+import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer-core';
 
 export interface Award {
   name: string | null;
@@ -13,6 +13,7 @@ export async function getDriver(): Promise<Browser> {
   
   const launchOptions = {
     headless: true,
+    executablePath: process.env.CHROME_BINARY_PATH || '/app/.apt/usr/bin/google-chrome',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -23,6 +24,7 @@ export async function getDriver(): Promise<Browser> {
     ],
   };
   
+  console.log('Chrome binary path:', launchOptions.executablePath);
   const browser = await puppeteer.launch(launchOptions);
   console.log('Puppeteer initialized successfully');
   return browser;

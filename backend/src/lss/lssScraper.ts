@@ -1,12 +1,4 @@
-import { Builder, By, until, WebDriver, WebElement } from 'selenium-webdriver';
-import chrome from 'selenium-webdriver/chrome.js';
-import chromedriver from 'chromedriver';
-import path from 'path';
-import os from 'os';
-import { v4 as uuidv4 } from 'uuid';
-
-// Initialize chromedriver
-chromedriver.start();
+import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer';
 
 export interface Award {
   name: string | null;
@@ -15,86 +7,40 @@ export interface Award {
   daysLeft: number | null;
 }
 
-export async function getDriver(): Promise<WebDriver> {
-  console.log('Initializing Chrome driver...');
+export async function getDriver(): Promise<Browser> {
+  console.log('Initializing Puppeteer...');
   console.log('Environment:', process.env.NODE_ENV);
   
-  const options = new chrome.Options();
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+      '--window-size=1920x1080',
+    ],
+  });
   
-  // Always use headless mode in production (Heroku)
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Setting up production Chrome options...');
-    
-    // Production-specific options
-    options.addArguments('--headless=new');
-    options.addArguments('--disable-dev-shm-usage');
-    options.addArguments('--no-sandbox');
-    options.addArguments('--disable-gpu');
-    options.addArguments('--disable-software-rasterizer');
-    options.addArguments('--disable-extensions');
-    options.addArguments('--single-process');
-    options.addArguments('--no-zygote');
-    
-    // Additional stability flags
-    options.addArguments('--remote-debugging-port=9222');
-    options.addArguments('--disable-background-networking');
-    options.addArguments('--disable-background-timer-throttling');
-    options.addArguments('--disable-client-side-phishing-detection');
-    options.addArguments('--disable-default-apps');
-    options.addArguments('--disable-hang-monitor');
-    options.addArguments('--disable-popup-blocking');
-    options.addArguments('--disable-prompt-on-repost');
-    options.addArguments('--metrics-recording-only');
-    options.addArguments('--no-first-run');
-    options.addArguments('--safebrowsing-disable-auto-update');
-    options.addArguments('--disable-web-security');
-    options.addArguments('--allow-running-insecure-content');
-    options.addArguments('--window-size=1920,1080');
-    
-    // Set binary path for Heroku
-    const chromeBinaryPath = process.env.CHROME_BINARY_PATH || '/app/.apt/usr/bin/google-chrome';
-    console.log('Chrome binary path:', chromeBinaryPath);
-    options.setChromeBinaryPath(chromeBinaryPath);
-  }
-  
-  try {
-    // Set service path for chromedriver
-    const serviceBuilder = new chrome.ServiceBuilder()
-      .setPort(4444); // Use a fixed port
-    
-    console.log('Building Chrome driver...');
-    const driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(options)
-      .setChromeService(serviceBuilder)
-      .build();
-    
-    console.log('Chrome driver initialized successfully');
-    return driver;
-  } catch (error) {
-    console.error('Failed to initialize Chrome driver:', error);
-    throw error;
-  }
+  console.log('Puppeteer initialized successfully');
+  return browser;
 }
 
-export async function parseAwardsFromTable(container: WebElement): Promise<Award[]> {
+export async function parseAwardsFromTable(page: Page): Promise<Award[]> {
   const detailedAwards: Award[] = [];
   try {
-    const table = await container.findElement(By.tagName('table'));
-    let tableBody: WebElement;
-    try {
-      tableBody = await table.findElement(By.tagName('tbody'));
-    } catch {
-      tableBody = table;
-    }
-    const rows = await tableBody.findElements(By.tagName('tr'));
+    const rows = await page.$$('table tr');
     console.log('\n=== Raw Awards Data from LSS Website ===');
+    
     for (const row of rows) {
-      const tds = await row.findElements(By.tagName('td'));
+      const tds = await row.$$('td');
       if (tds.length !== 3) continue;
-      const issuedStr = (await tds[0].getText()).trim();
-      const expiryStr = (await tds[1].getText()).trim();
-      const awardStr = (await tds[2].getText()).trim();
+      
+      const issuedStr = await tds[0].evaluate((el: Element) => el.textContent?.trim() || '');
+      const expiryStr = await tds[1].evaluate((el: Element) => el.textContent?.trim() || '');
+      const awardStr = await tds[2].evaluate((el: Element) => el.textContent?.trim() || '');
+      
       console.log(`\nAward Details:`);
       console.log(`- Name: ${awardStr}`);
       console.log(`- Issued: ${issuedStr}`);
@@ -102,6 +48,7 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
       
       let daysLeft: number | null = null;
       let issueDate: Date | null = null;
+      
       if (issuedStr) {
         try {
           issueDate = new Date(issuedStr);
@@ -110,6 +57,7 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
           console.error(`  Failed to parse issue date: ${issuedStr}`, error);
         }
       }
+      
       if (expiryStr) {
         try {
           const expiryDate = new Date(expiryStr);
@@ -120,6 +68,7 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
           console.error(`  Failed to parse expiry date: ${expiryStr}`, error);
         }
       }
+      
       detailedAwards.push({
         name: awardStr || null,
         issued: issueDate ? issueDate.toISOString() : null,
@@ -134,47 +83,47 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
   return detailedAwards;
 }
 
-export async function fetchCertificationsForLssId(driver: WebDriver, lssId: string): Promise<{ name: string, awards: Award[] } | null> {
+export async function fetchCertificationsForLssId(browser: Browser, lssId: string): Promise<{ name: string, awards: Award[] } | null> {
   console.log(`\n=== Fetching certifications for LSS ID: ${lssId} ===`);
-  await driver.get('https://www.lifesavingsociety.com/find-a-member.aspx');
+  const page = await browser.newPage();
+  
   try {
+    await page.goto('https://www.lifesavingsociety.com/find-a-member.aspx');
+    
     // Fill in LSS ID
-    const inputBox = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CustomerCodeTextBox'));
-    await inputBox.clear();
-    await inputBox.sendKeys(lssId);
+    await page.type('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CustomerCodeTextBox', lssId);
     
     // Set dropdown to 'All Certifications'
-    const dropdownElem = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1'));
-    await dropdownElem.sendKeys('All Certifications');
+    await page.select('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1', 'All Certifications');
     console.log('Selected "All Certifications" from dropdown');
     
     // Click GetCertifications
-    const button = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton'));
-    await button.click();
+    await page.click('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton');
     
     // Wait for results
-    await driver.wait(until.elementLocated(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView')), 10000);
-    const container = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView'));
+    await page.waitForSelector('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView', { timeout: 10000 });
     
     // Parse name
     let foundName = 'Unknown';
     try {
-      const nameElem = await driver.findElement(By.xpath("//p[label[text()='Re:']]"));
-      const reText = (await nameElem.getText()).trim();
-      if (reText.includes('Re:')) {
-        const possibleName = reText.split('Re:', 2)[1].trim();
+      const nameText = await page.$eval('p:has(label:text("Re:"))', (el: Element) => el.textContent?.trim() || '');
+      if (nameText.includes('Re:')) {
+        const possibleName = nameText.split('Re:', 2)[1].trim();
         if (possibleName) foundName = possibleName;
       }
     } catch {}
     
     // Parse awards
-    const awards = await parseAwardsFromTable(container);
+    const awards = await parseAwardsFromTable(page);
     console.log('\n=== Processed Awards Summary ===');
     console.log(JSON.stringify(awards, null, 2));
     console.log('=== End of Processed Awards ===\n');
+    
+    await page.close();
     return { name: foundName, awards };
   } catch (err) {
     console.error('Error fetching certifications:', err);
+    await page.close();
     return null;
   }
 } 

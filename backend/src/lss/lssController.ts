@@ -141,7 +141,7 @@ export const getCertifications = async (req: Request, res: Response) => {
     if (driver) {
       try {
         console.log('Quitting Chrome driver...');
-        await driver.quit();
+        await driver.close();
         console.log('Chrome driver quit successfully');
       } catch (quitError) {
         console.error('Error quitting Chrome driver:', quitError);

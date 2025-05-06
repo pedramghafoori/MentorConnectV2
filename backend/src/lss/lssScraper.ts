@@ -11,7 +11,7 @@ export async function getDriver(): Promise<Browser> {
   console.log('Initializing Puppeteer...');
   console.log('Environment:', process.env.NODE_ENV);
   
-  const launchOptions: any = {
+  const launchOptions = {
     headless: true,
     args: [
       '--no-sandbox',
@@ -22,13 +22,6 @@ export async function getDriver(): Promise<Browser> {
       '--window-size=1920x1080',
     ],
   };
-
-  // In production, use the Chrome binary from the buildpack
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Setting up production Chrome options...');
-    launchOptions.executablePath = process.env.CHROME_BINARY_PATH || '/app/.apt/usr/bin/google-chrome';
-    console.log('Chrome binary path:', launchOptions.executablePath);
-  }
   
   const browser = await puppeteer.launch(launchOptions);
   console.log('Puppeteer initialized successfully');

@@ -20,6 +20,7 @@ export async function getDriver(): Promise<WebDriver> {
   
   // Always use headless mode in production (Heroku)
   if (process.env.NODE_ENV === 'production') {
+    // Production-specific options
     options.addArguments('--headless=new');
     options.addArguments('--disable-dev-shm-usage');
     options.addArguments('--no-sandbox');
@@ -44,11 +45,20 @@ export async function getDriver(): Promise<WebDriver> {
     options.addArguments('--disable-web-security');
     options.addArguments('--allow-running-insecure-content');
     options.addArguments('--window-size=1920,1080');
+    
+    // Set binary path for Heroku
+    const chromeBinaryPath = process.env.CHROME_BINARY_PATH || '/app/.apt/usr/bin/google-chrome';
+    options.setChromeBinaryPath(chromeBinaryPath);
   }
+  
+  // Set service path for chromedriver
+  const serviceBuilder = new chrome.ServiceBuilder()
+    .setPort(4444); // Use a fixed port
   
   return await new Builder()
     .forBrowser('chrome')
     .setChromeOptions(options)
+    .setChromeService(serviceBuilder)
     .build();
 }
 

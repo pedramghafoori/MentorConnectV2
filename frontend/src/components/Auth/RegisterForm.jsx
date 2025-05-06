@@ -138,32 +138,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       }
       
       setIsLssIdValid(true);
-      
-      try {
-        if (!certificationsFetched) {
-          setIsLoading(true);
-          setError('');
-          // Fetch certifications using the correct API endpoint
-          const response = await axios.post('/api/lss/certifications', { lssId });
-          if (response.data && response.data.certifications) {
-            // Transform to array of { type, years }
-            const certArray = Object.entries(response.data.certifications)
-              .filter(([_, cert]) => cert.hasCredential)
-              .map(([category, cert]) => ({
-                type: category,
-                years: cert.yearsOfExperience
-              }));
-            setCertifications(certArray);
-          }
-          setCertificationsFetched(true);
-        }
-      } catch (err) {
-        console.error('Failed to fetch certifications:', err);
-        // Don't block progression if fetch fails
-        setCertifications([]);
-      } finally {
-        setIsLoading(false);
-      }
+      // Skip certification fetch during registration - will be done after login
+      setCertifications([]);
     }
     
     if (currentStep === 4) {

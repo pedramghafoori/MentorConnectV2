@@ -13,7 +13,7 @@ export async function getDriver(): Promise<Browser> {
   
   const launchOptions = {
     headless: true,
-    executablePath: process.env.CHROME_BINARY_PATH || '/app/.apt/usr/bin/google-chrome',
+    executablePath: "/app/.chrome-for-testing/chrome-linux64/chrome",
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -128,5 +128,89 @@ export async function fetchCertificationsForLssId(browser: Browser, lssId: strin
     console.error('Error fetching certifications:', err);
     await page.close();
     return null;
+  }
+}
+
+export async function scrapeLSSAwards(lssId: string): Promise<{ name: string | null; awards: Award[] }> {
+  console.log(`Starting scrape for LSS ID: ${lssId}`);
+  const browser = await getDriver();
+  const page = await browser.newPage();
+  
+  try {
+    // Navigate to the LSS website
+    await page.goto('https://www.lifesavingsociety.com/find-a-member.aspx', {
+      waitUntil: 'networkidle0',
+      timeout: 30000
+    });
+
+    // Fill in the LSS ID
+    await page.waitForSelector('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CustomerCodeTextBox');
+    await page.type('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CustomerCodeTextBox', lssId);
+
+    // Select 'Complete' from dropdown
+    await page.waitForSelector('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1');
+    await page.select('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1', 'Complete');
+
+    // Click the GetCertifications button
+    await page.waitForSelector('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton');
+    await page.click('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton');
+
+    // Wait for results container
+    try {
+      await page.waitForSelector('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView', {
+        timeout: 5000
+      });
+    } catch (error) {
+      console.log('No results container found - likely invalid LSS ID');
+      return { name: null, awards: [] };
+    }
+
+    // Try to get the name from the Re: line
+    let name = null;
+    try {
+      const nameElement = await page.waitForSelector('p:has(label:text("Re:"))', { timeout: 5000 });
+      if (nameElement) {
+        const nameText = await nameElement.evaluate(el => el.textContent);
+        if (nameText && nameText.includes('Re:')) {
+          name = nameText.split('Re:')[1].trim();
+        }
+      }
+    } catch (error) {
+      console.log('Could not find name element');
+    }
+
+    // Get the awards table
+    const awards = await page.evaluate(() => {
+      const awards: Award[] = [];
+      const rows = document.querySelectorAll('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView table tr');
+      
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 3) {
+          const issued = cells[0].textContent?.trim() || null;
+          const expiry = cells[1].textContent?.trim() || null;
+          const name = cells[2].textContent?.trim() || null;
+          
+          let daysLeft = null;
+          if (expiry) {
+            const expiryDate = new Date(expiry);
+            const today = new Date();
+            const diffTime = expiryDate.getTime() - today.getTime();
+            daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          }
+          
+          awards.push({ name, issued, expiry, daysLeft });
+        }
+      });
+      
+      return awards;
+    });
+
+    return { name, awards };
+  } catch (error) {
+    console.error('Error scraping LSS awards:', error);
+    return { name: null, awards: [] };
+  } finally {
+    await browser.close();
   }
 } 

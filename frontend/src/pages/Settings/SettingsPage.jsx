@@ -9,6 +9,7 @@ import AccountDangerZone from './AccountDangerZone';
 import { FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 import LANGUAGES from '../../lib/languages.json';
+import api from '../../lib/api';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
@@ -86,6 +87,9 @@ export default function SettingsPage() {
   const [workplacesLoading, setWorkplacesLoading] = useState(false);
   const [workplacesError, setWorkplacesError] = useState(null);
   const [workplacesSuccess, setWorkplacesSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
     if (fullUserData) {
@@ -157,6 +161,26 @@ export default function SettingsPage() {
       setWorkplaces(fullUserData.workplaces);
     }
   }, [fullUserData]);
+
+  // Check for success message in URL params and refresh user data
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    console.log('URL params:', Object.fromEntries(params.entries()));
+    console.log('Current user data:', fullUserData);
+    
+    if (params.get('success')) {
+      console.log('Success param found, refreshing user data...');
+      setSuccess('Stripe account connected successfully!');
+      // Refresh user data to get updated stripeAccountId
+      refetch().then(() => {
+        console.log('User data refreshed');
+      }).catch(error => {
+        console.error('Error refreshing user data:', error);
+      });
+      // Clear the success message after 5 seconds
+      setTimeout(() => setSuccess(null), 5000);
+    }
+  }, [refetch, fullUserData]);
 
   const allowTwoApprentices = fullUserData?.role === 'MENTOR'
     && ratingSummary.count >= 5
@@ -384,6 +408,23 @@ export default function SettingsPage() {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddWorkplace();
+    }
+  };
+
+  const handleEnablePayouts = async () => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      // Include user ID in the state parameter for verification
+      const response = await api.post('/stripe/create-oauth-link', {
+        state: fullUserData._id
+      });
+      window.location.href = response.data.url;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to enable payouts. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -799,6 +840,34 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+              {fullUserData?.role === 'MENTOR' && (
+                <div className="settings-subsection mt-8">
+                  <h3 className="settings-subsection-title">Payout Settings</h3>
+                  <div className="flex flex-col gap-4 max-w-md">
+                    {fullUserData?.stripeAccountId ? (
+                      <div className="flex items-center gap-2">
+                        <span className="badge badge-success">Payouts enabled</span>
+                        <span className="text-sm text-gray-600">Your Stripe account is connected</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <p className="text-sm text-gray-600">
+                          Connect your Stripe account to receive payouts for your mentoring sessions.
+                        </p>
+                        <button
+                          onClick={handleEnablePayouts}
+                          disabled={isLoading}
+                          className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                        >
+                          {isLoading ? 'Processing...' : 'Enable payouts'}
+                        </button>
+                        {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
+                        {success && <div className="text-green-600 text-sm mt-1">{success}</div>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </section>
           )}
           {selected === 'account' && (

@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import TermsPage from './pages/Legal/TermsPage';
 import MentorAgreementPage from './pages/Legal/MentorAgreementPage';
 import MyCourses from './pages/Dashboard/mentor/MyCourses';
+import TestPager1 from './pages/TestPager1.jsx';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -21,6 +22,7 @@ const App = () => {
         <Navbar />
         <main className="flex-grow">
           <Routes>
+            <Route path="/testpager1" element={<TestPager1 />} />
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />

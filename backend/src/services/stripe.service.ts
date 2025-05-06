@@ -1,0 +1,68 @@
+import Stripe from 'stripe';
+import { User } from '../models/user.model.js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-04-30.basil',
+});
+
+export class StripeService {
+  static async createOAuthLink(userId: string, state: string): Promise<string> {
+    try {
+      // Check if user already has a Stripe account
+      let user = await User.findById(userId);
+      let stripeAccountId = user?.stripeAccountId;
+
+      // If not, create a new Stripe account and save it
+      if (!stripeAccountId) {
+        const account = await stripe.accounts.create({
+          type: 'standard',
+          email: user?.email,
+          metadata: {
+            userId: userId
+          }
+        });
+        stripeAccountId = account.id;
+        console.log('Saving stripeAccountId:', stripeAccountId, 'to user:', userId);
+        const updatedUser = await User.findByIdAndUpdate(userId, { stripeAccountId }, { new: true });
+        console.log('Updated user after adding Stripe account ID:', updatedUser);
+      }
+
+      // Create an account link for onboarding using the Stripe account ID
+      const accountLink = await stripe.accountLinks.create({
+        account: stripeAccountId,
+        refresh_url: 'http://localhost:5173/settings',
+        return_url: 'http://localhost:5173/settings',
+        type: 'account_onboarding',
+        collect: 'eventually_due',
+      });
+
+      return accountLink.url;
+    } catch (error) {
+      console.error('Error creating Stripe OAuth link:', error);
+      throw error;
+    }
+  }
+
+  static async handleOAuthCallback(code: string): Promise<string> {
+    const response = await stripe.oauth.token({
+      grant_type: 'authorization_code',
+      code,
+    });
+
+    if (!response.stripe_user_id) {
+      throw new Error('Failed to get Stripe user ID');
+    }
+
+    return response.stripe_user_id;
+  }
+
+  static async updateUserStripeAccount(userId: string, stripeAccountId: string): Promise<void> {
+    console.log('Updating user', userId, 'with Stripe account ID:', stripeAccountId);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { stripeAccountId },
+      { new: true }
+    );
+    console.log('Updated user:', updatedUser);
+  }
+} 

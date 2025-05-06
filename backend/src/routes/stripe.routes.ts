@@ -8,6 +8,9 @@ const router = express.Router();
 router.post('/create-oauth-link', auth, async (req, res) => {
   try {
     console.log('req.user:', req.user);
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     if (req.user.role !== 'MENTOR') {
       return res.status(403).json({ message: 'Only mentors can enable payouts' });
     }
@@ -29,7 +32,10 @@ router.post('/create-oauth-link', auth, async (req, res) => {
 router.get('/oauth/callback', auth, async (req, res) => {
   try {
     const { code, state } = req.query;
-    console.log('OAuth callback received:', { code, state, userId: req.user?.id });
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    console.log('OAuth callback received:', { code, state, userId: req.user.userId });
 
     if (!code || !state) {
       console.error('Missing parameters:', { code, state });
@@ -37,8 +43,8 @@ router.get('/oauth/callback', auth, async (req, res) => {
     }
 
     // Verify state matches the logged-in user
-    if (state !== req.user.id) {
-      console.error('State mismatch:', { state, userId: req.user?.id });
+    if (state !== req.user.userId) {
+      console.error('State mismatch:', { state, userId: req.user.userId });
       return res.status(403).json({ message: 'Invalid state parameter' });
     }
 
@@ -49,7 +55,7 @@ router.get('/oauth/callback', auth, async (req, res) => {
 
     // Update user with Stripe account ID
     console.log('Updating user with Stripe account ID...');
-    await StripeService.updateUserStripeAccount(req.user.id, stripeAccountId);
+    await StripeService.updateUserStripeAccount(req.user.userId, stripeAccountId);
     console.log('User updated successfully');
 
     // Redirect back to frontend settings with success message

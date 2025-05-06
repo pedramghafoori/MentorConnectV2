@@ -5,7 +5,7 @@ import { FaTimes } from 'react-icons/fa';
 import Select from 'react-select';
 import CANADIAN_CITIES from '../../lib/cities.json';
 import LANGUAGES from '../../lib/languages.json';
-import axios from 'axios';
+import api from '../../lib/api';
 import './RegisterForm.css';
 import ProfilePictureEditor from '../../components/ProfilePictureEditor';
 import AvatarFallback from '../../components/AvatarFallback';
@@ -143,8 +143,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         if (!certificationsFetched) {
           setIsLoading(true);
           setError('');
-          // Fetch certifications using the correct API endpoint
-          const response = await axios.post('/api/lss/certifications', { lssId });
+          // Use the configured API instance
+          const response = await api.post('/lss/certifications', { lssId });
           if (response.data && response.data.certifications) {
             // Transform to array of { type, years }
             const certArray = Object.entries(response.data.certifications)
@@ -231,7 +231,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         // Upload image to backend (assume /users/avatar endpoint returns URL)
         const formData = new FormData();
         formData.append('avatar', profileImage);
-        const uploadRes = await axios.post('/users/avatar', formData, {
+        const uploadRes = await api.post('/users/avatar', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         avatarUrl = uploadRes.data.url;

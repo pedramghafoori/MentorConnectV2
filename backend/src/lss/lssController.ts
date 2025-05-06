@@ -39,9 +39,10 @@ export const getCertifications = async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Missing lssId in request body' });
   }
 
-  if (!userId) {
-    return res.status(401).json({ error: 'User not authenticated' });
-  }
+  // Remove authentication check since we want to allow unauthenticated access
+  // if (!userId) {
+  //   return res.status(401).json({ error: 'User not authenticated' });
+  // }
   
   let driver;
   try {
@@ -132,16 +133,19 @@ export const getCertifications = async (req: Request, res: Response) => {
     console.log('\n=== Final Processed Certifications ===');
     console.log(JSON.stringify(processedCertifications, null, 2));
 
-    // If user is a mentor, update their role in the database
-    if (isMentor) {
-      await User.findByIdAndUpdate(userId, { 
-        role: 'MENTOR',
-        certifications: certificationObjects
-      });
-    } else {
-      await User.findByIdAndUpdate(userId, { 
-        certifications: certificationObjects
-      });
+    // Only update user if authenticated
+    if (userId) {
+      // If user is a mentor, update their role in the database
+      if (isMentor) {
+        await User.findByIdAndUpdate(userId, { 
+          role: 'MENTOR',
+          certifications: certificationObjects
+        });
+      } else {
+        await User.findByIdAndUpdate(userId, { 
+          certifications: certificationObjects
+        });
+      }
     }
 
     // Return both certifications and mentor status

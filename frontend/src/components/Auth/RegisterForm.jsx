@@ -156,12 +156,13 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             setCertifications(certArray);
           }
           setCertificationsFetched(true);
-          setIsLoading(false);
         }
       } catch (err) {
-        setIsLoading(false);
         console.error('Failed to fetch certifications:', err);
         // Don't block progression if fetch fails
+        setCertifications([]);
+      } finally {
+        setIsLoading(false);
       }
     }
     

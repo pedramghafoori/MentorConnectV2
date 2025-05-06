@@ -1,6 +1,6 @@
 import express from 'express';
-import { auth } from '../middleware/auth.middleware';
-import { StripeService } from '../services/stripe.service';
+import { auth } from '../middleware/auth.middleware.js';
+import { StripeService } from '../services/stripe.service.js';
 
 const router = express.Router();
 

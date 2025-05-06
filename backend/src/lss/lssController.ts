@@ -56,6 +56,7 @@ export const getCertifications = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'No certifications found' });
     }
 
+
     // Process awards into certification categories
     const processedCertifications: Record<string, ProcessedCertification> = {};
     let isMentor = false;

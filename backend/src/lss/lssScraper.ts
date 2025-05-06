@@ -3,6 +3,7 @@ import chrome from 'selenium-webdriver/chrome.js';
 import chromedriver from 'chromedriver';
 import path from 'path';
 import os from 'os';
+import { v4 as uuidv4 } from 'uuid';
 
 // Initialize chromedriver
 chromedriver.start();
@@ -27,8 +28,8 @@ export async function getDriver(): Promise<WebDriver> {
     options.addArguments('--disable-extensions');
     options.addArguments('--single-process');
     options.addArguments('--no-zygote');
-    // Use a unique user data directory in /tmp (Heroku's ephemeral filesystem)
-    const userDataDir = path.join(os.tmpdir(), `chrome-${Date.now()}`);
+    // Use a truly unique user data directory
+    const userDataDir = path.join(os.tmpdir(), `chrome-${uuidv4()}`);
     options.addArguments(`--user-data-dir=${userDataDir}`);
   }
   

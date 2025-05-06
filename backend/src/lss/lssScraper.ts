@@ -16,10 +16,15 @@ export interface Award {
 }
 
 export async function getDriver(): Promise<WebDriver> {
+  console.log('Initializing Chrome driver...');
+  console.log('Environment:', process.env.NODE_ENV);
+  
   const options = new chrome.Options();
   
   // Always use headless mode in production (Heroku)
   if (process.env.NODE_ENV === 'production') {
+    console.log('Setting up production Chrome options...');
+    
     // Production-specific options
     options.addArguments('--headless=new');
     options.addArguments('--disable-dev-shm-usage');
@@ -48,18 +53,28 @@ export async function getDriver(): Promise<WebDriver> {
     
     // Set binary path for Heroku
     const chromeBinaryPath = process.env.CHROME_BINARY_PATH || '/app/.apt/usr/bin/google-chrome';
+    console.log('Chrome binary path:', chromeBinaryPath);
     options.setChromeBinaryPath(chromeBinaryPath);
   }
   
-  // Set service path for chromedriver
-  const serviceBuilder = new chrome.ServiceBuilder()
-    .setPort(4444); // Use a fixed port
-  
-  return await new Builder()
-    .forBrowser('chrome')
-    .setChromeOptions(options)
-    .setChromeService(serviceBuilder)
-    .build();
+  try {
+    // Set service path for chromedriver
+    const serviceBuilder = new chrome.ServiceBuilder()
+      .setPort(4444); // Use a fixed port
+    
+    console.log('Building Chrome driver...');
+    const driver = await new Builder()
+      .forBrowser('chrome')
+      .setChromeOptions(options)
+      .setChromeService(serviceBuilder)
+      .build();
+    
+    console.log('Chrome driver initialized successfully');
+    return driver;
+  } catch (error) {
+    console.error('Failed to initialize Chrome driver:', error);
+    throw error;
+  }
 }
 
 export async function parseAwardsFromTable(container: WebElement): Promise<Award[]> {

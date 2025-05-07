@@ -1,0 +1,193 @@
+.certification-manager {
+  padding: 20px;
+}
+
+.certification-manager h2 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.category-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #d33;
+}
+
+.category-card {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.category-header h4 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+.level-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.level-1 {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.level-2 {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.level-3 {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.awards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+  min-height: 50px;
+}
+
+.award-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: move;
+  transition: all 0.2s ease;
+}
+
+.award-item:hover {
+  background: #f5f5f5;
+  border-color: #d33;
+}
+
+.award-item.dragging {
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.remove-award {
+  background: none;
+  border: none;
+  color: #d33;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.remove-award:hover {
+  opacity: 1;
+}
+
+.add-award {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.add-award input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.add-award button {
+  padding: 8px 16px;
+  background: #d33;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-award button:hover {
+  background: #b32;
+}
+
+.editing-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.editing-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.editing-form button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editing-form button:first-of-type {
+  background: #d33;
+  color: white;
+}
+
+.editing-form button:last-of-type {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.editing-form button:hover {
+  opacity: 0.9;
+}
+
+.error {
+  color: #d33;
+  padding: 10px;
+  background: #ffebee;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.access-denied {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.2rem;
+} 

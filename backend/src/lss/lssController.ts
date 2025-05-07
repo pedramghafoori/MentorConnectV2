@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getDriver, fetchCertificationsForLssId } from './lssScraper.js';
 import { User } from '../models/user.js';
+import { CertificationCategory } from '../models/certificationCategory.js';
 
 // Extend Express Request type to include session
 declare module 'express' {
@@ -15,20 +16,6 @@ declare module 'express' {
     };
   }
 }
-
-// Define certification categories and their corresponding awards
-const CERTIFICATION_CATEGORIES = {
-  FIRST_AID_INSTRUCTOR: ['Standard First Aid Instructor', 'Emergency First Aid Instructor'],
-  LIFESAVING_INSTRUCTOR: ['Lifesaving Instructor', 'Swim Instructor'],
-  NL_INSTRUCTOR: ['National Lifeguard Instructor'],
-  EXAMINER_FIRST_AID: ['Examiner - Standard First Aid'],
-  EXAMINER_NL: ['Examiner - National Lifeguard'],
-  EXAMINER_BRONZE: ['Examiner - Bronze Cross'],
-  INSTRUCTOR_TRAINER_LIFESAVING: ['Instructor Trainer - Lifesaving'],
-  INSTRUCTOR_TRAINER_NL: ['Instructor Trainer - National Lifeguard'],
-  INSTRUCTOR_TRAINER_FIRST_AID: ['Instructor Trainer - Standard First Aid'],
-  INSTRUCTOR_TRAINER_SWIM: ['Instructor Trainer - Swim']
-};
 
 // Special certification that grants mentor status
 const MENTOR_CERTIFICATION = 'Examiner Mentor';
@@ -61,6 +48,18 @@ export const getCertifications = async (req: Request, res: Response) => {
   
   let driver;
   try {
+    // Fetch all certification categories from the database
+    const certificationCategories = await CertificationCategory.find().lean();
+    if (!certificationCategories.length) {
+      return res.status(500).json({ error: 'No certification categories found in database' });
+    }
+
+    // Convert to the format needed for processing
+    const CERTIFICATION_CATEGORIES: Record<string, string[]> = {};
+    certificationCategories.forEach(cat => {
+      CERTIFICATION_CATEGORIES[cat.code] = cat.validAwards;
+    });
+
     driver = await getDriver();
     const result = await fetchCertificationsForLssId(driver, lssId);
     if (!result) {

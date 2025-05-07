@@ -10,12 +10,15 @@ import { FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 import LANGUAGES from '../../lib/languages.json';
 import api from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import CertificationManager from '../../components/Admin/CertificationManager';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
   { key: 'privacy', label: 'Privacy' },
   { key: 'tax', label: 'Tax and Payout' },
   { key: 'account', label: 'Account Settings' },
+  { key: 'certification', label: 'Certification Management' },
 ];
 
 const PREP_OPTIONS = [
@@ -32,6 +35,7 @@ const INVOLVEMENT_OPTIONS = [
 ];
 
 export default function SettingsPage() {
+  const { user } = useAuth();
   const [selected, setSelected] = useState('privacy');
   const queryClient = useQueryClient();
   const { data: fullUserData, refetch } = useQuery({
@@ -90,6 +94,10 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  useEffect(() => {
+    console.log('Settings page - Current user:', user);
+  }, [user]);
 
   useEffect(() => {
     if (fullUserData) {
@@ -412,14 +420,10 @@ export default function SettingsPage() {
   };
 
   const handleEnablePayouts = async () => {
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
-      // Include user ID in the state parameter for verification
-      const response = await api.post('/stripe/create-oauth-link', {
-        state: fullUserData._id
-      });
+      setIsLoading(true);
+      setError(null);
+      const response = await axios.post('/api/stripe/create-oauth-link');
       window.location.href = response.data.url;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to enable payouts. Please try again.');
@@ -428,13 +432,22 @@ export default function SettingsPage() {
     }
   };
 
+  if (!user) {
+    return <div>Loading user data...</div>;
+  }
+
+  const isDeveloper = user?.email === 'pedramghafoori@hotmail.com';
+  const filteredMenuItems = isDeveloper
+    ? menuItems
+    : menuItems.filter(item => item.key !== 'certification');
+
   return (
     <div style={{ background: '#fafbfc', minHeight: '80vh' }}>
       <Container style={{ display: 'flex', minHeight: '80vh' }}>
         <aside className="settings-sidebar">
           <nav>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {menuItems.map(item => (
+              {filteredMenuItems.map(item => (
                 <li key={item.key}>
                   <button
                     style={{
@@ -507,6 +520,12 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+            </section>
+          )}
+          {selected === 'certification' && isDeveloper && (
+            <section className="settings-section settings-section">
+              <h2 className="settings-section-title">Certification Management</h2>
+              <CertificationManager />
             </section>
           )}
           {selected === 'mentor' && (

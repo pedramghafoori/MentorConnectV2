@@ -188,7 +188,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 // Helper functions
 const generateAccessToken = (user: any) => {
     return jwt.sign(
-        { userId: user._id, role: user.role },
+        { userId: user._id, email: user.email, role: user.role },
         JWT_SECRET,
         { expiresIn: '1d' }
     );

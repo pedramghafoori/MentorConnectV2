@@ -69,14 +69,14 @@ const CertificationManager = () => {
           result.push({
             categoryId: cat._id,
             categoryName: cat.name,
-            award: awardObj,
+            name: awardObj,
             hierarchy: 9999, // fallback if not set
           });
         } else {
           result.push({
             categoryId: cat._id,
             categoryName: cat.name,
-            award: awardObj.name,
+            name: awardObj.name,
             hierarchy: awardObj.hierarchy ?? 9999,
           });
         }
@@ -93,7 +93,7 @@ const CertificationManager = () => {
   const handleAwardClick = (awardObj) => {
     setIsCreateMode(false);
     setModalAward(awardObj);
-    setModalAwardName(awardObj.award);
+    setModalAwardName(awardObj.name);
     setModalAwardHierarchy(awardObj.hierarchy);
     setModalAwardCategoryId(awardObj.categoryId);
     setModalAwardCategoryName(awardObj.categoryName);
@@ -135,7 +135,7 @@ const CertificationManager = () => {
         console.log('[CertificationManager] Editing award:', { modalAward, modalAwardName, modalAwardHierarchy, cat });
         if (!cat) throw new Error('Category not found for edit');
         const updatedAwards = (cat.validAwards || []).map(a => {
-          if ((typeof a === 'string' && a === modalAward.award) || (a.name === modalAward.award)) {
+          if ((typeof a === 'string' && a === modalAward.name) || (a.name === modalAward.name)) {
             return { name: modalAwardName, hierarchy: Number(modalAwardHierarchy) };
           }
           return typeof a === 'string' ? { name: a, hierarchy: 9999 } : a;
@@ -204,19 +204,19 @@ const CertificationManager = () => {
                 <div className="awards-list">
                   {sectionAwards.map((item, index) => (
                     <div
-                      key={item.categoryId + item.award}
+                      key={item.categoryId + item.name}
                       className="award-item award-item-clickable"
                       onClick={() => handleAwardClick(item)}
                       style={{ cursor: 'pointer' }}
                     >
                       <span>
-                        [<strong>{item.categoryName}</strong>] → {item.award}
+                        [<strong>{item.categoryName}</strong>] → {item.name}
                         <span style={{ color: '#888', fontSize: '0.9em', marginLeft: 8 }}>
                           (#{item.hierarchy})
                         </span>
                       </span>
                       <button
-                        onClick={e => { e.stopPropagation(); handleRemoveAward(item.categoryId, item.award); }}
+                        onClick={e => { e.stopPropagation(); handleRemoveAward(item.categoryId, item.name); }}
                         className="remove-award"
                       >
                         ×

@@ -8,6 +8,7 @@ import courseRoutes from './course.js';
 import courseTypeRoutes from './courseType.js';
 import opportunityRoutes from './opportunity.js';
 import facilityRoutes from './facility.js';
+import certificationCategories from './certificationCategories.js';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use('/courses', courseRoutes);
 router.use('/course-types', courseTypeRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/facilities', facilityRoutes);
+router.use('/certification-categories', certificationCategories);
 
 export default router; 

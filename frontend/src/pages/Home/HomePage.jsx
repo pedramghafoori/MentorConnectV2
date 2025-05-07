@@ -10,7 +10,7 @@ import FeaturedUsersCarousel from './FeaturedUsersCarousel';
 import CanadaMentorMap from "../../../components/CanadaMentorMap.jsx";
 import { cityCoordinates } from '../../../components/cityCoordinates';
 import Container from '../../components/Container';
-import OurThreeProngedApproach from '../../components/threeProngApproach';
+import OurThreeProngedApproach from '../../components/threeProngApproach.jsx';
 
 // Define new certification sections and mapping
 const EXAMINER_CERTS = [

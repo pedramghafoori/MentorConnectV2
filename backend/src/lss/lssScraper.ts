@@ -1,60 +1,57 @@
-import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer-core';
+import { Builder, By, until, WebDriver, WebElement } from 'selenium-webdriver';
+import chrome from 'selenium-webdriver/chrome.js';
+import chromedriver from 'chromedriver';
+
+// Initialize chromedriver
+chromedriver.start();
 
 export interface Award {
   name: string | null;
   issued: string | null;
   expiry: string | null;
+  daysLeft: number | null;
 }
 
-export async function getDriver(): Promise<Browser> {
-  console.log('Initializing Puppeteer...');
-  console.log('Environment:', process.env.NODE_ENV);
-  
-  // Use different Chrome paths based on environment
-  const chromePath = process.env.NODE_ENV === 'production' 
-    ? "/app/.chrome-for-testing/chrome-linux64/chrome"  // Heroku path
-    : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";  // Local Mac path
-  
-  const launchOptions = {
-    headless: true,
-    executablePath: chromePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--disable-gpu',
-      '--window-size=1920x1080',
-    ],
-  };
-  
-  console.log('Chrome binary path:', launchOptions.executablePath);
-  const browser = await puppeteer.launch(launchOptions);
-  console.log('Puppeteer initialized successfully');
-  return browser;
+export async function getDriver(): Promise<WebDriver> {
+  const options = new chrome.Options();
+  // Use headless Chrome in production, visible in dev
+  if (process.env.NODE_ENV === 'production') {
+    options.addArguments('--headless');
+    options.addArguments('--disable-dev-shm-usage');
+    options.addArguments('--no-sandbox');
+    options.addArguments('--disable-gpu');
+  }
+  return await new Builder()
+    .forBrowser('chrome')
+    .setChromeOptions(options)
+    .build();
 }
 
-export async function parseAwardsFromTable(page: Page): Promise<Award[]> {
+export async function parseAwardsFromTable(container: WebElement): Promise<Award[]> {
   const detailedAwards: Award[] = [];
   try {
-    const rows = await page.$$('table tr');
+    const table = await container.findElement(By.tagName('table'));
+    let tableBody: WebElement;
+    try {
+      tableBody = await table.findElement(By.tagName('tbody'));
+    } catch {
+      tableBody = table;
+    }
+    const rows = await tableBody.findElements(By.tagName('tr'));
     console.log('\n=== Raw Awards Data from LSS Website ===');
-    
     for (const row of rows) {
-      const tds = await row.$$('td');
+      const tds = await row.findElements(By.tagName('td'));
       if (tds.length !== 3) continue;
-      
-      const issuedStr = await tds[0].evaluate((el: Element) => el.textContent?.trim() || '');
-      const expiryStr = await tds[1].evaluate((el: Element) => el.textContent?.trim() || '');
-      const awardStr = await tds[2].evaluate((el: Element) => el.textContent?.trim() || '');
-      
+      const issuedStr = (await tds[0].getText()).trim();
+      const expiryStr = (await tds[1].getText()).trim();
+      const awardStr = (await tds[2].getText()).trim();
       console.log(`\nAward Details:`);
       console.log(`- Name: ${awardStr}`);
       console.log(`- Issued: ${issuedStr}`);
       console.log(`- Expiry: ${expiryStr}`);
       
+      let daysLeft: number | null = null;
       let issueDate: Date | null = null;
-      
       if (issuedStr) {
         try {
           issueDate = new Date(issuedStr);
@@ -63,11 +60,21 @@ export async function parseAwardsFromTable(page: Page): Promise<Award[]> {
           console.error(`  Failed to parse issue date: ${issuedStr}`, error);
         }
       }
-      
+      if (expiryStr) {
+        try {
+          const expiryDate = new Date(expiryStr);
+          const today = new Date();
+          daysLeft = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          console.log(`  Days until expiry: ${daysLeft}`);
+        } catch (error) {
+          console.error(`  Failed to parse expiry date: ${expiryStr}`, error);
+        }
+      }
       detailedAwards.push({
         name: awardStr || null,
         issued: issueDate ? issueDate.toISOString() : null,
         expiry: expiryStr || null,
+        daysLeft,
       });
     }
     console.log('\n=== End of Raw Awards Data ===\n');
@@ -77,62 +84,47 @@ export async function parseAwardsFromTable(page: Page): Promise<Award[]> {
   return detailedAwards;
 }
 
-export async function fetchCertificationsForLssId(browser: Browser, lssId: string): Promise<{ name: string, awards: Award[] } | null> {
+export async function fetchCertificationsForLssId(driver: WebDriver, lssId: string): Promise<{ name: string, awards: Award[] } | null> {
   console.log(`\n=== Fetching certifications for LSS ID: ${lssId} ===`);
-  const page = await browser.newPage();
-  
+  await driver.get('https://www.lifesavingsociety.com/find-a-member.aspx');
   try {
-    await page.goto('https://www.lifesavingsociety.com/find-a-member.aspx');
-    
     // Fill in LSS ID
-    await page.type('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CustomerCodeTextBox', lssId);
+    const inputBox = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CustomerCodeTextBox'));
+    await inputBox.clear();
+    await inputBox.sendKeys(lssId);
     
     // Set dropdown to 'All Certifications'
-    await page.select('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1', 'All Certifications');
+    const dropdownElem = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1'));
+    await dropdownElem.sendKeys('All Certifications');
     console.log('Selected "All Certifications" from dropdown');
     
     // Click GetCertifications
-    await page.click('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton');
+    const button = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton'));
+    await button.click();
     
     // Wait for results
-    await page.waitForSelector('#ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView', { timeout: 10000 });
+    await driver.wait(until.elementLocated(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView')), 10000);
+    const container = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_CertificationResultsFormView'));
     
     // Parse name
     let foundName = 'Unknown';
     try {
-      const nameText = await page.$eval('p:has(label:text("Re:"))', (el: Element) => el.textContent?.trim() || '');
-      if (nameText.includes('Re:')) {
-        const possibleName = nameText.split('Re:', 2)[1].trim();
+      const nameElem = await driver.findElement(By.xpath("//p[label[text()='Re:']]"));
+      const reText = (await nameElem.getText()).trim();
+      if (reText.includes('Re:')) {
+        const possibleName = reText.split('Re:', 2)[1].trim();
         if (possibleName) foundName = possibleName;
       }
     } catch {}
     
     // Parse awards
-    const awards = await parseAwardsFromTable(page);
+    const awards = await parseAwardsFromTable(container);
     console.log('\n=== Processed Awards Summary ===');
     console.log(JSON.stringify(awards, null, 2));
     console.log('=== End of Processed Awards ===\n');
-    
-    await page.close();
     return { name: foundName, awards };
   } catch (err) {
     console.error('Error fetching certifications:', err);
-    await page.close();
     return null;
-  }
-}
-
-export async function scrapeLSSAwards(lssId: string): Promise<{ name: string | null; awards: Award[] }> {
-  console.log(`Starting scrape for LSS ID: ${lssId}`);
-  const browser = await getDriver();
-  
-  try {
-    const result = await fetchCertificationsForLssId(browser, lssId);
-    return result || { name: null, awards: [] };
-  } catch (error) {
-    console.error('Error scraping LSS awards:', error);
-    return { name: null, awards: [] };
-  } finally {
-    await browser.close();
   }
 } 

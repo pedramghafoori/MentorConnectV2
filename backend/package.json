@@ -7,7 +7,8 @@
     "dev": "dotenv -e .env -- tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
-    "seed:course-types": "dotenv -e .env -- tsx src/seed/courseTypeSeed.ts"
+    "seed:course-types": "dotenv -e .env -- tsx src/seed/courseTypeSeed.ts",
+    "populate-certs": "dotenv -e .env -- tsx src/scripts/populateCertificationCategories.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.530.0",

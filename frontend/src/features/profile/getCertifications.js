@@ -11,6 +11,7 @@ export const formatCertificationName = (name) => {
     if (name.includes('FIRST_AID')) return 'First Aid IT';
     if (name.includes('NL')) return 'NL IT';
     if (name.includes('LIFESAVING')) return 'Lifesaving IT';
+    if (name.includes('SWIM')) return 'Swim IT';
     return 'IT';
   }
   

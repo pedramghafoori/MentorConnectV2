@@ -32,7 +32,6 @@ const OurThreeProngedApproach = () => {
 
   return (
     <>
-      
       <section className="three-prong-section">
         {/* Three‑prong icon */}
         <div className="icon-wrap">
@@ -96,4 +95,4 @@ const ProngBubble = ({ title, description, isActive, onTouchStart, onTouchEnd })
   );
 };
 
-export default OurThreeProngedApproach;
+export default OurThreeProngedApproach; 

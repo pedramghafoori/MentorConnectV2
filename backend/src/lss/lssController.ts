@@ -26,7 +26,8 @@ const CERTIFICATION_CATEGORIES = {
   EXAMINER_BRONZE: ['Examiner - Bronze Cross'],
   INSTRUCTOR_TRAINER_LIFESAVING: ['Instructor Trainer - Lifesaving'],
   INSTRUCTOR_TRAINER_NL: ['Instructor Trainer - National Lifeguard'],
-  INSTRUCTOR_TRAINER_FIRST_AID: ['Instructor Trainer - Standard First Aid']
+  INSTRUCTOR_TRAINER_FIRST_AID: ['Instructor Trainer - Standard First Aid'],
+  INSTRUCTOR_TRAINER_SWIM: ['Instructor Trainer - Swim']
 };
 
 // Special certification that grants mentor status

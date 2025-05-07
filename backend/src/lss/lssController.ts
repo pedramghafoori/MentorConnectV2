@@ -2,6 +2,20 @@ import { Request, Response } from 'express';
 import { getDriver, fetchCertificationsForLssId } from './lssScraper.js';
 import { User } from '../models/user.js';
 
+// Extend Express Request type to include session
+declare module 'express' {
+  interface Request {
+    session?: {
+      registrationData?: {
+        isMentor: boolean;
+        certifications: { type: string; years: number }[];
+        name: string;
+        lssId: string;
+      };
+    };
+  }
+}
+
 // Define certification categories and their corresponding awards
 const CERTIFICATION_CATEGORIES = {
   FIRST_AID_INSTRUCTOR: ['Standard First Aid Instructor', 'Emergency First Aid Instructor'],
@@ -28,18 +42,20 @@ interface ProcessedCertification {
 interface CertificationResponse {
   certifications: Record<string, ProcessedCertification>;
   isMentor: boolean;
+  registrationData?: {
+    isMentor: boolean;
+    certifications: { type: string; years: number }[];
+    name: string;
+  };
 }
 
 export const getCertifications = async (req: Request, res: Response) => {
   const { lssId } = req.body;
   const userId = req.user?.userId;
+  const isRegistration = !userId; // If no userId, this is registration
 
   if (!lssId) {
     return res.status(400).json({ error: 'Missing lssId in request body' });
-  }
-
-  if (!userId) {
-    return res.status(401).json({ error: 'User not authenticated' });
   }
   
   let driver;
@@ -131,22 +147,44 @@ export const getCertifications = async (req: Request, res: Response) => {
     console.log('\n=== Final Processed Certifications ===');
     console.log(JSON.stringify(processedCertifications, null, 2));
 
-    // If user is a mentor, update their role in the database
-    if (isMentor) {
-      await User.findByIdAndUpdate(userId, { 
-        role: 'MENTOR',
-        certifications: certificationObjects
-      });
-    } else {
-      await User.findByIdAndUpdate(userId, { 
-        certifications: certificationObjects
-      });
+    // If this is registration, store the data in session
+    if (isRegistration) {
+      // Store certification data in session for registration
+      if (!req.session) {
+        req.session = {};
+      }
+      req.session.registrationData = {
+        isMentor,
+        certifications: certificationObjects,
+        name: result.name,
+        lssId
+      };
+    } else if (userId) {
+      // Update existing user's data
+      if (isMentor) {
+        await User.findByIdAndUpdate(userId, { 
+          role: 'MENTOR',
+          certifications: certificationObjects
+        });
+      } else {
+        await User.findByIdAndUpdate(userId, { 
+          certifications: certificationObjects
+        });
+      }
     }
 
     // Return both certifications and mentor status
     const response: CertificationResponse = {
       certifications: processedCertifications,
-      isMentor
+      isMentor,
+      // Include registration data if this is registration
+      ...(isRegistration && {
+        registrationData: {
+          isMentor,
+          certifications: certificationObjects,
+          name: result.name
+        }
+      })
     };
 
     res.json(response);

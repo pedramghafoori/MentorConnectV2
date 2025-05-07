@@ -1,0 +1,26 @@
+<svg
+  width="240"
+  height="360"
+  viewBox="0 0 240 360"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Curved shaft -->
+  <path
+    d="M180 24
+       C 80 16, 18 110, 80 288"
+    stroke="#e63946"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Arrowhead -->
+  <polyline
+    points="40 260, 88 304, 100 232"
+    fill="none"
+    stroke="#e63946"
+    stroke-width="18"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

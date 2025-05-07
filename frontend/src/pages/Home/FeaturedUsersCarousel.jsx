@@ -134,7 +134,7 @@ export default function FeaturedUsersCarousel() {
 
   return (
     <div className="featured-carousel-container">
-      <h2 className="featured-carousel-title">Experience & Passion Connected</h2>
+      <h2 className="featured-carousel-title">Featured Users</h2>
 
       <div 
         className="featured-carousel"

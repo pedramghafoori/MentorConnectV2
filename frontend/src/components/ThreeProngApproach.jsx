@@ -1,5 +1,6 @@
 import React from 'react';
 import './threeProngApproach.css';
+import ProngArrow from '../assets/ProngArrow.svg';
 
 /**
  * Our Three‑Pronged Approach — interactive version
@@ -28,32 +29,45 @@ const DATA = [
 
 const OurThreeProngedApproach = () => {
   return (
-    <section className="three-prong-section">
-      {/* Three‑prong icon */}
-      <div className="icon-wrap">
-        <svg
-          width="120"
-          height="90"
-          viewBox="0 0 64 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M32 48V0" stroke="#e63946" strokeWidth="6" strokeLinecap="round" />
-          <path d="M12 48V12" stroke="#e63946" strokeWidth="6" strokeLinecap="round" />
-          <path d="M52 48V12" stroke="#e63946" strokeWidth="6" strokeLinecap="round" />
-        </svg>
-      </div>
+    <>
+      
+      <section className="three-prong-section">
+        {/* Three‑prong icon */}
+        <div className="icon-wrap">
+          <svg
+            width="120"
+            height="110"
+            viewBox="0 0 64 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M32 48V0" stroke="#e63946" strokeWidth="8" strokeLinecap="round" />
+            <path d="M14 48V15" stroke="#e63946" strokeWidth="8" strokeLinecap="round" />
+            <path d="M50 48V15" stroke="#e63946" strokeWidth="8" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div className="why-mentorconnect">
+          <div className="philosophy-arrow-wrap">
+            <h2 className="Our-Pilosophy-heading">
+              Finding a mentor should have always been easy—now it is.
+            </h2>
+            <img src={ProngArrow} alt="Prong Arrow" className="prong-arrow" />
+          </div>
+        </div>
+        <h2 className="heading">Our Three‑Pronged Approach</h2>
+        <p className="why-mentorconnect-desc">
+          Talented instructor-candidates don't fail for lack of skill; they fail for lack of access. MentorConnect was built to remove that roadblock and make the certification journey as simple—and rewarding—as it should have been all along.
+        </p>
 
-      <h2 className="heading">Our Three‑Pronged Approach</h2>
-
-      <ul className="prong-list">
-        {DATA.map((item, idx) => (
-          <li key={idx}>
-            <ProngBubble title={item.title} description={item.description} />
-          </li>
-        ))}
-      </ul>
-    </section>
+        <ul className="prong-list">
+          {DATA.map((item, idx) => (
+            <li key={idx}>
+              <ProngBubble title={item.title} description={item.description} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
   );
 };
 

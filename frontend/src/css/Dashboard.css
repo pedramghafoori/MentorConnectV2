@@ -80,9 +80,9 @@
 .opportunity-card-ribbon-title {
   font-size: 2rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #334155;
 
-  margin-left: 1rem;
+  margin-left: 2.6rem;
 
 }
 
@@ -420,6 +420,7 @@
 }
 
 .details-heading {
+  color: #334155;
   font-size: 1.75rem;
   font-weight: 500;
   margin-bottom: 0.25rem;
@@ -431,6 +432,7 @@
   font-weight: 500;
   margin-bottom: 0.25rem;
   margin-top: 0.5rem;
+  color: #334155;
 }
 
 .responsibilities-support-text {
@@ -451,10 +453,10 @@
 .prep-requirement-pill {
   background: #fd00503b;
   color: #ff0000;
-  padding: 0.25rem 1.3rem;
+  padding: 0.1rem 0.9rem;
   border-radius: 9999px;
   border: 0.25px solid #c52155;
-  font-size: 1rem;
+  font-size: 0.2rem;
   font-weight: 500;
   
   display: flex;
@@ -578,11 +580,11 @@
 .opportunity-card-ribbon-opid{
   font-size: 0.8rem;
   font-weight: 400;
-  color: #f0efef;
+  color: #334155;
   margin-bottom: 0rem;
-  margin-top: -0.4rem;
+  margin-top: -0.1rem;
   text-align: left;
-  margin-left: 1.1rem;
+  margin-left: 2.6rem;
 
 }
 
@@ -599,7 +601,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  background: linear-gradient(10deg, #0d2655 0%, #5eaaff 100%);
+  border-bottom: 2px solid #e5e7eb;
+
   border-top-left-radius: 1.5rem;
   border-top-right-radius: 1.5rem;
   padding: 1.2rem 0;

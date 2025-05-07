@@ -10,6 +10,7 @@ import FeaturedUsersCarousel from './FeaturedUsersCarousel';
 import CanadaMentorMap from "../../../components/CanadaMentorMap.jsx";
 import { cityCoordinates } from '../../../components/cityCoordinates';
 import Container from '../../components/Container';
+import OurThreeProngedApproach from '../../components/threeProngApproach';
 
 // Define new certification sections and mapping
 const EXAMINER_CERTS = [
@@ -210,7 +211,10 @@ const HomePage = () => {
             />
           </div>
 
-          {/* Featured Carousel at the end for mobile stacking */}
+          {/* Three Pronged Approach */}
+          <OurThreeProngedApproach />
+
+          {/* Featured Carousel */}
           <FeaturedUsersCarousel />
         </div>
         {/* Mentor Map Section - always last */}

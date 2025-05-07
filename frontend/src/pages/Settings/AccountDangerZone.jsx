@@ -13,7 +13,7 @@ export default function AccountDangerZone() {
     setLoading(true);
     setError(null);
     try {
-      await axios.delete('/api/account', { data: { password } });
+      await axios.delete('http://localhost:4000/api/account', { data: { password }, withCredentials: true });
       // Clear localStorage/cookies and redirect
       localStorage.clear();
       document.cookie = '';

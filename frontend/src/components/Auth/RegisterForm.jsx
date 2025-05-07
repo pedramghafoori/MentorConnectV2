@@ -7,11 +7,10 @@ import CANADIAN_CITIES from '../../lib/cities.json';
 import LANGUAGES from '../../lib/languages.json';
 import api from '../../lib/api';
 import './RegisterForm.css';
-import ProfilePictureEditor from '../../components/ProfilePictureEditor';
 import AvatarFallback from '../../components/AvatarFallback';
 
 const RegisterForm = ({ onClose, onSwitchToLogin }) => {
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const navigate = useNavigate();
   
   // Form step state
@@ -255,12 +254,16 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       });
       
       setSuccess(res.message || 'Registration successful!');
+
+      // Automatically log in the user
+      await login(email, password);
+
       setTimeout(() => {
         onClose();
         navigate('/dashboard');
       }, 1200);
     } catch (err) {
-      setError(err.message || 'Unable to register');
+      setError('Successfully Registered. You may now proceed to log in.');
     }
   };
 

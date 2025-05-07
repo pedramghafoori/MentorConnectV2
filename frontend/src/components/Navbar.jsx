@@ -263,175 +263,177 @@ const Navbar = () => {
           </Link>
           <nav className="flex gap-2 sm:gap-4 items-center">
             {/* Search Icon and Animated Search Box */}
-            <div className="relative flex items-center" ref={searchRef}>
-              {/* Backdrop overlay for mobile */}
-              {showSearch && (
-                <div 
-                  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 sm:hidden"
-                  onClick={() => setShowSearch(false)}
-                />
-              )}
-              {/* Search icon */}
-              <button
-                className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
-                onClick={() => setShowSearch((v) => !v)}
-                aria-label="Search users"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
-                </svg>
-              </button>
-              {/* Filter icon */}
-              {showSearch && (
+            {user && (
+              <div className="relative flex items-center" ref={searchRef}>
+                {/* Backdrop overlay for mobile */}
+                {showSearch && (
+                  <div 
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 sm:hidden"
+                    onClick={() => setShowSearch(false)}
+                  />
+                )}
+                {/* Search icon */}
                 <button
                   className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
-                  onClick={() => setShowAdvancedSearch((v) => !v)}
-                  aria-label="Advanced search"
+                  onClick={() => setShowSearch((v) => !v)}
+                  aria-label="Search users"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
-                    <rect x="4" y="7" width="16" height="2" rx="1" fill="#555"/>
-                    <rect x="7" y="11" width="10" height="2" rx="1" fill="#555"/>
-                    <rect x="10" y="15" width="4" height="2" rx="1" fill="#555"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.5 6.5a7.5 7.5 0 0 0 10.6 10.6z" />
                   </svg>
                 </button>
-              )}
-              {/* Search bar and dropdown */}
-              <div
-                className={`transition-all duration-300 z-50 ${
-                  showSearch 
-                    ? 'sm:relative sm:block fixed left-0 right-0 px-4 mt-4 sm:mt-0 sm:px-0' 
-                    : 'hidden'
-                }`}
-                style={{
-                  width: showSearch ? '100%' : 0,
-                  maxWidth: showSearch ? (window.innerWidth >= 640 ? '320px' : '100%') : 0,
-                  opacity: showSearch ? 1 : 0,
-                  pointerEvents: showSearch ? 'auto' : 'none',
-                  marginLeft: window.innerWidth >= 640 ? (showSearch ? 12 : 0) : 0,
-                  top: window.innerWidth >= 640 ? 'auto' : '72px'
-                }}
-              >
-                <div className="relative w-full max-w-[90%] mx-auto sm:max-w-none">
-                  <input
-                    type="text"
-                    value={searchValue}
-                    onChange={e => setSearchValue(e.target.value)}
-                    placeholder="Search by name or LSS ID"
-                    className="rounded-full px-5 py-2 border border-gray-300 shadow-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
-                    style={{
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      transition: 'width 0.3s, opacity 0.3s',
-                    }}
-                    autoFocus={showSearch}
-                    disabled={showAdvancedSearch && searchMode === 'certs'}
-                  />
-                  {/* Advanced Search Panel (compact, below search bar) */}
-                  {showAdvancedSearch && (
-                    <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 z-50 p-4">
-                      <div className="flex gap-4 mb-4">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="searchMode"
-                            value="name"
-                            checked={searchMode === 'name'}
-                            onChange={() => setSearchMode('name')}
-                          />
-                          <span className="text-sm">Name/ID</span>
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="searchMode"
-                            value="certs"
-                            checked={searchMode === 'certs'}
-                            onChange={() => setSearchMode('certs')}
-                          />
-                          <span className="text-sm">Certifications</span>
-                        </label>
-                      </div>
-                      <div className="mb-2 font-semibold text-sm">Filter by Certifications</div>
-                      <div className="flex flex-wrap gap-2 mb-4 max-h-48 overflow-y-auto">
-                        {ALL_CERTIFICATIONS.map(cert => (
+                {/* Filter icon */}
+                {showSearch && (
+                  <button
+                    className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
+                    onClick={() => setShowAdvancedSearch((v) => !v)}
+                    aria-label="Advanced search"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
+                      <rect x="4" y="7" width="16" height="2" rx="1" fill="#555"/>
+                      <rect x="7" y="11" width="10" height="2" rx="1" fill="#555"/>
+                      <rect x="10" y="15" width="4" height="2" rx="1" fill="#555"/>
+                    </svg>
+                  </button>
+                )}
+                {/* Search bar and dropdown */}
+                <div
+                  className={`transition-all duration-300 z-50 ${
+                    showSearch 
+                      ? 'sm:relative sm:block fixed left-0 right-0 px-4 mt-4 sm:mt-0 sm:px-0' 
+                      : 'hidden'
+                  }`}
+                  style={{
+                    width: showSearch ? '100%' : 0,
+                    maxWidth: showSearch ? (window.innerWidth >= 640 ? '320px' : '100%') : 0,
+                    opacity: showSearch ? 1 : 0,
+                    pointerEvents: showSearch ? 'auto' : 'none',
+                    marginLeft: window.innerWidth >= 640 ? (showSearch ? 12 : 0) : 0,
+                    top: window.innerWidth >= 640 ? 'auto' : '72px'
+                  }}
+                >
+                  <div className="relative w-full max-w-[90%] mx-auto sm:max-w-none">
+                    <input
+                      type="text"
+                      value={searchValue}
+                      onChange={e => setSearchValue(e.target.value)}
+                      placeholder="Search by name or LSS ID"
+                      className="rounded-full px-5 py-2 border border-gray-300 shadow-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#d33] text-gray-800 text-base transition-all w-full"
+                      style={{
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        transition: 'width 0.3s, opacity 0.3s',
+                      }}
+                      autoFocus={showSearch}
+                      disabled={showAdvancedSearch && searchMode === 'certs'}
+                    />
+                    {/* Advanced Search Panel (compact, below search bar) */}
+                    {showAdvancedSearch && (
+                      <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 z-50 p-4">
+                        <div className="flex gap-4 mb-4">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="searchMode"
+                              value="name"
+                              checked={searchMode === 'name'}
+                              onChange={() => setSearchMode('name')}
+                            />
+                            <span className="text-sm">Name/ID</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="searchMode"
+                              value="certs"
+                              checked={searchMode === 'certs'}
+                              onChange={() => setSearchMode('certs')}
+                            />
+                            <span className="text-sm">Certifications</span>
+                          </label>
+                        </div>
+                        <div className="mb-2 font-semibold text-sm">Filter by Certifications</div>
+                        <div className="flex flex-wrap gap-2 mb-4 max-h-48 overflow-y-auto">
+                          {ALL_CERTIFICATIONS.map(cert => (
+                            <button
+                              key={cert.value}
+                              className={`px-2 py-1 rounded-full border text-xs sm:text-sm ${
+                                selectedCertifications.includes(cert.value)
+                                  ? 'bg-[#d33] text-white border-[#d33]'
+                                  : 'bg-gray-100 text-gray-700 border-gray-300'
+                              }`}
+                              onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
+                                ? selectedCertifications.filter(c => c !== cert.value)
+                                : [...selectedCertifications, cert.value])}
+                              type="button"
+                              disabled={searchMode !== 'certs'}
+                            >
+                              {cert.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex justify-end gap-2">
                           <button
-                            key={cert.value}
-                            className={`px-2 py-1 rounded-full border text-xs sm:text-sm ${
-                              selectedCertifications.includes(cert.value)
-                                ? 'bg-[#d33] text-white border-[#d33]'
-                                : 'bg-gray-100 text-gray-700 border-gray-300'
-                            }`}
-                            onClick={() => setSelectedCertifications(selectedCertifications.includes(cert.value)
-                              ? selectedCertifications.filter(c => c !== cert.value)
-                              : [...selectedCertifications, cert.value])}
-                            type="button"
-                            disabled={searchMode !== 'certs'}
+                            className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm"
+                            onClick={() => setSelectedCertifications([])}
+                          >Clear</button>
+                          <button
+                            className="px-4 py-2 rounded bg-[#d33] text-white hover:bg-[#c22] text-sm"
+                            onClick={() => {
+                              setShowAdvancedSearch(false);
+                              if (searchMode === 'certs' && searchValue.trim() === '' && selectedCertifications.length > 0) {
+                                setSearchValue(' ');
+                              }
+                            }}
+                          >Search</button>
+                        </div>
+                      </div>
+                    )}
+                    {/* Search results dropdown */}
+                    {!showAdvancedSearch && (
+                      (searchMode === 'name' && searchValue.trim() !== '') ||
+                      (searchMode === 'certs' && selectedCertifications.length > 0)
+                    ) && (
+                      <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-[calc(100vh-200px)] overflow-y-auto z-50">
+                        {searchLoading && (
+                          <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
+                        )}
+                        {searchError && (
+                          <div className="px-4 py-3 text-center text-red-400 text-sm">{searchError}</div>
+                        )}
+                        {!searchLoading && !searchError && searchResults.length === 0 && (
+                          <div className="px-4 py-6 text-center text-gray-400 text-sm">No users found.</div>
+                        )}
+                        {!searchLoading && !searchError && searchResults.map(user => (
+                          <div
+                            key={user._id}
+                            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition rounded-lg cursor-pointer"
+                            onMouseDown={() => {
+                              setShowSearch(false);
+                              setShowAdvancedSearch(false);
+                              navigate(`/profile/${user._id}`);
+                            }}
                           >
-                            {cert.label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <button
-                          className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm"
-                          onClick={() => setSelectedCertifications([])}
-                        >Clear</button>
-                        <button
-                          className="px-4 py-2 rounded bg-[#d33] text-white hover:bg-[#c22] text-sm"
-                          onClick={() => {
-                            setShowAdvancedSearch(false);
-                            if (searchMode === 'certs' && searchValue.trim() === '' && selectedCertifications.length > 0) {
-                              setSearchValue(' ');
-                            }
-                          }}
-                        >Search</button>
-                      </div>
-                    </div>
-                  )}
-                  {/* Search results dropdown */}
-                  {!showAdvancedSearch && (
-                    (searchMode === 'name' && searchValue.trim() !== '') ||
-                    (searchMode === 'certs' && selectedCertifications.length > 0)
-                  ) && (
-                    <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-[calc(100vh-200px)] overflow-y-auto z-50">
-                      {searchLoading && (
-                        <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
-                      )}
-                      {searchError && (
-                        <div className="px-4 py-3 text-center text-red-400 text-sm">{searchError}</div>
-                      )}
-                      {!searchLoading && !searchError && searchResults.length === 0 && (
-                        <div className="px-4 py-6 text-center text-gray-400 text-sm">No users found.</div>
-                      )}
-                      {!searchLoading && !searchError && searchResults.map(user => (
-                        <div
-                          key={user._id}
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition rounded-lg cursor-pointer"
-                          onMouseDown={() => {
-                            setShowSearch(false);
-                            setShowAdvancedSearch(false);
-                            navigate(`/profile/${user._id}`);
-                          }}
-                        >
-                          <img
-                            src={user.avatarUrl || '/default-avatar.png'}
-                            alt={user.firstName}
-                            className="w-9 h-9 rounded-full object-cover bg-gray-200"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900 truncate">
-                              {user.firstName} {user.lastName}
-                            </div>
-                            <div className="text-xs text-gray-500 truncate">
-                              {user.lssId}
+                            <img
+                              src={user.avatarUrl || '/default-avatar.png'}
+                              alt={user.firstName}
+                              className="w-9 h-9 rounded-full object-cover bg-gray-200"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 truncate">
+                                {user.firstName} {user.lastName}
+                              </div>
+                              <div className="text-xs text-gray-500 truncate">
+                                {user.lssId}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             {/* Notification Bell Icon */}
             {user && (
               <div className="relative flex items-center" ref={notifRef}>

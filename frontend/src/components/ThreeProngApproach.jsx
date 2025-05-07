@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './threeProngApproach.css';
 import ProngArrow from '../assets/ProngArrow.svg';
 
@@ -28,6 +28,8 @@ const DATA = [
 ];
 
 const OurThreeProngedApproach = () => {
+  const [activeBubble, setActiveBubble] = useState(null);
+
   return (
     <>
       
@@ -49,10 +51,13 @@ const OurThreeProngedApproach = () => {
         <div className="why-mentorconnect">
           <div className="philosophy-arrow-wrap">
             <h2 className="Our-Pilosophy-heading">
-              Finding a mentor should have always been easy—now it is.
+              Finding a mentor should have always been easy.
             </h2>
-            <img src={ProngArrow} alt="Prong Arrow" className="prong-arrow" />
+            <h2 className="Our-Pilosophy-punchline">
+              Now it is.
+            </h2>
           </div>
+          <div className="our-philosophy-divider"></div>
         </div>
         <h2 className="heading">Our Three‑Pronged Approach</h2>
         <p className="why-mentorconnect-desc">
@@ -62,7 +67,13 @@ const OurThreeProngedApproach = () => {
         <ul className="prong-list">
           {DATA.map((item, idx) => (
             <li key={idx}>
-              <ProngBubble title={item.title} description={item.description} />
+              <ProngBubble 
+                title={item.title} 
+                description={item.description} 
+                isActive={activeBubble === idx}
+                onTouchStart={() => setActiveBubble(idx)}
+                onTouchEnd={() => setActiveBubble(null)}
+              />
             </li>
           ))}
         </ul>
@@ -71,11 +82,13 @@ const OurThreeProngedApproach = () => {
   );
 };
 
-const ProngBubble = ({ title, description }) => {
+const ProngBubble = ({ title, description, isActive, onTouchStart, onTouchEnd }) => {
   return (
     <div
-      className="prong-bubble"
+      className={`prong-bubble ${isActive ? 'active' : ''}`}
       tabIndex={0}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       <h3 className="prong-title">{title}</h3>
       <p className="prong-description">{description}</p>

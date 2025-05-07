@@ -10,6 +10,8 @@
 
 /* big hero image on the right */
 .hero-image-container {
+  position: relative;
+  z-index: 1;
   max-width: 100vw;
   width: 100%;
   margin-left: auto;
@@ -17,7 +19,7 @@
   height: 220px;
   margin: 0 auto 1.5rem auto;
   border-radius: 18px;
-  order: 1;
+  order: 0;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -44,11 +46,11 @@
 
 .search-card {
   position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 100vw;
   margin: 0 auto;
-  order: 2;
-  z-index: 10;
+  order: 1;
   box-sizing: border-box;
 }
 
@@ -96,7 +98,11 @@
   }
 
   .featured-carousel-container {
-    order: 0;  /* Reset order for desktop */
+    order: 3;  /* Set to appear last */
+  }
+
+  .three-pronged-approach {
+    order: 2;  /* Set to appear before carousel but after hero/search */
   }
 }
 
@@ -313,4 +319,12 @@ body, html {
   width: 100vw;
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+.three-pronged-approach {
+  order: 2;
+  width: 100%;
+  max-width: 100vw;
+  margin: 0 auto;
+  box-sizing: border-box;
 } 

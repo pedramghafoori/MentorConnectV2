@@ -116,7 +116,16 @@ const HomePage = () => {
     <div className="home-container">
       <Container>
         <div className="content-wrapper">
-          {/* Search Card */}
+          {/* Hero Image (Order 0) */}
+          <div className="hero-image-container">
+            <img
+              src={mentorHero}
+              alt="Mentor guiding student beside pool"
+              className="hero-image"
+            />
+          </div>
+
+          {/* Search Card (Order 1) */}
           <div className="search-card">
             <div className="search-card-inner">
               <h1 className="search-title">
@@ -202,19 +211,12 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Hero Image */}
-          <div className="hero-image-container">
-            <img
-              src={mentorHero}
-              alt="Mentor guiding student beside pool"
-              className="hero-image"
-            />
+          {/* Three Pronged Approach (Order 2) */}
+          <div className="three-pronged-approach" style={{ order: 2 }}>
+            <OurThreeProngedApproach />
           </div>
 
-          {/* Three Pronged Approach */}
-          <OurThreeProngedApproach />
-
-          {/* Featured Carousel */}
+          {/* Featured Carousel (Order 3) */}
           <FeaturedUsersCarousel />
         </div>
         {/* Mentor Map Section - always last */}

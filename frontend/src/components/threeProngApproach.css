@@ -9,7 +9,7 @@
 }
 
 .why-mentorconnect {
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto 2.5rem auto;
   text-align: center;
 }
@@ -21,25 +21,40 @@
 
 .Our-Pilosophy-heading {
   font-size: 3.1rem;
-  font-weight: 700;
+  max-width: 800px;
+  font-weight: 200;
   color: #334155;
   margin-bottom: 1rem;
 }
 
+.Our-Pilosophy-punchline {
+  font-size: 3.1rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 1rem;
+}
 .why-mentorconnect-tagline {
     font-size: 1.5rem;
     font-weight: 700;
     color: #334155;
     margin-bottom: 1rem;
   }
+ 
+  .heading {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+  }
 
-.why-mentorconnect-desc {
+  .why-mentorconnect-desc {
   font-size: 1.15rem;
   color: #334155;
   line-height: 1.6;
   font-weight: 400;
   margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
 .icon-wrap {
@@ -48,13 +63,7 @@
   margin-bottom: 2rem;
 }
 
-.heading {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #334155;
-  margin-bottom: 2rem;
-  margin-top: 5rem;
-}
+
 
 .prong-list {
   display: flex;
@@ -76,14 +85,15 @@
   height: 160px;
   padding: 7rem;
   border-radius: 50%;
-  background: #fefbfb;
-  box-shadow: 0 60px 200px rgba(0,0,0,0.06);
+  background: #0f2a5994;
+  box-shadow: 0 60px 200px rgba(0, 0, 0, 0.272);
   transition: all 0.35s ease;
   cursor: pointer;
   overflow: hidden;
 }
 
-.prong-bubble:hover {
+.prong-bubble:hover,
+.prong-bubble.active {
   width: 300px;
   height: 300px;
 }
@@ -95,7 +105,7 @@
   transform: translate(-50%, -50%);
   font-size: 1.25rem;
   font-weight: 700;
-  color: #334155;
+  color: #ededed;
   margin: 0;
   text-align: center;
   max-width: 80%;
@@ -105,7 +115,8 @@
   pointer-events: none;
 }
 
-.prong-bubble:hover .prong-title {
+.prong-bubble:hover .prong-title,
+.prong-bubble.active .prong-title {
   opacity: 0;
 }
 
@@ -115,7 +126,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 0.95rem;
-  color: #334155;
+  color: #ededed;
   line-height: 1.45;
   margin: 0;
   max-width: 80%;
@@ -125,7 +136,8 @@
   pointer-events: none;
 }
 
-.prong-bubble:hover .prong-description {
+.prong-bubble:hover .prong-description,
+.prong-bubble.active .prong-description {
   opacity: 1;
 }
 
@@ -136,4 +148,24 @@
   width: 120px;
   height: auto;
   transform: scaleX(-1) rotate(-60deg);
+}
+
+.our-philosophy-divider {
+  width: 70%;           /* Adjust width as needed */
+  height: 6px;            /* Adjust thickness as needed */
+  margin: 2rem auto 2.5rem auto; /* Space above/below */
+  background: #e63946;    /* Default color (matches prongs) */
+  border-radius: 8px;     /* Rounded ends */
+  transition: background 0.3s;
+}
+
+/* Touch device specific styles */
+@media (hover: none) {
+  .prong-bubble {
+    touch-action: manipulation;
+  }
+  
+  .prong-bubble:active {
+    transform: scale(0.98);
+  }
 } 

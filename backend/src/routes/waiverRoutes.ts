@@ -1,32 +1,30 @@
-import { Router } from 'express';
-import {
-  signWaiver,
-  getLatestWaiver,
-  downloadSignedWaiverPdf,
-} from '../controllers/waiverController.js';
+import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
+import {
+  getLatestWaiver,
+  signWaiver,
+  getSignedWaivers,
+  downloadSignedWaiverPdf,
+  verifyMentorSignature
+} from '../controllers/waiverController.js';
 
-const router = Router();
+const router = express.Router();
 
 console.log('=== Waiver Routes Setup ===');
 
-// Add detailed logging middleware for all waiver routes
+// Add logging middleware for all waiver routes
 router.use((req, res, next) => {
-  console.log('=== Waiver Route Accessed ===');
-  console.log('Method:', req.method);
-  console.log('URL:', req.originalUrl);
-  console.log('Headers:', req.headers);
-  console.log('Cookies:', req.cookies);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// Temporarily remove authentication for testing
-router.get('/latest', (req, res, next) => {
-  console.log('=== /latest route handler called ===');
-  getLatestWaiver(req, res, next);
-});
+// Public routes
+router.get('/latest', getLatestWaiver);
 
+// Protected routes
 router.post('/sign', authenticateToken, signWaiver);
+router.get('/signed', authenticateToken, getSignedWaivers); // Get all signed waivers for the authenticated mentor
+router.get('/verify/:mentorId', authenticateToken, verifyMentorSignature); // Verify if the mentor has signed
 router.get('/:id/pdf', authenticateToken, downloadSignedWaiverPdf);
 
 console.log('Waiver routes registered successfully');

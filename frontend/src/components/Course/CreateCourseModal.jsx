@@ -828,8 +828,38 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
                     This waiver outlines your responsibilities and obligations as a mentor.
                   </p>
                   {signedWaiverId ? (
-                    <div className="text-green-600 font-medium">
-                      ✓ Waiver signed and accepted
+                    <div className="flex items-center justify-between">
+                      <div className="text-green-600 font-medium">
+                        ✓ Waiver signed and accepted
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const response = await api.get(`/waivers/${signedWaiverId}/pdf`, {
+                              responseType: 'blob'
+                            });
+                            const blob = new Blob([response.data], { type: 'application/pdf' });
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `MentorConnect-Waiver-${signedWaiverId}.pdf`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                          } catch (error) {
+                            console.error('Error downloading waiver:', error);
+                            alert('Failed to download waiver. Please try again.');
+                          }
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d33]"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download PDF
+                      </button>
                     </div>
                   ) : (
                     <button

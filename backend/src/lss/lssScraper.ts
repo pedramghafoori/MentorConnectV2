@@ -38,26 +38,23 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
       tableBody = table;
     }
     const rows = await tableBody.findElements(By.tagName('tr'));
-    console.log('\n=== Raw Awards Data from LSS Website ===');
+
     for (const row of rows) {
       const tds = await row.findElements(By.tagName('td'));
       if (tds.length !== 3) continue;
       const issuedStr = (await tds[0].getText()).trim();
       const expiryStr = (await tds[1].getText()).trim();
       const awardStr = (await tds[2].getText()).trim();
-      console.log(`\nAward Details:`);
-      console.log(`- Name: ${awardStr}`);
-      console.log(`- Issued: ${issuedStr}`);
-      console.log(`- Expiry: ${expiryStr}`);
+
       
       let daysLeft: number | null = null;
       let issueDate: Date | null = null;
       if (issuedStr) {
         try {
           issueDate = new Date(issuedStr);
-          console.log(`  Parsed Issue Date: ${issueDate.toISOString()}`);
+         
         } catch (error) {
-          console.error(`  Failed to parse issue date: ${issuedStr}`, error);
+          
         }
       }
       if (expiryStr) {
@@ -65,9 +62,9 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
           const expiryDate = new Date(expiryStr);
           const today = new Date();
           daysLeft = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          console.log(`  Days until expiry: ${daysLeft}`);
+
         } catch (error) {
-          console.error(`  Failed to parse expiry date: ${expiryStr}`, error);
+          
         }
       }
       detailedAwards.push({
@@ -77,9 +74,9 @@ export async function parseAwardsFromTable(container: WebElement): Promise<Award
         daysLeft,
       });
     }
-    console.log('\n=== End of Raw Awards Data ===\n');
+
   } catch (error) {
-    console.error('Error parsing awards table:', error);
+
   }
   return detailedAwards;
 }
@@ -96,7 +93,7 @@ export async function fetchCertificationsForLssId(driver: WebDriver, lssId: stri
     // Set dropdown to 'All Certifications'
     const dropdownElem = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_DropDownList1'));
     await dropdownElem.sendKeys('All Certifications');
-    console.log('Selected "All Certifications" from dropdown');
+    
     
     // Click GetCertifications
     const button = await driver.findElement(By.id('ContentPlaceHolderDefault_MainContentPlaceHolder_BodyCopyPlaceHolder_Item2_GetCertificationsForMember_5_GetCertificationsButton'));
@@ -119,9 +116,7 @@ export async function fetchCertificationsForLssId(driver: WebDriver, lssId: stri
     
     // Parse awards
     const awards = await parseAwardsFromTable(container);
-    console.log('\n=== Processed Awards Summary ===');
-    console.log(JSON.stringify(awards, null, 2));
-    console.log('=== End of Processed Awards ===\n');
+    
     return { name: foundName, awards };
   } catch (err) {
     console.error('Error fetching certifications:', err);

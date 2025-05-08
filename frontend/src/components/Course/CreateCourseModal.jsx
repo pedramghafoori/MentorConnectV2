@@ -380,8 +380,8 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
                   }`}>
                     {stepNumber === 1 ? 'Basic Info' :
                      stepNumber === 2 ? 'Schedule' :
-                     stepNumber === 3 ? 'Preparation Expectations' :
-                     stepNumber === 4 ? 'Summary and Confirmation' :
+                     stepNumber === 3 ? 'Expectations' :
+                     stepNumber === 4 ? 'Summary' :
                      'Waiver'}
                   </span>
                 </div>

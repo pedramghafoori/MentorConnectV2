@@ -1,7 +1,8 @@
 import api from '../../lib/api';
 
-export const getCertifications = async (lssId) => {
-  const response = await api.post('/lss/certifications', { lssId });
+export const getCertifications = async (lssId, userId) => {
+  const body = userId ? { lssId, userId } : { lssId };
+  const response = await api.post('/lss/certifications', body);
   return response.data;
 };
 
@@ -12,7 +13,7 @@ export const formatCertificationName = (name) => {
     if (name.includes('NL')) return 'NL IT';
     if (name.includes('LIFESAVING')) return 'Lifesaving IT';
     if (name.includes('SWIM')) return 'Swim IT';
-    return 'IT';
+    return 'Swim IT';
   }
   
   // Handle other certifications

@@ -38,9 +38,11 @@ interface CertificationResponse {
 }
 
 export const getCertifications = async (req: Request, res: Response) => {
-  const { lssId } = req.body;
-  const userId = req.user?.userId;
-  const isRegistration = !userId; // If no userId, this is registration
+  const { lssId, userId: bodyUserId } = req.body;
+  const sessionUserId = req.user?.userId;
+  // Prefer userId from body if present, otherwise from session
+  const effectiveUserId = bodyUserId || sessionUserId;
+  const isRegistration = !sessionUserId && !bodyUserId; // If neither, this is registration
 
   if (!lssId) {
     return res.status(400).json({ error: 'Missing lssId in request body' });
@@ -66,7 +68,6 @@ export const getCertifications = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'No certifications found or failed to fetch.' });
     }
 
-    console.log('\n=== Processing Certifications ===');
     // Process awards into a more useful format with dates
     const processedAwards = result.awards
       .filter(award => award.name && award.issued)
@@ -75,9 +76,9 @@ export const getCertifications = async (req: Request, res: Response) => {
         issueDate: new Date(award.issued!)
       }));
     
-    console.log('\nAll Valid Awards:');
+   
     processedAwards.forEach(award => {
-      console.log(`- ${award.name} (Issued: ${award.issueDate.toISOString()})`);
+     
     });
 
     // Check for mentor status
@@ -85,23 +86,23 @@ export const getCertifications = async (req: Request, res: Response) => {
       award.name.includes(MENTOR_CERTIFICATION)
     );
     console.log(`\nMentor Status: ${isMentor ? 'Yes' : 'No'}`);
+    console.log('bodyUserId:', bodyUserId, 'sessionUserId:', sessionUserId, 'effectiveUserId:', effectiveUserId);
 
     // Process each certification category
     const processedCertifications: Record<string, ProcessedCertification> = {};
     const certificationObjects: { type: string; years: number }[] = [];
     
-    console.log('\n=== Processing Categories ===');
+   
     for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
-      console.log(`\nCategory: ${category}`);
-      console.log(`Valid Awards for this category: ${validAwards.join(', ')}`);
+     
       
       const relevantAwards = processedAwards.filter(award => 
         validAwards.some(validAward => award.name.includes(validAward))
       );
       
-      console.log(`Found ${relevantAwards.length} relevant awards:`);
+     
       relevantAwards.forEach(award => {
-        console.log(`- ${award.name} (Issued: ${award.issueDate.toISOString()})`);
+       
       });
 
       if (relevantAwards.length > 0) {
@@ -110,20 +111,12 @@ export const getCertifications = async (req: Request, res: Response) => {
           current.issueDate < earliest.issueDate ? current : earliest
         );
         
-        console.log(`\nEarliest Award for ${category}:`);
-        console.log(`- Name: ${earliestAward.name}`);
-        console.log(`- Issue Date: ${earliestAward.issueDate.toISOString()}`);
-
+        
         // Calculate years of experience
         const currentYear = new Date().getFullYear();
         const issueYear = earliestAward.issueDate.getFullYear();
         const yearsOfExperience = currentYear - issueYear;
         
-        console.log(`Years Calculation:`);
-        console.log(`- Current Year: ${currentYear}`);
-        console.log(`- Issue Year: ${issueYear}`);
-        console.log(`- Years of Experience: ${yearsOfExperience}`);
-
         processedCertifications[category] = {
           category,
           hasCredential: true,
@@ -134,7 +127,7 @@ export const getCertifications = async (req: Request, res: Response) => {
         // Add to object array for database storage
         certificationObjects.push({ type: category, years: yearsOfExperience });
       } else {
-        console.log(`No relevant awards found for ${category}`);
+       
         processedCertifications[category] = {
           category,
           hasCredential: false,
@@ -144,9 +137,7 @@ export const getCertifications = async (req: Request, res: Response) => {
       }
     }
 
-    console.log('\n=== Final Processed Certifications ===');
-    console.log(JSON.stringify(processedCertifications, null, 2));
-
+    
     // If this is registration, store the data in session
     if (isRegistration) {
       // Store certification data in session for registration
@@ -159,17 +150,19 @@ export const getCertifications = async (req: Request, res: Response) => {
         name: result.name,
         lssId
       };
-    } else if (userId) {
-      // Update existing user's data
+    } else if (effectiveUserId) {
+      // Update existing user's data (either from session or from body)
       if (isMentor) {
-        await User.findByIdAndUpdate(userId, { 
+        const updateResult = await User.findByIdAndUpdate(effectiveUserId, { 
           role: 'MENTOR',
           certifications: certificationObjects
         });
+        console.log('User update result:', updateResult);
       } else {
-        await User.findByIdAndUpdate(userId, { 
+        const updateResult = await User.findByIdAndUpdate(effectiveUserId, { 
           certifications: certificationObjects
         });
+        console.log('User update result:', updateResult);
       }
     }
 

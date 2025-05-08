@@ -12,6 +12,8 @@ import LANGUAGES from '../../lib/languages.json';
 import api from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import CertificationManager from '../../components/Admin/CertificationManager';
+import WaiverModal from '../../components/WaiverModal/WaiverModal';
+import { format } from 'date-fns';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
@@ -19,6 +21,7 @@ const menuItems = [
   { key: 'tax', label: 'Tax and Payout' },
   { key: 'account', label: 'Account Settings' },
   { key: 'certification', label: 'Certification Management' },
+  { key: 'agreements', label: 'Agreements' },
 ];
 
 const PREP_OPTIONS = [
@@ -94,6 +97,10 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [showWaiverModal, setShowWaiverModal] = useState(false);
+  const [waiverStatus, setWaiverStatus] = useState({ hasSigned: false, signedAt: null, waiverId: null });
+  const [waiverLoading, setWaiverLoading] = useState(false);
+  const [waiverError, setWaiverError] = useState(null);
 
   useEffect(() => {
     console.log('Settings page - Current user:', user);
@@ -189,6 +196,18 @@ export default function SettingsPage() {
       setTimeout(() => setSuccess(null), 5000);
     }
   }, [refetch, fullUserData]);
+
+  // Fetch waiver status for this mentor
+  useEffect(() => {
+    if (user?.role === 'MENTOR') {
+      setWaiverLoading(true);
+      setWaiverError(null);
+      api.get(`/waivers/verify/${user._id}`)
+        .then(res => setWaiverStatus(res.data))
+        .catch(() => setWaiverError('Failed to load waiver status'))
+        .finally(() => setWaiverLoading(false));
+    }
+  }, [user]);
 
   const allowTwoApprentices = fullUserData?.role === 'MENTOR'
     && ratingSummary.count >= 5
@@ -429,6 +448,29 @@ export default function SettingsPage() {
       setError(err.response?.data?.message || 'Failed to enable payouts. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleWaiverSigned = (signedWaiverId) => {
+    setShowWaiverModal(false);
+    setWaiverStatus({ hasSigned: true, signedAt: new Date(), waiverId: signedWaiverId });
+  };
+
+  const handleDownloadWaiver = async () => {
+    if (!waiverStatus.waiverId) return;
+    try {
+      const response = await api.get(`/waivers/${waiverStatus.waiverId}/pdf`, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `MentorConnect-Waiver-${waiverStatus.waiverId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to download waiver PDF.');
     }
   };
 
@@ -944,6 +986,46 @@ export default function SettingsPage() {
                 </form>
               </div>
               <AccountDangerZone />
+            </section>
+          )}
+          {selected === 'agreements' && (
+            <section className="settings-section-agreements settings-section">
+              <h2 className="settings-section-title">Agreements</h2>
+              <div className="settings-subsection">
+                <h3 className="settings-subsection-title">Mentor Agreement</h3>
+                {waiverLoading ? (
+                  <div>Loading waiver status...</div>
+                ) : waiverStatus.hasSigned ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="badge badge-success w-fit">Signed on {waiverStatus.signedAt ? format(new Date(waiverStatus.signedAt), 'MMMM d, yyyy') : ''}</div>
+                    <button
+                      className="btn btn-primary w-fit"
+                      onClick={handleDownloadWaiver}
+                    >
+                      Download Signed Waiver
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4 max-w-2xl">
+                    <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap" style={{ maxHeight: 300, overflowY: 'auto' }}>
+                      {/* Show a preview or the full waiver text here. For now, just a placeholder. */}
+                      Please review and sign the Mentor Waiver Agreement to continue using the platform as a mentor.
+                    </div>
+                    <button
+                      className="btn btn-primary w-fit"
+                      onClick={() => setShowWaiverModal(true)}
+                    >
+                      Agree and Sign
+                    </button>
+                  </div>
+                )}
+                <WaiverModal
+                  isOpen={showWaiverModal}
+                  onClose={() => setShowWaiverModal(false)}
+                  onSigned={handleWaiverSigned}
+                />
+                {waiverError && <div className="alert alert-error mt-2">{waiverError}</div>}
+              </div>
             </section>
           )}
         </main>

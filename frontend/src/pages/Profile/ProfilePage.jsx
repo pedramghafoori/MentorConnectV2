@@ -216,7 +216,7 @@ export default function ProfilePage() {
     }
     try {
       setIsFetchingCerts(true);
-      const newCerts = await getCertifications(lssId);
+      const newCerts = await getCertifications(lssId, user?._id);
       
       // Transform certifications into array of objects
       const certificationObjects = Object.entries(newCerts.certifications)
@@ -227,6 +227,17 @@ export default function ProfilePage() {
         }));
       
       await mutation.mutateAsync({ certifications: certificationObjects });
+      // Invalidate the profile query so it refetches from the backend
+      await queryClient.invalidateQueries({ queryKey: [isOwnProfile ? 'me' : 'user', userId] });
+      // Refetch the profile and update local state
+      let updatedProfile;
+      if (isOwnProfile) {
+        updatedProfile = await getProfile();
+      } else {
+        updatedProfile = await getProfileById(userId);
+      }
+      // Manually update the react-query cache and force a re-render
+      queryClient.setQueryData([isOwnProfile ? 'me' : 'user', userId], updatedProfile);
     } catch (error) {
       console.error('Failed to fetch certifications:', error);
       alert('Failed to fetch certifications. Please try again later.');

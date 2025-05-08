@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { getDriver, fetchCertificationsForLssId } from './lssScraper.js';
 import { User } from '../models/user.js';
 import { CertificationCategory } from '../models/certificationCategory.js';
+import jwt from 'jsonwebtoken';
 
 // Extend Express Request type to include session
 declare module 'express' {
@@ -153,11 +154,37 @@ export const getCertifications = async (req: Request, res: Response) => {
     } else if (effectiveUserId) {
       // Update existing user's data (either from session or from body)
       if (isMentor) {
-        const updateResult = await User.findByIdAndUpdate(effectiveUserId, { 
-          role: 'MENTOR',
-          certifications: certificationObjects
-        });
-        console.log('User update result:', updateResult);
+        const updatedUser = await User.findByIdAndUpdate(
+          effectiveUserId, 
+          { 
+            role: 'MENTOR',
+            certifications: certificationObjects
+          },
+          { new: true } // Return the updated document
+        );
+        console.log('Updated user:', updatedUser);
+
+        if (updatedUser) {
+          // Generate new token with updated role
+          const newToken = jwt.sign(
+            { 
+              userId: updatedUser._id, 
+              email: updatedUser.email, 
+              role: updatedUser.role 
+            },
+            process.env.JWT_SECRET as string,
+            { expiresIn: '1d' }
+          );
+
+          // Set the new token in a cookie
+          res.cookie('token', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            domain: process.env.NODE_ENV === 'production' ? 'mentorconnect-ecc82a256094.herokuapp.com' : undefined,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          });
+        }
       } else {
         const updateResult = await User.findByIdAndUpdate(effectiveUserId, { 
           certifications: certificationObjects

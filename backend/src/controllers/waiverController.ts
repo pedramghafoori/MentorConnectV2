@@ -38,15 +38,12 @@ interface RequestWithUser extends Request {
 }
 
 export const getLatestWaiver = async (req: Request, res: Response) => {
-  console.log('=== getLatestWaiver called ===');
-  console.log('Request headers:', req.headers);
-  console.log('User from request:', req.user);
-  console.log('Cookies:', req.cookies);
+ 
   
   try {
-    console.log('Attempting to find latest waiver in database...');
+    
     let waiver = await Waiver.findOne().sort({ createdAt: -1 });
-    console.log('Database query result:', waiver);
+    
     
     // If no waiver exists, create the initial one
     if (!waiver) {
@@ -55,19 +52,19 @@ export const getLatestWaiver = async (req: Request, res: Response) => {
       console.log('Created new waiver:', waiver);
     }
     
-    console.log('Sending response with waiver:', waiver);
+
     res.json(waiver);
   } catch (error: any) {
-    console.error('Error in getLatestWaiver:', error);
-    console.error('Error stack:', error.stack);
+
+
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 };
 
 export const signWaiver = async (req: Request, res: Response) => {
-  console.log('=== signWaiver called ===');
-  console.log('Request body:', req.body);
-  console.log('User:', req.user);
+
+
+
   
   try {
     const { signaturePng } = req.body;

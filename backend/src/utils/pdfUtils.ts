@@ -107,7 +107,7 @@ export const buildPdf = async (
     });
 
     // Add waiver text with custom wrapping
-    console.log('Adding waiver text...');
+    
     const lines = wrapText(sanitizedText, textWidth, fontSize, font);
     let y = page.getHeight() - margin - logoFontSize - 20;
     const lineHeight = fontSize * 1.3;

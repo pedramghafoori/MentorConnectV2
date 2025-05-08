@@ -76,11 +76,16 @@ router.get('/organizations', async (req, res) => {
 
 // POST /api/opportunities - Create a new opportunity
 router.post('/', authenticateToken, async (req, res) => {
+  console.log('--- POST /api/opportunities called ---');
+  console.log('req.user:', req.user);
+  console.log('req.body:', req.body);
   try {
     if (!req.user) {
+      console.log('No user on request');
       return res.status(401).json({ message: 'Unauthorized' });
     }
     if (req.user.role !== 'MENTOR') {
+      console.log('User is not a mentor, role:', req.user.role);
       return res.status(403).json({ message: 'Only mentors can post opportunities.' });
     }
     // Destructure all relevant fields from the request body

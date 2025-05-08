@@ -1,8 +1,13 @@
 import api from '../../lib/api';
 
 export const getProfile = async () => {
-  const response = await api.get('/users/me');
-  return response.data;
+  try {
+    const response = await api.get('/users/me');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    return null;
+  }
 };
 
 export const getProfileById = async (userId) => {

@@ -1002,14 +1002,14 @@ export default function SettingsPage() {
                       className="btn btn-primary w-fit"
                       onClick={handleDownloadWaiver}
                     >
-                      Download Signed Waiver
+                      Download Signed Agreement
                     </button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4 max-w-2xl">
                     <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap" style={{ maxHeight: 300, overflowY: 'auto' }}>
                       {/* Show a preview or the full waiver text here. For now, just a placeholder. */}
-                      Please review and sign the Mentor Waiver Agreement to continue using the platform as a mentor.
+                      Please review and sign the Mentor Agreement to continue using the platform as a mentor.
                     </div>
                     <button
                       className="btn btn-primary w-fit"

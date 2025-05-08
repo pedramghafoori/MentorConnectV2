@@ -45,6 +45,7 @@ export interface IUser extends Document {
     scale: number;
     rotate: number;
   };
+  mentorAgreementSigned: boolean;
 }
 
 const certificationSchema = new Schema({
@@ -219,6 +220,10 @@ const userSchema = new Schema<IUser>({
     },
     scale: { type: Number, default: 1 },
     rotate: { type: Number, default: 0 }
+  },
+  mentorAgreementSigned: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

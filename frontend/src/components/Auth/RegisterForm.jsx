@@ -575,7 +575,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                 className="register-button-primary"
                 disabled={isLoading}
               >
-                {isLoading ? 'Fetching...' : 'Next'}
+                {isLoading ? 'Verifying...' : 'Next'}
               </button>
             </div>
           </div>

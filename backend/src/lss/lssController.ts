@@ -112,12 +112,12 @@ export const getCertifications = async (req: Request, res: Response) => {
           current.issueDate < earliest.issueDate ? current : earliest
         );
         
-        
+
         // Calculate years of experience
         const currentYear = new Date().getFullYear();
         const issueYear = earliestAward.issueDate.getFullYear();
         const yearsOfExperience = currentYear - issueYear;
-        
+
         processedCertifications[category] = {
           category,
           hasCredential: true,
@@ -138,7 +138,7 @@ export const getCertifications = async (req: Request, res: Response) => {
       }
     }
 
-    
+
     // If this is registration, store the data in session
     if (isRegistration) {
       // Store certification data in session for registration
@@ -157,8 +157,8 @@ export const getCertifications = async (req: Request, res: Response) => {
         const updatedUser = await User.findByIdAndUpdate(
           effectiveUserId, 
           { 
-            role: 'MENTOR',
-            certifications: certificationObjects
+          role: 'MENTOR',
+          certifications: certificationObjects
           },
           { new: true } // Return the updated document
         );

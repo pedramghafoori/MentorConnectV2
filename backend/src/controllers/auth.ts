@@ -69,7 +69,7 @@ export const login = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
 
-        // Find user
+        // Find user, including soft-deleted ones
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
@@ -79,6 +79,13 @@ export const login = async (req: Request, res: Response) => {
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
             return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // If account is soft-deleted, restore it
+        if (user.deletedAt) {
+            user.deletedAt = null;
+            user.deletionRequestedAt = null;
+            await user.save();
         }
 
         // Generate tokens
@@ -94,7 +101,17 @@ export const login = async (req: Request, res: Response) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        res.json({ user: { id: user._id, email: user.email, role: user.role } });
+        // Check if this is a restored account
+        const wasRestored = user.deletedAt !== null;
+        
+        res.json({ 
+            user: { 
+                id: user._id, 
+                email: user.email, 
+                role: user.role,
+                wasRestored
+            } 
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in', error });
     }

@@ -54,6 +54,7 @@ export function AuthProvider({ children }) {
       // After login, fetch full profile
       await fetchFullUserProfile();
       if (onSuccess) onSuccess();
+      return response.data;
     } catch (error) {
       throw error;
     }

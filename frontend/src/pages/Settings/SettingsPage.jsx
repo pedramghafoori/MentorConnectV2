@@ -5,7 +5,7 @@ import { getProfile } from '../../features/profile/getProfile';
 import Select from 'react-select';
 import Container from '../../components/Container';
 import '../../css/settings.css';
-import AccountDangerZone from './AccountDangerZone';
+import AccountDangerZone from '../../components/Account/AccountDangerZone';
 import { FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 import LANGUAGES from '../../lib/languages.json';

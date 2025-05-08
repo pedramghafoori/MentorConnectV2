@@ -22,7 +22,11 @@ router.delete('/', authenticateToken, async (req, res) => {
     user.deletedAt = now;
     await user.save();
     // TODO: Invalidate all refresh tokens/sessions for this user
-    res.status(204).send();
+    res.status(200).json({ 
+      message: 'Account deletion request received',
+      restorationPeriod: '30 days',
+      deletionDate: new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString()
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting account', error });
   }

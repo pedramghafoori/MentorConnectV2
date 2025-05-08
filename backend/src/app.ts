@@ -9,6 +9,7 @@ import { dirname } from 'path';
 import lssRoutes from './lss/lssRoutes.js';
 import accountRoutes from './routes/account.js';
 import stripeRoutes from './routes/stripe.routes.js';
+import waiverRoutes from './routes/waiverRoutes.js';
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/lss', lssRoutes);
 app.use('/api/account', accountRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/waivers', waiverRoutes);
 
 export default app; 

@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/calendar.css";
 import api from '../../lib/api';
+import WaiverModal from '../WaiverModal/WaiverModal';
 
 const COURSE_OPTIONS = [
   'Bronze',
@@ -81,7 +82,9 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
   const [calendarError, setCalendarError] = useState('');
   const [status, setStatus] = useState('draft');
   const [facilityError, setFacilityError] = useState('');
-  const totalSteps = 4;
+  const [showWaiverModal, setShowWaiverModal] = useState(false);
+  const [signedWaiverId, setSignedWaiverId] = useState(null);
+  const totalSteps = 5;
 
   // Fetch mentor settings when component mounts
   useEffect(() => {
@@ -181,6 +184,13 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
       console.error('User must be logged in as a mentor to create an opportunity');
       return;
     }
+
+    // Show waiver modal if not already signed
+    if (!signedWaiverId) {
+      setShowWaiverModal(true);
+      return;
+    }
+
     // Final calendar validation before submit
     if (formData.schedule.isExamOnly) {
       if (!formData.schedule.examDate) {
@@ -195,6 +205,7 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
         return;
       }
     }
+
     try {
       const payload = {
         title: formData.title,
@@ -212,6 +223,7 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
         prepRequirements: Array.isArray(formData.defaultSettings.customSettings.prepRequirements)
           ? formData.defaultSettings.customSettings.prepRequirements
           : [],
+        signedWaiverId,
       };
       console.log('Opportunity payload:', payload);
       if (initialOpportunity) {
@@ -356,7 +368,7 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
           {/* Progress Steps */}
           <div className="mb-8">
             <div className="flex justify-between items-center">
-              {[1, 2, 3, 4].map((stepNumber) => (
+              {[1, 2, 3, 4, 5].map((stepNumber) => (
                 <div key={stepNumber} className="flex-1">
                   <div
                     className={`h-2 rounded-full transition-colors ${
@@ -369,7 +381,8 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
                     {stepNumber === 1 ? 'Basic Info' :
                      stepNumber === 2 ? 'Schedule' :
                      stepNumber === 3 ? 'Preparation Expectations' :
-                     'Summary and Confirmation'}
+                     stepNumber === 4 ? 'Summary and Confirmation' :
+                     'Waiver'}
                   </span>
                 </div>
               ))}
@@ -806,6 +819,31 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
               </div>
             )}
 
+            {step === 5 && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Waiver Agreement</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700">
+                  <p className="mb-4">
+                    Before creating this opportunity, you must sign the mentor waiver agreement.
+                    This waiver outlines your responsibilities and obligations as a mentor.
+                  </p>
+                  {signedWaiverId ? (
+                    <div className="text-green-600 font-medium">
+                      ✓ Waiver signed and accepted
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowWaiverModal(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#d33] hover:bg-[#c22] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d33]"
+                    >
+                      Sign Waiver
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8">
               {step > 1 && (
@@ -857,7 +895,12 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
               ) : (
                 <button
                   type="submit"
-                  className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#d33] hover:bg-[#c22] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d33]"
+                  disabled={!signedWaiverId}
+                  className={`ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+                    !signedWaiverId
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-[#d33] hover:bg-[#c22] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d33]'
+                  }`}
                 >
                   Create Opportunity
                 </button>
@@ -866,6 +909,16 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
           </form>
         </div>
       </div>
+
+      {/* Waiver Modal */}
+      <WaiverModal
+        isOpen={showWaiverModal}
+        onClose={() => setShowWaiverModal(false)}
+        onSigned={(id) => {
+          setSignedWaiverId(id);
+          setShowWaiverModal(false);
+        }}
+      />
     </div>
   );
 };

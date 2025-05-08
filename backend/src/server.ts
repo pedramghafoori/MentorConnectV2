@@ -13,6 +13,7 @@ import cookieParser from 'cookie-parser';
 import uploadRoutes from './routes/upload.js';
 import lssRoutes from './lss/lssRoutes.js';
 import stripeRoutes from './routes/stripe.routes.js';
+import waiverRoutes from './routes/waiverRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,6 +47,7 @@ mongoose.connect(mongoUri)
 app.use('/api', router);
 app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/waivers', waiverRoutes);
 
 console.log('Registering /api/upload route');
 app.use('/api/upload', (req, res, next) => {

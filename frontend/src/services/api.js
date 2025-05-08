@@ -10,20 +10,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add a request interceptor to add the auth token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 // Auth services
 export const register = async (userData) => {
   const response = await api.post('/auth/register', userData);

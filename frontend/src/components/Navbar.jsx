@@ -256,7 +256,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center py-4 sm:py-6 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
+      <header className="flex justify-between items-center py-2 sm:py-3 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
         <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Link to="/" className="text-xl sm:text-2xl font-bold text-[#d33] tracking-tight font-['Inter',system-ui,sans-serif]">
             LifeguardHub

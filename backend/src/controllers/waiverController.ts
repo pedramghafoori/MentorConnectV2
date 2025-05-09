@@ -3,7 +3,7 @@ import { SignedWaiver } from '../models/SignedWaiver.js';
 import { Waiver } from '../models/Waiver.js';
 import { buildPdf } from '../utils/pdfUtils.js';
 import { sendPdfEmail } from '../utils/emailUtils.js';
-import { MENTOR_WAIVER } from '../constants/mentorWaiver.js';
+import { MENTOR_WAIVER_TEXT } from '../constants/mentorWaiver.js';
 import { Types } from 'mongoose';
 
 interface PopulatedMentor {
@@ -47,8 +47,8 @@ export const getLatestWaiver = async (req: Request, res: Response) => {
     
     // If no waiver exists, create the initial one
     if (!waiver) {
-      console.log('No waiver found, creating initial waiver with template:', MENTOR_WAIVER);
-      waiver = await Waiver.create(MENTOR_WAIVER);
+      console.log('No waiver found, creating initial waiver with template:', MENTOR_WAIVER_TEXT);
+      waiver = await Waiver.create(MENTOR_WAIVER_TEXT);
       console.log('Created new waiver:', waiver);
     }
     

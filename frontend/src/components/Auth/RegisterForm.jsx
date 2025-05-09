@@ -692,7 +692,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             </div>
             
             <div className="register-input-group">
-              <label className="register-label">How did you hear about MentorConnect?</label>
+              <label className="register-label">How did you hear about LifeguardHub?</label>
               <div className="register-checkbox-grid">
                 {['Word of mouth', 'My area chair', 'Lifesaving Society', 'My instructor']
                   .map(option => (

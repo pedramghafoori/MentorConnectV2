@@ -1,6 +1,6 @@
-# MentorConnect
+# LifeguardHub
 
-A platform connecting mentors and mentees.
+A platform connecting lifeguard instructors with certification candidates.
 
 ## Setup
 

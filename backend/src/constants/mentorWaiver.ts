@@ -1,61 +1,58 @@
-export const MENTOR_WAIVER = {
-  title: 'Mentor Waiver Agreement',
-  text: `PLEASE READ CAREFULLY. By clicking "I agree," signing, or otherwise affirmatively accepting this Agreement each time you submit an opportunity ("Opportunity") on the MentorConnect platform (the "Platform"), you ("Mentor") acknowledge that you have read, understood, and agree to be legally bound by the terms below on your own behalf and on behalf of any entity you represent.
+export const MENTOR_WAIVER_TEXT = `
+MENTOR WAIVER AGREEMENT
 
-⸻
+By signing up for an opportunity ("Opportunity") on the LifeguardHub platform (the "Platform"), you ("Mentor") acknowledge that you have read, understood, and agree to be legally bound by the terms below on your own behalf and on behalf of any entity you represent.
 
-1. Accuracy & Ownership of Content
+1. Definitions
+1.1 "Platform" means the LifeguardHub website and mobile application.
+1.2 "Opportunity" means any teaching, mentoring, or coaching session posted on the Platform.
+1.3 "Mentor" means the individual providing the Opportunity.
+1.4 "Participant" means the individual receiving the Opportunity.
 
-1.1 Accuracy. Mentor certifies that all information supplied in connection with an Opportunity—including descriptions, dates, pricing, credentials, and contact details—is true, complete, and not misleading.
-1.2 Right to Post. Mentor affirms that they own, or have obtained all necessary rights, licenses, and consents to publish the Opportunity and any associated materials (text, images, video, trademarks, etc.) on the Platform.
-1.3 No Infringement. Mentor warrants that posting the Opportunity will not violate any intellectual-property, privacy, or other rights of any third party.
+2. Mentor Responsibilities
+2.1 Professional Conduct. Mentor shall maintain professional conduct and provide high-quality instruction in accordance with industry standards.
+2.2 Platform Policies. Mentor shall follow all current LifeguardHub Terms of Service, Community Guidelines, and Opportunity-Posting Policies, each of which is incorporated by reference and may be amended from time to time.
+2.3 Safety. Mentor shall prioritize participant safety and follow all applicable safety protocols and regulations.
+2.4 Insurance. Mentor shall maintain appropriate liability insurance coverage.
 
-2. Compliance with Laws & Policies
+3. Independent Contractor Status
+3.1 Mentor acknowledges that they are an independent contractor and not an employee, agent, or representative of LifeguardHub Inc. ("Company").
+3.2 Mentor is responsible for their own taxes, insurance, and business expenses.
+3.3 Mentor has no authority to bind Company or create any liability on behalf of Company.
 
-2.1 General Compliance. Mentor agrees to comply with all applicable federal, provincial, and municipal laws, regulations, professional standards, and industry guidelines—including, without limitation, anti-discrimination statutes, employment standards, privacy laws (e.g., the Personal Information Protection and Electronic Documents Act), and health-and-safety requirements.
-2.2 Platform Policies. Mentor shall follow all current MentorConnect Terms of Service, Community Guidelines, and Opportunity-Posting Policies, each of which is incorporated by reference and may be amended from time to time.
-2.3 Facility Permissions for Apprentices. Where an Opportunity involves bringing an apprentice or assistant onto a course, Mentor certifies that they have secured all required approvals, permits, or permissions from the hosting venue, facility operator, or any other relevant authority to allow the apprentice's participation.
+4. Liability and Indemnification
+4.1 Mentor shall indemnify and hold harmless Company from any claims, damages, or expenses arising from Mentor's actions or omissions.
+4.2 Mentor acknowledges that Company is not liable for any disputes between Mentor and Participants.
+4.3 Mentor is responsible for their own professional liability insurance.
 
-3. Independent Relationship
+5. Intellectual Property
+5.1 Mentor retains ownership of their original content and materials.
+5.2 Mentor grants Company a license to use their content for Platform purposes.
+5.3 Mentor shall not infringe on others' intellectual property rights.
 
-3.1 Mentor understands and agrees that posting an Opportunity does not create an employment, partnership, or agency relationship between Mentor and MentorConnect Inc. ("Company").
-3.2 Mentor is solely responsible for negotiating, forming, and fulfilling any agreements with participants who respond to the Opportunity. Company is not a party to those agreements.
+6. Confidentiality
+6.1 Mentor shall maintain the confidentiality of participant information.
+6.2 Mentor shall not disclose Platform trade secrets or confidential information.
 
-4. Assumption of Risk
+7. Termination
+7.1 Company may terminate Mentor's access to the Platform for any reason.
+7.2 Mentor may terminate their account at any time.
+7.3 Certain provisions survive termination.
 
-Mentor acknowledges that providing mentorship, training, instruction, or other services may involve inherent risks (including, but not limited to, physical injury, property damage, or financial loss). Mentor voluntarily assumes all such risks and is solely responsible for obtaining appropriate insurance coverage, certifications, and safety measures.
+8. Privacy and Data
+8.1 Mentor consents to Company's collection, use, and disclosure of personal information as described in the LifeguardHub Privacy Policy. Mentor further consents to Company displaying Mentor's profile, credentials, and Opportunity details to potential participants.
 
-5. Release & Waiver of Liability
+9. Governing Law
+9.1 This Agreement is governed by the laws of the jurisdiction where Company is headquartered.
+9.2 Any disputes shall be resolved in the courts of that jurisdiction.
 
-To the fullest extent permitted by law, Mentor releases, waives, and forever discharges Company, its parents, affiliates, directors, officers, employees, and agents (collectively, the "Released Parties") from any and all claims, liabilities, damages, costs, and expenses—whether known or unknown, anticipated or unanticipated—arising out of or related to:
-	•	(a) Mentor's posting, promotion, or conduct of an Opportunity;
-	•	(b) interactions or agreements between Mentor and any participant; and
-	•	(c) the use of the Platform or any third-party services integrated with it.
+10. Entire Agreement
+10.1 This Agreement constitutes the entire understanding between Mentor and Company.
+10.2 Any modifications must be in writing and signed by both parties.
 
-6. Indemnification
+By signing below, Mentor acknowledges that they have read, understood, and agree to be bound by this Agreement.
 
-Mentor agrees to defend, indemnify, and hold harmless the Released Parties from and against any third-party claims, damages, losses, costs, or expenses (including reasonable legal fees) arising from:
-	•	(i) Mentor's breach of this Agreement or any Platform policy;
-	•	(ii) the content or conduct of any Opportunity; or
-	•	(iii) Mentor's violation of any law or third-party right.
-
-7. Limitation of Liability
-
-Under no circumstances will the Released Parties be liable for any indirect, incidental, special, consequential, or punitive damages (including loss of profits, goodwill, data, or business opportunities) related to this Agreement or the Platform, even if advised of the possibility of such damages. In no event will the Released Parties' aggregate liability exceed CAD $100 or the amount of fees paid by Mentor to Company in the twelve (12) months preceding the event giving rise to liability, whichever is greater.
-
-8. Privacy & Use of Personal Information
-
-Mentor consents to Company's collection, use, and disclosure of personal information as described in the MentorConnect Privacy Policy. Mentor further consents to Company displaying Mentor's profile, credentials, and Opportunity details to potential participants.
-
-9. Term & Termination
-
-This Agreement applies each time Mentor posts an Opportunity and remains in force for that Opportunity's entire lifecycle. Company may remove an Opportunity or suspend Mentor's account at any time for breach of this Agreement or any applicable policy.
-
-10. General
-
-10.1 Governing Law. This Agreement is governed by the laws of the Province of Ontario and the federal laws of Canada applicable therein, without regard to conflict-of-laws principles.
-10.2 Dispute Resolution. Any dispute arising out of or relating to this Agreement shall be resolved exclusively in the courts located in Toronto, Ontario, and Mentor irrevocably submits to their jurisdiction.
-10.3 Entire Agreement. This Agreement, together with the incorporated Platform policies, constitutes the entire agreement between the parties concerning its subject matter and supersedes all prior discussions or agreements.
-10.4 Severability. If any provision is held unenforceable, the remaining provisions will remain in full force and effect.
-10.5 Amendment. Company may modify this Agreement by posting an updated version. Continued use of the Platform to post Opportunities after changes become effective constitutes acceptance of the revised terms.`
-};
+Mentor Name: ________________________
+Date: ________________________
+Signature: ________________________
+`;

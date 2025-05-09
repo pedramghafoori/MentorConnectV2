@@ -10,6 +10,7 @@ import opportunityRoutes from './opportunity.js';
 import facilityRoutes from './facility.js';
 import certificationCategories from './certificationCategories.js';
 import accountRoutes from './account.js';
+import forumRoutes from './forum.js';
 
 const router = Router();
 
@@ -31,5 +32,8 @@ router.use('/opportunities', opportunityRoutes);
 router.use('/facilities', facilityRoutes);
 router.use('/certification-categories', certificationCategories);
 router.use('/account', authenticateToken, accountRoutes);
+
+// Forum routes - mounted at /api/v1/forum
+router.use('/v1/forum', forumRoutes);
 
 export default router; 

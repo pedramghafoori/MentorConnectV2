@@ -40,7 +40,6 @@ const certificationCategorySchema = new mongoose.Schema({
 });
 
 // Create indexes for efficient querying
-certificationCategorySchema.index({ code: 1 });
 certificationCategorySchema.index({ level: 1 });
 certificationCategorySchema.index({ category: 1 });
 

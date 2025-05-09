@@ -10,6 +10,9 @@ import TermsPage from './pages/Legal/TermsPage';
 import MentorAgreementPage from './pages/Legal/MentorAgreementPage';
 import MyCourses from './pages/Dashboard/mentor/MyCourses';
 import TestPager1 from './pages/TestPager1.jsx';
+import ForumHome from './pages/forum/ForumHome';
+import ThreadPage from './pages/forum/ThreadPage';
+import AskQuestionPage from './pages/forum/AskQuestionPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -32,6 +35,11 @@ const App = () => {
             <Route path="/mentor-agreement" element={<MentorAgreementPage />} />
             <Route path="/courses/my-courses" element={user ? <MyCourses /> : <Navigate to="/" />} />
             <Route path="/courses/edit/:courseId" element={user ? <MyCourses /> : <Navigate to="/" />} />
+            
+            {/* Forum Routes */}
+            <Route path="/forum" element={<ForumHome />} />
+            <Route path="/forum/ask" element={user ? <AskQuestionPage /> : <Navigate to="/" />} />
+            <Route path="/forum/:slug" element={<ThreadPage />} />
           </Routes>
         </main>
         <Footer />

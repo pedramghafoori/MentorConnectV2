@@ -8,4 +8,12 @@
   body {
     @apply antialiased;
   }
+}
+
+.rich-text-area .ProseMirror {
+  min-height: 200px;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.5;
 } 

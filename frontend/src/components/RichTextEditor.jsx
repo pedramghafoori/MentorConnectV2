@@ -126,7 +126,11 @@ const RichTextEditor = ({ content, onChange, placeholder }) => {
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <MenuBar editor={editor} />
-      <EditorContent editor={editor} className="prose max-w-none p-4 min-h-[200px]" />
+      <EditorContent 
+        editor={editor} 
+        className="rich-text-area p-4 w-full outline-none"
+        style={{ width: '100%' }}
+      />
     </div>
   );
 };

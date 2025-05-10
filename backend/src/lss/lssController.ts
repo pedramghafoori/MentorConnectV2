@@ -189,6 +189,15 @@ export const getCertifications = async (req: Request, res: Response) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
           });
         }
+
+        await User.findByIdAndUpdate(
+          effectiveUserId,
+          {
+            hasExaminerCourse,
+            hasTrainerCourse,
+            certifications: certificationObjects
+          }
+        );
       } else {
         const updateResult = await User.findByIdAndUpdate(effectiveUserId, { 
           certifications: certificationObjects

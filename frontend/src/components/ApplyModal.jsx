@@ -29,7 +29,13 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const needsVerification = !user?.hasExaminerCourse || !user?.hasTrainerCourse;
+  // Determine what is required for this opportunity
+  const requiresTrainer = opportunity.requiredLevel === 'trainer' || opportunity.requiredLevel === 'both';
+  const requiresExaminer = opportunity.requiredLevel === 'examiner' || opportunity.requiredLevel === 'both';
+
+  const needsVerification =
+    (requiresTrainer && !user?.hasTrainerCourse) ||
+    (requiresExaminer && !user?.hasExaminerCourse);
   console.log('[ApplyModal] user:', user);
   console.log('[ApplyModal] needsVerification:', needsVerification);
   console.log('[ApplyModal] currentStep (init):', currentStep);

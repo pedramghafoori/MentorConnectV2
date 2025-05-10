@@ -4,16 +4,25 @@ import locationPin from '../assets/icons/location-pin.png';
 import calendarIcon from '../assets/icons/calendar.svg';
 import clipboardIcon from '../assets/icons/clipboard.svg';
 import ReusableModal from './ReusableModal';
+import ApplyModal from './ApplyModal';
 
 export default function OpportunityCard({ opportunity, hideRibbon }) {
   const { user } = useAuth();
   const [mentorModalOpen, setMentorModalOpen] = useState(false);
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
   const mentor = opportunity.mentor || {};
   const facility = opportunity.facility || {};
   const prepReqs = opportunity.prepRequirements || [];
   const date = opportunity.schedule?.isExamOnly
     ? opportunity.schedule.examDate
     : (opportunity.schedule?.courseDates?.[0] || null);
+
+  // Add debug logging
+  const handleApplyClick = () => {
+    console.log('Apply button clicked');
+    setApplyModalOpen(true);
+    console.log('applyModalOpen set to:', true);
+  };
 
   // Map course titles to display names
   const getDisplayTitle = (title) => {
@@ -45,6 +54,11 @@ export default function OpportunityCard({ opportunity, hideRibbon }) {
           {/* Add more mentor info here if available */}
         </div>
       </ReusableModal>
+      <ApplyModal
+        isOpen={applyModalOpen}
+        onClose={() => setApplyModalOpen(false)}
+        opportunity={opportunity}
+      />
       <div className="opportunity-card">
         {!hideRibbon && (
           <div className="opportunity-card-ribbon">
@@ -102,7 +116,14 @@ export default function OpportunityCard({ opportunity, hideRibbon }) {
                   </svg>
                   <span className="opportunity-card-detail-text">{opportunity.price ? `$${opportunity.price}` : 'N/A'}</span>
                 </div>
-                {user && <button className="opportunity-card-apply-btn">Apply</button>}
+                {user && (
+                  <button
+                    className="opportunity-card-apply-btn"
+                    onClick={handleApplyClick}
+                  >
+                    Apply
+                  </button>
+                )}
                 {!user && (
                   <button
                     className="opportunity-card-apply-btn"

@@ -6,12 +6,14 @@ import { loadStripe } from '@stripe/stripe-js';
 import { AssignmentService } from '../services/assignment.service';
 import { toast } from 'react-toastify';
 import SignaturePad from './SignaturePad';
-import { PaymentForm } from './PaymentForm';
+import PaymentForm from './PaymentForm';
 import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const ApplyModal = ({ isOpen, onClose, opportunity }) => {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [prerequisites, setPrerequisites] = useState({
     verified: false,
@@ -50,7 +52,21 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
     setError(null);
 
     try {
-      const response = await api.post('/lss/certifications');
+      if (!user?.lssId) {
+        // If user doesn't have an LSS ID, show AMA waiver
+        setPrerequisites({
+          verified: false,
+          method: 'ama',
+          verifiedAt: null,
+          signedAt: null
+        });
+        setCurrentStep(2);
+        return;
+      }
+
+      const response = await api.post('/lss/certifications', {
+        lssId: user.lssId
+      });
       
       if (response.data && response.data.meetsPrerequisites) {
         setPrerequisites({
@@ -87,7 +103,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
     if (prerequisites.method === 'ama') {
       // If using AMA waiver, collect that signature too
       setCurrentStep(2.5);
-    } else if (opportunity.fee > 0) {
+    } else if (opportunity.price > 0) {
       // If there's a fee, move to payment step
       setCurrentStep(3);
     } else {
@@ -102,7 +118,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
       amaSignature: signature
     }));
 
-    if (opportunity.fee > 0) {
+    if (opportunity.price > 0) {
       setCurrentStep(3);
     } else {
       handleSubmit();
@@ -121,7 +137,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
     try {
       const assignment = await AssignmentService.createAssignment({
         opportunityId: opportunity._id,
-        feeSnapshot: opportunity.fee,
+        feeSnapshot: opportunity.price || 0,
         prerequisites: {
           ...prerequisites,
           signedAt: new Date()
@@ -161,7 +177,16 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
         return (
           <div>
             <h3>Sign Mentee Agreement</h3>
-            <p>Please review and sign the mentee agreement.</p>
+            <p>Please review and sign the mentee agreement below.</p>
+            <div className="mentee-agreement-text" style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16, background: '#f9f9f9', maxHeight: 200, overflowY: 'auto'}}>
+              <strong>Mentee Agreement</strong>
+              <p>
+                By signing this agreement, you acknowledge your commitment to attend all sessions, complete all required preparation, and communicate promptly with your mentor. Failure to do so may result in removal from the opportunity.
+              </p>
+              <p>
+                You agree to uphold the standards and expectations set by the mentor and the organization.
+              </p>
+            </div>
             <SignaturePad onSign={handleMenteeSignature} />
           </div>
         );
@@ -182,7 +207,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
             <p>Complete payment to finalize your application.</p>
             <Elements stripe={stripePromise}>
               <PaymentForm
-                amount={opportunity.fee}
+                amount={opportunity.price || 0}
                 onSuccess={handlePaymentSuccess}
               />
             </Elements>
@@ -208,7 +233,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
           <div className={`step ${currentStep >= 2 ? 'active' : ''}`}>
             Sign Agreement{prerequisites.method === 'ama' ? 's' : ''}
           </div>
-          {opportunity.fee > 0 && (
+          {opportunity.price > 0 && (
             <div className={`step ${currentStep >= 3 ? 'active' : ''}`}>
               Payment
             </div>
@@ -232,7 +257,7 @@ ApplyModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   opportunity: PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    fee: PropTypes.number.isRequired
+    price: PropTypes.number.isRequired
   }).isRequired
 };
 

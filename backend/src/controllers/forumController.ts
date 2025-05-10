@@ -142,7 +142,8 @@ export const acceptAnswer = async (req: Request, res: Response) => {
 // Answers
 export const createAnswer = async (req: Request, res: Response) => {
   try {
-    const question = await Question.findById(req.params.id);
+    // Find question by slug instead of _id
+    const question = await Question.findOne({ slug: req.params.id });
     if (!question) {
       return res.status(404).json({ message: 'Question not found' });
     }

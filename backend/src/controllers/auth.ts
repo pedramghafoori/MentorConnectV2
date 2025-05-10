@@ -106,7 +106,7 @@ export const login = async (req: Request, res: Response) => {
         
         res.json({ 
             user: { 
-                id: user._id, 
+                userId: user._id, 
                 email: user.email, 
                 role: user.role,
                 wasRestored

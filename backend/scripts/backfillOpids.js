@@ -21,10 +21,10 @@ async function backfillOpids() {
   for (const opp of missing) {
     opp.opid = await generateUniqueOpid();
     await opp.save();
-    console.log(`Updated ${opp._id} with opid ${opp.opid}`);
+    
   }
 
-  console.log('Backfill complete!');
+  
   mongoose.disconnect();
 }
 

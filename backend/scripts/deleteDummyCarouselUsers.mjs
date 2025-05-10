@@ -18,7 +18,7 @@ async function deleteDummyUsers() {
       ]
     });
     
-    console.log(`Successfully deleted ${result.deletedCount} dummy users`);
+    
   } catch (error) {
     console.error('Error deleting dummy users:', error);
   } finally {

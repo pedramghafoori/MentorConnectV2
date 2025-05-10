@@ -1,4 +1,3 @@
-export const MENTOR_WAIVER_TEXT = `
 MENTOR WAIVER AGREEMENT
 
 By signing up for an opportunity ("Opportunity") on the LifeguardHub platform (the "Platform"), you ("Mentor") acknowledge that you have read, understood, and agree to be legally bound by the terms below on your own behalf and on behalf of any entity you represent.
@@ -54,5 +53,4 @@ By signing below, Mentor acknowledges that they have read, understood, and agree
 
 Mentor Name: ________________________
 Date: ________________________
-Signature: ________________________
-`;
+Signature: ________________________ 

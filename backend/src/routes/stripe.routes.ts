@@ -1,11 +1,11 @@
 import express from 'express';
-import { auth } from '../middleware/auth.middleware.js';
+import { authenticateToken } from '../middleware/auth.js';
 import { StripeService } from '../services/stripe.service.js';
 
 const router = express.Router();
 
 // Create OAuth link for Stripe Connect
-router.post('/create-oauth-link', auth, async (req, res) => {
+router.post('/create-oauth-link', authenticateToken, async (req, res) => {
   try {
     console.log('req.user:', req.user);
     if (!req.user) {
@@ -29,7 +29,7 @@ router.post('/create-oauth-link', auth, async (req, res) => {
 });
 
 // Handle Stripe OAuth callback
-router.get('/oauth/callback', auth, async (req, res) => {
+router.get('/oauth/callback', authenticateToken, async (req, res) => {
   try {
     const { code, state } = req.query;
     if (!req.user) {

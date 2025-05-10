@@ -49,17 +49,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/waivers', waiverRoutes);
 
-console.log('Registering /api/upload route');
+
 app.use('/api/upload', (req, res, next) => {
-  console.log(`[UPLOAD] ${req.method} ${req.originalUrl}`);
+  
   next();
 });
 app.use('/api/upload', uploadRoutes);
 
-console.log('Registering /api/lss route');
+
 app.use('/api/lss', lssRoutes);
 
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
+
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
@@ -78,5 +78,4 @@ const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`API health check available at http://localhost:${PORT}/api/health`);
 }); 

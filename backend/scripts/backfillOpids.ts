@@ -19,15 +19,15 @@ async function backfillOpids() {
 
     // Find all opportunities missing opid
     const missing = await Opportunity.find({ $or: [{ opid: { $exists: false } }, { opid: null }] });
-    console.log(`Found ${missing.length} opportunities missing opid`);
+    
 
     for (const opp of missing) {
       opp.opid = await generateUniqueOpid();
       await opp.save();
-      console.log(`Updated ${opp._id} with opid ${opp.opid}`);
+      
     }
 
-    console.log('Backfill complete!');
+    
     await mongoose.disconnect();
     process.exit(0);
   } catch (err) {

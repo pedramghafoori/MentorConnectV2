@@ -3,8 +3,9 @@ import { SignedWaiver } from '../models/SignedWaiver.js';
 import { Waiver } from '../models/Waiver.js';
 import { buildPdf } from '../utils/pdfUtils.js';
 import { sendPdfEmail } from '../utils/emailUtils.js';
-import { MENTOR_WAIVER_TEXT } from '../constants/mentorWaiver.js';
 import { Types } from 'mongoose';
+import fs from 'fs';
+import path from 'path';
 
 interface PopulatedMentor {
   _id: Types.ObjectId;
@@ -38,26 +39,12 @@ interface RequestWithUser extends Request {
 }
 
 export const getLatestWaiver = async (req: Request, res: Response) => {
- 
-  
   try {
-    
-    let waiver = await Waiver.findOne().sort({ createdAt: -1 });
-    
-    
-    // If no waiver exists, create the initial one
-    if (!waiver) {
-      console.log('No waiver found, creating initial waiver with template:', MENTOR_WAIVER_TEXT);
-      waiver = await Waiver.create(MENTOR_WAIVER_TEXT);
-      console.log('Created new waiver:', waiver);
-    }
-    
-
-    res.json(waiver);
-  } catch (error: any) {
-
-
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    const waiverPath = path.join(__dirname, '../agreements/mentorAgreement.md');
+    const waiverText = fs.readFileSync(waiverPath, 'utf8');
+    res.json({ text: waiverText });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch waiver text' });
   }
 };
 

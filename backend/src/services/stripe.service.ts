@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { User } from '../models/user.model.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil',
+  apiVersion: '2025-04-30.basil'
 });
 
 export class StripeService {
@@ -64,5 +64,36 @@ export class StripeService {
       { new: true }
     );
     console.log('Updated user:', updatedUser);
+  }
+
+  static async createPaymentIntent({
+    amount,
+    currency,
+    capture_method,
+    metadata
+  }: {
+    amount: number;
+    currency: string;
+    capture_method: 'automatic' | 'manual';
+    metadata: Record<string, string>;
+  }): Promise<Stripe.PaymentIntent> {
+    return stripe.paymentIntents.create({
+      amount,
+      currency,
+      capture_method,
+      metadata
+    });
+  }
+
+  static async capturePaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+    return stripe.paymentIntents.capture(paymentIntentId);
+  }
+
+  static async cancelPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+    return stripe.paymentIntents.cancel(paymentIntentId);
+  }
+
+  static async getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+    return stripe.paymentIntents.retrieve(paymentIntentId);
   }
 } 

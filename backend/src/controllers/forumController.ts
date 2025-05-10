@@ -122,7 +122,7 @@ export const acceptAnswer = async (req: Request, res: Response) => {
     }
 
     // Check if user is the question author
-    if (question.authorId.toString() !== req.user._id.toString()) {
+    if (question.authorId.toString() !== req.user.userId.toString()) {
       return res.status(403).json({ message: 'Only the question author can accept answers' });
     }
 
@@ -151,7 +151,7 @@ export const createAnswer = async (req: Request, res: Response) => {
     const answer = new Answer({
       questionId: question._id,
       body: req.body.body,
-      authorId: req.user._id as Types.ObjectId
+      authorId: new Types.ObjectId(req.user.userId)
     });
 
     await answer.save();

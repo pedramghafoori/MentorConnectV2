@@ -12,7 +12,7 @@ async function listAllUsers() {
     // Find all users
     const users = await User.find({});
     
-    console.log(`Found ${users.length} total users:`);
+    
     users.forEach(user => {
       console.log('\nUser:', {
         _id: user._id,

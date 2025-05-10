@@ -36,6 +36,10 @@ interface CertificationResponse {
     certifications: { type: string; years: number }[];
     name: string;
   };
+  debug: {
+    rawAwards: any[];
+    name: string;
+  };
 }
 
 export const getCertifications = async (req: Request, res: Response) => {
@@ -77,9 +81,10 @@ export const getCertifications = async (req: Request, res: Response) => {
         issueDate: new Date(award.issued!)
       }));
     
-   
-    processedAwards.forEach(award => {
-     
+    // Log all found awards
+    console.log('\nAll found awards:');
+    result.awards.forEach(award => {
+      console.log(`- ${award.name} (Issued: ${award.issued}, Expiry: ${award.expiry})`);
     });
 
     // Check for mentor status
@@ -93,25 +98,16 @@ export const getCertifications = async (req: Request, res: Response) => {
     const processedCertifications: Record<string, ProcessedCertification> = {};
     const certificationObjects: { type: string; years: number }[] = [];
     
-   
     for (const [category, validAwards] of Object.entries(CERTIFICATION_CATEGORIES)) {
-     
-      
       const relevantAwards = processedAwards.filter(award => 
         validAwards.some(validAward => award.name.includes(validAward))
       );
       
-     
-      relevantAwards.forEach(award => {
-       
-      });
-
       if (relevantAwards.length > 0) {
         // Find earliest certification date for this category
         const earliestAward = relevantAwards.reduce((earliest, current) => 
           current.issueDate < earliest.issueDate ? current : earliest
         );
-        
 
         // Calculate years of experience
         const currentYear = new Date().getFullYear();
@@ -128,7 +124,6 @@ export const getCertifications = async (req: Request, res: Response) => {
         // Add to object array for database storage
         certificationObjects.push({ type: category, years: yearsOfExperience });
       } else {
-       
         processedCertifications[category] = {
           category,
           hasCredential: false,
@@ -137,7 +132,6 @@ export const getCertifications = async (req: Request, res: Response) => {
         };
       }
     }
-
 
     // If this is registration, store the data in session
     if (isRegistration) {
@@ -204,7 +198,12 @@ export const getCertifications = async (req: Request, res: Response) => {
           certifications: certificationObjects,
           name: result.name
         }
-      })
+      }),
+      // Include raw awards data for debugging
+      debug: {
+        rawAwards: result.awards,
+        name: result.name
+      }
     };
 
     res.json(response);

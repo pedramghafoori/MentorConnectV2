@@ -88,6 +88,7 @@ export const getCertifications = async (req: Request, res: Response) => {
     const hasExaminerCourse = processedAwards.some(award => award.name === 'Examiner Course');
     const hasTrainerCourse = processedAwards.some(award => award.name === 'Instructor Trainer Course');
     const meetsPrerequisites = hasExaminerCourse || hasTrainerCourse;
+    console.log(`hasExaminerCourse: ${hasExaminerCourse}, hasTrainerCourse: ${hasTrainerCourse}`);
     // Use hasExaminerCourse and hasTrainerCourse internally as needed
 
     // Log all found awards

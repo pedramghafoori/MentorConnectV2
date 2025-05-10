@@ -29,9 +29,13 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const needsVerification = !user?.hasExaminerCourse || !user?.hasTrainerCourse;
+  console.log('[ApplyModal] user:', user);
+  console.log('[ApplyModal] needsVerification:', needsVerification);
+  console.log('[ApplyModal] currentStep (init):', currentStep);
+
   useEffect(() => {
     if (isOpen) {
-      setCurrentStep(1);
       setPrerequisites({
         verified: false,
         method: null,
@@ -44,8 +48,17 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
       });
       setPaymentIntent(null);
       setError(null);
+
+      // If no verification needed, start at agreement step
+      if (!needsVerification) {
+        setCurrentStep(2);
+        console.log('[ApplyModal] Skipping verification, setting currentStep to 2');
+      } else {
+        setCurrentStep(1);
+        console.log('[ApplyModal] Needs verification, setting currentStep to 1');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, needsVerification]);
 
   const verifyPrerequisites = async () => {
     setLoading(true);
@@ -157,6 +170,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
   };
 
   const renderStepContent = () => {
+    console.log('[ApplyModal] renderStepContent - currentStep:', currentStep, 'needsVerification:', needsVerification);
     switch (currentStep) {
       case 1:
         return (
@@ -172,7 +186,6 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
             </button>
           </div>
         );
-
       case 2:
         return (
           <div>
@@ -190,7 +203,6 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
             <SignaturePad onSign={handleMenteeSignature} />
           </div>
         );
-
       case 2.5:
         return (
           <div>
@@ -199,7 +211,6 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
             <SignaturePad onSign={handleAmaSignature} />
           </div>
         );
-
       case 3:
         return (
           <div>
@@ -213,7 +224,6 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
             </Elements>
           </div>
         );
-
       default:
         return null;
     }

@@ -46,6 +46,8 @@ export interface IUser extends Document {
     rotate: number;
   };
   mentorAgreementSigned: boolean;
+  hasExaminerCourse?: boolean;
+  hasTrainerCourse?: boolean;
 }
 
 const certificationSchema = new Schema({
@@ -224,7 +226,9 @@ const userSchema = new Schema<IUser>({
   mentorAgreementSigned: {
     type: Boolean,
     default: false
-  }
+  },
+  hasExaminerCourse: { type: Boolean, default: false },
+  hasTrainerCourse: { type: Boolean, default: false },
 }, {
   timestamps: true
 });

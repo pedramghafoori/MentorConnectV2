@@ -57,6 +57,12 @@ export async function parseAwardsFromTable(table: WebElement, isCoursesTable: bo
         // For courses table: [Course Date, Award]
         issuedStr = (await tds[0].getText()).trim();
         awardStr = (await tds[1].getText()).trim();
+        // Normalize old course names to new
+        if (awardStr === 'Exam Standards clinic') {
+          awardStr = 'Examiner Course';
+        } else if (awardStr === 'Trainer Course') {
+          awardStr = 'Instructor Trainer Course';
+        }
       } else if (tds.length === 3) {
         // For awards table: [Issued, Expiry, Award]
         issuedStr = (await tds[0].getText()).trim();

@@ -31,6 +31,7 @@ interface ProcessedCertification {
 interface CertificationResponse {
   certifications: Record<string, ProcessedCertification>;
   isMentor: boolean;
+  meetsPrerequisites: boolean;
   registrationData?: {
     isMentor: boolean;
     certifications: { type: string; years: number }[];
@@ -77,10 +78,18 @@ export const getCertifications = async (req: Request, res: Response) => {
     const processedAwards = result.awards
       .filter(award => award.name && award.issued)
       .map(award => ({
-        name: award.name!,
+        name: award.name === 'Exam Standards clinic' ? 'Examiner Course' : 
+              award.name === 'Trainer Course' ? 'Instructor Trainer Course' : 
+              award.name!,
         issueDate: new Date(award.issued!)
       }));
     
+    // Internal flags for backend logic (not returned or saved)
+    const hasExaminerCourse = processedAwards.some(award => award.name === 'Examiner Course');
+    const hasTrainerCourse = processedAwards.some(award => award.name === 'Instructor Trainer Course');
+    const meetsPrerequisites = hasExaminerCourse || hasTrainerCourse;
+    // Use hasExaminerCourse and hasTrainerCourse internally as needed
+
     // Log all found awards
     console.log('\nAll found awards:');
     result.awards.forEach(award => {
@@ -191,6 +200,7 @@ export const getCertifications = async (req: Request, res: Response) => {
     const response: CertificationResponse = {
       certifications: processedCertifications,
       isMentor,
+      meetsPrerequisites,
       // Include registration data if this is registration
       ...(isRegistration && {
         registrationData: {

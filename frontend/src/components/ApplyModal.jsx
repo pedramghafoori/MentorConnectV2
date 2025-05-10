@@ -52,7 +52,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
     try {
       const response = await api.post('/lss/certifications');
       
-      if (response.data && response.data.certifications) {
+      if (response.data && response.data.meetsPrerequisites) {
         setPrerequisites({
           verified: true,
           method: 'scraper',

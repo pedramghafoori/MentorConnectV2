@@ -97,8 +97,7 @@ export const login = async (req: Request, res: Response) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            domain: process.env.NODE_ENV === 'production' ? 'mentorconnect-ecc82a256094.herokuapp.com' : undefined,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
         // Check if this is a restored account
@@ -110,7 +109,8 @@ export const login = async (req: Request, res: Response) => {
                 email: user.email, 
                 role: user.role,
                 wasRestored
-            } 
+            },
+            token: accessToken // Include token in response for client-side storage
         });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in', error });

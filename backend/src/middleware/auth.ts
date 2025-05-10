@@ -18,12 +18,14 @@ declare global {
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // Try to get token from cookie first, then from Authorization header
+  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+  
   if (!token) {
     console.log('No token provided');
     return res.status(401).json({ message: 'No token provided' });
   }
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     console.log('Decoded token:', decoded);

@@ -14,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import CertificationManager from '../../components/Admin/CertificationManager';
 import WaiverModal from '../../components/WaiverModal/WaiverModal';
 import { format } from 'date-fns';
+import { SignedWaivers } from '../../components/SignedWaivers/SignedWaivers';
 
 const menuItems = [
   { key: 'mentor', label: 'Mentor Preferences' },
@@ -1025,6 +1026,10 @@ export default function SettingsPage() {
                   onSigned={handleWaiverSigned}
                 />
                 {waiverError && <div className="alert alert-error mt-2">{waiverError}</div>}
+              </div>
+              {/* Show all signed waivers below mentor agreement */}
+              <div className="settings-subsection mt-8">
+                <SignedWaivers />
               </div>
             </section>
           )}

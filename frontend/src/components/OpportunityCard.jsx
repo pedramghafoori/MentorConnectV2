@@ -114,7 +114,9 @@ export default function OpportunityCard({ opportunity, hideRibbon }) {
                       </g>
                     </g>
                   </svg>
-                  <span className="opportunity-card-detail-text">{opportunity.price ? `$${opportunity.price}` : 'N/A'}</span>
+                  <span className="opportunity-card-detail-text">
+                    {opportunity.price === 0 ? 'No charge' : (opportunity.price ? `$${opportunity.price}` : 'N/A')}
+                  </span>
                 </div>
                 {user && (
                   <button

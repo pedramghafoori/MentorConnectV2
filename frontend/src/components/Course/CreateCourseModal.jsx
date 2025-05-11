@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/calendar.css";
 import api from '../../lib/api';
+import WaiverModal from '../WaiverModal/WaiverModal';
 
 const COURSE_OPTIONS = [
   'Bronze',
@@ -18,7 +19,7 @@ const COURSE_OPTIONS = [
 
 const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
   const { user } = useAuth();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [mentorSettings, setMentorSettings] = useState({
     prepSupportFee: 0,
     maxApprentices: 1
@@ -82,8 +83,8 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
   const [status, setStatus] = useState('draft');
   const [facilityError, setFacilityError] = useState('');
   const totalSteps = 4;
-  const [mentorAgreementSigned, setMentorAgreementSigned] = useState(true);
-  const [loadingAgreementStatus, setLoadingAgreementStatus] = useState(true);
+  const [showWaiverModal, setShowWaiverModal] = useState(false);
+  const [mentorAgreementSigned, setMentorAgreementSigned] = useState(null);
 
   // Fetch mentor settings when component mounts
   useEffect(() => {
@@ -178,15 +179,26 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
   const prepRequirementOptions = ['lesson-plan', 'exam-plan', 'scenarios', 'must-sees template'];
 
   useEffect(() => {
-    if (user) {
-      setLoadingAgreementStatus(true);
-      getProfile().then(profile => {
-        setMentorAgreementSigned(!!profile.mentorAgreementSigned);
-        setLoadingAgreementStatus(false);
-        if (!profile.mentorAgreementSigned) setStep(0);
-      }).catch(() => setLoadingAgreementStatus(false));
+    if (user && isOpen) {
+      setMentorAgreementSigned(null);
+      api.get(`/waivers/verify/${user._id}`)
+        .then(res => {
+          setMentorAgreementSigned(res.data.hasSigned);
+          if (!res.data.hasSigned) {
+            setShowWaiverModal(true);
+            setStep(0);
+          } else {
+            setShowWaiverModal(false);
+            setStep(1);
+          }
+        })
+        .catch(() => {
+          setMentorAgreementSigned(false);
+          setShowWaiverModal(true);
+          setStep(0);
+        });
     }
-  }, [user]);
+  }, [user, isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -348,15 +360,21 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
     }
   }, [initialOpportunity]);
 
-  // Add a handler to simulate signing the agreement (replace with real logic as needed)
-  const handleSignAgreement = async () => {
-    // TODO: Replace with real API call to sign agreement
-    await api.post(`/users/${user._id}/sign-mentor-agreement`);
-    setMentorAgreementSigned(true);
-    setStep(1);
-  };
-
   if (!isOpen) return null;
+
+  if (showWaiverModal && !mentorAgreementSigned) {
+    return (
+      <WaiverModal
+        isOpen={showWaiverModal}
+        onClose={() => {}}
+        onSigned={() => {
+          setMentorAgreementSigned(true);
+          setShowWaiverModal(false);
+          setStep(1);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -401,24 +419,6 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {step === 0 && (
-              <div className="flex flex-col items-center justify-center py-12">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Mentor Agreement Required</h3>
-                <p className="mb-4 text-gray-700 text-center max-w-xl">
-                  Before you can post an opportunity, you must sign the Mentor Agreement. This agreement outlines your responsibilities as a mentor on MentorConnect.
-                </p>
-                <p className="mb-4 text-gray-600 text-center max-w-xl">
-                  After signing, you can download a copy of your signed agreement from the <b>Settings</b> page. You will only need to sign this once.
-                </p>
-                <button
-                  className="bg-[#d33] text-white px-6 py-2 rounded font-medium hover:bg-[#c22] transition-colors"
-                  onClick={handleSignAgreement}
-                >
-                  Review & Sign Mentor Agreement
-                </button>
-              </div>
-            )}
-
             {step === 1 && (
               <div className="space-y-6">
                 <div>

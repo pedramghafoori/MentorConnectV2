@@ -8,7 +8,7 @@
   text-align: center;
 }
 
-.why-lifeguardhub {
+.why-mentorconnect {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -16,14 +16,14 @@
   margin-bottom: 2rem;
 }
 
-.why-lifeguardhub-tagline {
+.why-mentorconnect-tagline {
   font-size: 1.5rem;
   font-weight: 600;
   color: #333;
   margin-bottom: 1rem;
 }
 
-.why-lifeguardhub-desc {
+.why-mentorconnect-desc {
   font-size: 1rem;
   color: #666;
   max-width: 800px;
@@ -49,22 +49,16 @@
   color: #334155;
   margin-bottom: 1rem;
 }
-.why-mentorconnect-tagline {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 1rem;
-  }
- 
-  .heading {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 2rem;
-    margin-top: 2rem;
-  }
 
-  .why-mentorconnect-desc {
+.heading {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
+
+.why-mentorconnect-desc {
   font-size: 1.15rem;
   color: #334155;
   line-height: 1.6;
@@ -78,8 +72,6 @@
   justify-content: center;
   margin-bottom: 2rem;
 }
-
-
 
 .prong-list {
   display: flex;

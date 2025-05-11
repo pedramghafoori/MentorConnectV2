@@ -7,9 +7,9 @@ function Page() {
   return (
     <>
       <Helmet>
-        <title>Forum · LifeguardHub</title>
-        <meta name="description" content="Ask questions and get answers from the LifeguardHub community." />
-        <link rel="canonical" href="https://lifeguardhub.ca/forum" />
+        <title>Forum · MentorConnect</title>
+        <meta name="description" content="Ask questions and get answers from the MentorConnect community." />
+        <link rel="canonical" href="https://mentorconnect.ca/forum" />
       </Helmet>
       <ForumHome />
     </>

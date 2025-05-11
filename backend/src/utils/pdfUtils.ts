@@ -94,7 +94,7 @@ export const buildPdf = async (
       .replace(/[^\x00-\x7F]/g, '-'); // Replace any other non-ASCII characters with a dash
 
     // Add styled text logo at the top
-    const logoText = 'LifeguardHub';
+    const logoText = 'MentorConnect';
     const logoFontSize = 28;
     const logoColor = rgb(0.83, 0.2, 0.2); // #d33
     // Use Times-Roman for now; for a closer match, embed a custom font

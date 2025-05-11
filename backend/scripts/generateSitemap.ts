@@ -8,7 +8,7 @@ dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || '';
 const OUTPUT_PATH = path.join(process.cwd(), 'public', 'sitemap.xml');
-const BASE_URL = 'https://lifeguardhub.ca';
+const BASE_URL = 'https://mentorconnect.ca';
 
 // Ensure public directory exists
 const publicDir = path.join(process.cwd(), 'public');

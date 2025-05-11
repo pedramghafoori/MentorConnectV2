@@ -1,21 +1,21 @@
 MENTOR WAIVER AGREEMENT
 
-By signing up for an opportunity ("Opportunity") on the LifeguardHub platform (the "Platform"), you ("Mentor") acknowledge that you have read, understood, and agree to be legally bound by the terms below on your own behalf and on behalf of any entity you represent.
+By signing up for an opportunity ("Opportunity") on the MentorConnect platform (the "Platform"), you ("Mentor") acknowledge that you have read, understood, and agree to be legally bound by the terms below on your own behalf and on behalf of any entity you represent.
 
 1. Definitions
-1.1 "Platform" means the LifeguardHub website and mobile application.
+1.1 "Platform" means the MentorConnect website and mobile application.
 1.2 "Opportunity" means any teaching, mentoring, or coaching session posted on the Platform.
 1.3 "Mentor" means the individual providing the Opportunity.
 1.4 "Participant" means the individual receiving the Opportunity.
 
 2. Mentor Responsibilities
 2.1 Professional Conduct. Mentor shall maintain professional conduct and provide high-quality instruction in accordance with industry standards.
-2.2 Platform Policies. Mentor shall follow all current LifeguardHub Terms of Service, Community Guidelines, and Opportunity-Posting Policies, each of which is incorporated by reference and may be amended from time to time.
+2.2 Platform Policies. Mentor shall follow all current MentorConnect Terms of Service, Community Guidelines, and Opportunity-Posting Policies, each of which is incorporated by reference and may be amended from time to time.
 2.3 Safety. Mentor shall prioritize participant safety and follow all applicable safety protocols and regulations.
 2.4 Insurance. Mentor shall maintain appropriate liability insurance coverage.
 
 3. Independent Contractor Status
-3.1 Mentor acknowledges that they are an independent contractor and not an employee, agent, or representative of LifeguardHub Inc. ("Company").
+3.1 Mentor acknowledges that they are an independent contractor and not an employee, agent, or representative of MentorConnect Inc. ("Company").
 3.2 Mentor is responsible for their own taxes, insurance, and business expenses.
 3.3 Mentor has no authority to bind Company or create any liability on behalf of Company.
 
@@ -39,7 +39,7 @@ By signing up for an opportunity ("Opportunity") on the LifeguardHub platform (t
 7.3 Certain provisions survive termination.
 
 8. Privacy and Data
-8.1 Mentor consents to Company's collection, use, and disclosure of personal information as described in the LifeguardHub Privacy Policy. Mentor further consents to Company displaying Mentor's profile, credentials, and Opportunity details to potential participants.
+8.1 Mentor consents to Company's collection, use, and disclosure of personal information as described in the MentorConnect Privacy Policy. Mentor further consents to Company displaying Mentor's profile, credentials, and Opportunity details to potential participants.
 
 9. Governing Law
 9.1 This Agreement is governed by the laws of the jurisdiction where Company is headquartered.

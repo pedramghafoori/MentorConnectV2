@@ -18,7 +18,7 @@ async function render(pageContext) {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>LifeguardHub</title>
+        <title>MentorConnect</title>
       </head>
       <body>
         <div id="root">${dangerouslySkipEscape(pageHtml)}</div>

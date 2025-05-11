@@ -37,7 +37,7 @@ router.post('/generate-sitemap', async (req, res) => {
 router.get('/sitemap.xml', async (req, res) => {
   try {
     const questions = await Question.find().select('slug updatedAt');
-    const baseUrl = 'https://lifeguardhub.ca';
+    const baseUrl = 'https://mentorconnect.ca';
     const urls = questions.map((q: Document & IQuestion) => `
       <url>
         <loc>${baseUrl}/forum/${q.slug}</loc>

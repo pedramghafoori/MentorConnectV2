@@ -20,9 +20,9 @@ export const sendPdfEmail = async ({
   });
 
   await transporter.sendMail({
-    from: '"LifeguardHub" <no-reply@lifeguardhub>',
+    from: '"MentorConnect" <no-reply@mentorconnect>',
     to,
-    subject: 'Your signed LifeguardHub waiver',
+    subject: 'Your signed MentorConnect waiver',
     text: 'Attached is the PDF copy of your signed waiver.',
     attachments: [
       {

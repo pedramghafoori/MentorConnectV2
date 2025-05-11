@@ -21,7 +21,8 @@ app.use(cors({
     'http://localhost:5173',
     'https://mentorconnect-ecc82a256094.herokuapp.com',
     'https://www.mentorconnectcanada.com',
-    'https://mentorconnectcanada.com'
+    'https://mentorconnectcanada.com',
+    'https://lifeguardinghub.ca'
   ],
   credentials: true,
 }));

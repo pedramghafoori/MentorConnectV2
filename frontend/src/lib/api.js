@@ -22,8 +22,19 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      window.location.href = '/login';
+      // Only redirect if not already on /login
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      } else {
+        // Show a session expired message if already on login page
+        if (window?.toast) {
+          window.toast('Session expired, please log in again.', { type: 'error' });
+        } else if (window.ReactToastify) {
+          window.ReactToastify.toast('Session expired, please log in again.', { type: 'error' });
+        } else {
+          alert('Session expired, please log in again.');
+        }
+      }
     }
     return Promise.reject(error);
   }

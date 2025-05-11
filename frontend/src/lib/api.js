@@ -18,15 +18,20 @@ api.interceptors.request.use(
 );
 
 // Add response interceptor to handle token expiration
+const publicPaths = ['/', '/terms', '/mentor-agreement', '/forum', '/forum/ask']; // Add all public routes here
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Only redirect if not already on /login
-      if (window.location.pathname !== '/login') {
+      const currentPath = window.location.pathname;
+      // Check for dynamic forum thread pages
+      const isForumThread = currentPath.startsWith('/forum/') && currentPath.split('/').length === 3;
+      const isPublic = publicPaths.includes(currentPath) || isForumThread;
+      if (!isPublic && currentPath !== '/login') {
+        // Only redirect to login for protected pages
         window.location.href = '/login';
-      } else {
-        // Show a session expired message if already on login page
+        // Optionally show a toast
         if (window?.toast) {
           window.toast('Session expired, please log in again.', { type: 'error' });
         } else if (window.ReactToastify) {
@@ -35,6 +40,7 @@ api.interceptors.response.use(
           alert('Session expired, please log in again.');
         }
       }
+      // Do nothing for public pages
     }
     return Promise.reject(error);
   }

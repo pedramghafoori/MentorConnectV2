@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 import { makeStorageFactory } from '../lib/storageFactory.js';
+import AWS from 'aws-sdk';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -40,9 +41,26 @@ router.post('/me/profile-picture', authenticateToken, upload.single('avatar'), a
 
     // Delete the old profile picture if it exists
     if (user.avatarUrl) {
-      const oldFilePath = path.join(__dirname, '../../uploads', path.basename(user.avatarUrl));
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
+      if (process.env.NODE_ENV === 'production') {
+        // Extract the key from the old avatarUrl (e.g., 'avatars/1234567890.jpg')
+        const oldKey = user.avatarUrl.split('/').slice(-2).join('/');
+        const s3Client = new AWS.S3({
+          endpoint: process.env.DO_SPACES_ENDPOINT,
+          region: process.env.DO_SPACES_REGION,
+          accessKeyId: process.env.DO_SPACES_KEY,
+          secretAccessKey: process.env.DO_SPACES_SECRET,
+          s3ForcePathStyle: false,
+          signatureVersion: 'v4'
+        });
+        await s3Client.deleteObject({
+          Bucket: process.env.DO_SPACES_BUCKET,
+          Key: oldKey
+        }).promise();
+      } else {
+        const oldFilePath = path.join(__dirname, '../../uploads', path.basename(user.avatarUrl));
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
       }
     }
 

@@ -233,6 +233,7 @@ const ProfilePictureEditor = ({ image, onSave, onCancel, onChangePicture, onDele
                 >
                   Upload
                 </button>
+                {console.log('ProfilePictureEditor Save button:', { originalFile, imageLoaded })}
                 <button
                   onClick={onDownloadCropClick}
                   className="px-4 py-2 text-white bg-[#d33] rounded-lg hover:bg-[#c22] transition-colors"

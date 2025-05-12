@@ -38,7 +38,7 @@ export const makeStorageFactory = () => {
     });
   } else {
     console.log('Using local storage for uploads');
-    const uploadDir = path.resolve('uploads/avatars');
+    const uploadDir = path.resolve('uploads');
     ensureLocalDir(uploadDir);
 
     return multer.diskStorage({

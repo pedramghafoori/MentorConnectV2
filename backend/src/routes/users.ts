@@ -20,15 +20,15 @@ const storage = makeStorageFactory();
 const upload = multer({ storage });
 
 // POST /api/users/me/profile-picture - Upload new profile picture
-router.post('/me/profile-picture', authenticateToken, upload.single('file'), async (req, res) => {
+router.post('/me/profile-picture', authenticateToken, upload.single('avatar'), async (req, res) => {
   const userId = req.user?.userId;
   if (!userId) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
   try {
-    const file = req.file as Express.Multer.File & { location?: string };
-    if (!file) {
+    const avatar = req.file as Express.Multer.File & { location?: string };
+    if (!avatar) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
@@ -49,9 +49,9 @@ router.post('/me/profile-picture', authenticateToken, upload.single('file'), asy
     // Update user with new profile picture URL
     let newAvatarUrl;
     if (process.env.NODE_ENV === 'production') {
-      newAvatarUrl = file.location; // multer-s3 provides this
+      newAvatarUrl = avatar.location; // multer-s3 provides this
     } else {
-      newAvatarUrl = `/uploads/${file.filename}`;
+      newAvatarUrl = `/uploads/${avatar.filename}`;
     }
     user.avatarUrl = newAvatarUrl;
     await user.save();

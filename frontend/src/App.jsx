@@ -14,6 +14,7 @@ import ForumHome from './pages/forum/ForumHome';
 import ThreadPage from './pages/forum/ThreadPage';
 import AskQuestionPage from './pages/forum/AskQuestionPage';
 import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
+import { MenteeAssignmentsPage } from './pages/MenteeAssignmentsPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -39,6 +40,9 @@ const App = () => {
             
             {/* Mentor Routes */}
             <Route path="/mentor/assignments" element={user ? <MentorAssignmentsPage /> : <Navigate to="/" />} />
+            
+            {/* Mentee Routes */}
+            <Route path="/mentee/assignments" element={user ? <MenteeAssignmentsPage /> : <Navigate to="/" />} />
             
             {/* Forum Routes */}
             <Route path="/forum" element={<ForumHome />} />

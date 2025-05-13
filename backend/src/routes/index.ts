@@ -35,7 +35,7 @@ router.use('/facilities', facilityRoutes);
 router.use('/certification-categories', certificationCategories);
 router.use('/account', authenticateToken, accountRoutes);
 
-// Forum routes - mounted at /api/v1/forum
+// Forum routes - mounted at /v1/forum
 router.use('/v1/forum', forumRoutes);
 
 router.use('/assignments', assignmentRoutes);

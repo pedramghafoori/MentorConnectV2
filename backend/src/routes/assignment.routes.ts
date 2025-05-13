@@ -158,4 +158,94 @@ router.get(
   }
 );
 
+// Get mentee assignments
+router.get(
+  '/mentee',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      console.log('=== GET /assignments/mentee ===');
+      console.log('Request details:', {
+        range: req.query.range,
+        menteeId: req.user?.userId,
+        user: req.user,
+        headers: req.headers,
+        cookies: req.cookies
+      });
+
+      const { range } = req.query;
+      const menteeId = req.user?.userId;
+
+      if (!menteeId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      // Debug: Check all assignments for this mentee
+      const allAssignments = await Assignment.find({ menteeId });
+      console.log('Debug - All assignments for mentee:', {
+        total: allAssignments.length,
+        assignments: allAssignments.map(a => ({
+          id: a._id,
+          status: a.status,
+          startDate: a.startDate,
+          mentorId: a.mentorId
+        }))
+      });
+
+      const today = new Date();
+      const nextMonth = new Date();
+      nextMonth.setMonth(today.getMonth() + 1);
+
+      console.log('Date ranges:', {
+        today: today.toISOString(),
+        nextMonth: nextMonth.toISOString()
+      });
+
+      const filter: any = { menteeId };
+      console.log('Initial filter:', filter);
+
+      switch (range) {
+        case 'future':
+          filter.startDate = { $gt: nextMonth };
+          console.log('Future filter applied:', filter);
+          break;
+        case 'active':
+          filter.status = { $in: ['ACTIVE', 'CHARGED', 'PENDING', 'ACCEPTED'] };
+          console.log('Active filter applied:', filter);
+          break;
+        case 'completed':
+          filter.status = { $in: ['COMPLETED', 'REJECTED', 'CANCELED'] };
+          console.log('Completed filter applied:', filter);
+          break;
+        default:
+          filter.status = { $nin: ['COMPLETED', 'REJECTED', 'CANCELED'] };
+          console.log('Default filter applied:', filter);
+      }
+
+      console.log('Final MongoDB filter:', JSON.stringify(filter, null, 2));
+
+      const assignments = await Assignment
+        .find(filter)
+        .populate('mentorId', 'firstName lastName avatarUrl')
+        .sort({ startDate: 1 });
+
+      console.log('Query results:', {
+        totalFound: assignments.length,
+        assignments: assignments.map(a => ({
+          id: a._id,
+          status: a.status,
+          startDate: a.startDate,
+          mentorId: a.mentorId
+        }))
+      });
+
+      res.json(assignments);
+    } catch (error: any) {
+      console.error('Error in GET /assignments/mentee:', error);
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ message: 'Error fetching assignments' });
+    }
+  }
+);
+
 export default router; 

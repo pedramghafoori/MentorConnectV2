@@ -63,8 +63,19 @@ export class AssignmentService {
   }
 
   static async getMenteeAssignments(range: 'active' | 'future' | 'completed'): Promise<Assignment[]> {
-    const response = await api.get(`/assignments/mentee?range=${range}`);
-    return response.data;
+    console.log('=== getMenteeAssignments Request ===');
+    console.log('Request params:', { range });
+    
+    try {
+      const response = await api.get(`/assignments/mentee?range=${range}`);
+      console.log('Response data:', response.data);
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Error in getMenteeAssignments:', apiError);
+      console.error('Error response:', apiError.response?.data);
+      throw apiError;
+    }
   }
 
   static async acceptAssignment(assignmentId: string): Promise<Assignment> {

@@ -4,10 +4,25 @@ let socket: Socket | null = null;
 
 export const initializeSocket = (userId: string) => {
   if (!socket) {
-    socket = io(import.meta.env.VITE_API_URL || 'http://localhost:4000', {
+    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace('/api', '');
+    socket = io(baseUrl, {
+      withCredentials: true,
+      transports: ['websocket'],
+      path: '/socket.io',
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
       auth: {
         userId
       }
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket.IO connected successfully');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket.IO connection error:', error);
     });
   }
   return socket;

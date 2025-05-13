@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { AssignmentService, Assignment } from '../services/assignment.service';
+import { AssignmentService } from '../services/assignment.service';
 import { AssignmentCard } from '../components/AssignmentCard';
 import { Spinner } from '../components/Spinner';
 import { initializeSocket, getSocket } from '../services/socket';

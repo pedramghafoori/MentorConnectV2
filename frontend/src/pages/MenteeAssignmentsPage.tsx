@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { AssignmentService } from '../services/assignment.service';
+import { AssignmentService, Assignment } from '../services/assignment.service';
 import { MenteeAssignmentCard } from '../components/MenteeAssignmentCard';
 import { initializeSocket } from '../services/socket';
 import '../styles/assignments.css';
-
-interface Assignment {
-  _id: string;
-  mentorId: {
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string;
-  };
-  startDate: string;
-  status: 'PENDING' | 'ACCEPTED' | 'ACTIVE' | 'COMPLETED' | 'REJECTED' | 'CANCELED' | 'CHARGED';
-}
 
 const TABS = [
   { key: 'active', label: 'Active Assignments' },

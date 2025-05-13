@@ -23,6 +23,11 @@ export interface Assignment {
     lastName: string;
     avatarUrl?: string;
   };
+  mentorId: {
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+  };
   startDate: string;
   status: 'PENDING' | 'ACCEPTED' | 'ACTIVE' | 'COMPLETED' | 'REJECTED' | 'CANCELED' | 'CHARGED';
 }
@@ -35,6 +40,11 @@ export class AssignmentService {
 
   static async getMentorAssignments(range: 'active' | 'future' | 'completed'): Promise<Assignment[]> {
     const response = await api.get(`/assignments/mentor?range=${range}`);
+    return response.data;
+  }
+
+  static async getMenteeAssignments(range: 'active' | 'future' | 'completed'): Promise<Assignment[]> {
+    const response = await api.get(`/assignments/mentee?range=${range}`);
     return response.data;
   }
 

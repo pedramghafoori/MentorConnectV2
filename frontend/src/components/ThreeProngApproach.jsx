@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './ThreeProngApproach.css';
+import './threeProngApproach.css';
 import ProngArrow from '../assets/ProngArrow.svg';
 
 /**

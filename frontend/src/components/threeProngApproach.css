@@ -24,10 +24,19 @@
 }
 
 .why-mentorconnect-desc {
-  font-size: 1rem;
-  color: #666;
-  max-width: 800px;
+  font-size: 1.15rem;
+  color: #334155;
   line-height: 1.6;
+  font-weight: 400;
+  margin-top: 2rem;
+  margin-bottom: 3rem;
+  text-align: center !important;
+
+  width: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+  align-self: center !important;
 }
 
 .philosophy-arrow-wrap {
@@ -56,15 +65,6 @@
   color: #334155;
   margin-bottom: 2rem;
   margin-top: 2rem;
-}
-
-.why-mentorconnect-desc {
-  font-size: 1.15rem;
-  color: #334155;
-  line-height: 1.6;
-  font-weight: 400;
-  margin-top: 2rem;
-  margin-bottom: 3rem;
 }
 
 .icon-wrap {

@@ -23,7 +23,13 @@ const __dirname = dirname(__filename);
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://www.mentorconnectcanada.com', 'https://mentorconnect-ecc82a256094.herokuapp.com'],
+  origin: [
+    'http://localhost:5173',
+    'https://mentorconnect-ecc82a256094.herokuapp.com',
+    'https://mentorconnectcanada.com',
+    'https://www.mentorconnectcanada.com',
+    'https://lifeguardinghub.ca'
+  ],
   credentials: true,
 }));
 app.use(express.json());
@@ -83,8 +89,10 @@ export const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:5173',
-      'http://www.mentorconnectcanada.com',
-      'https://mentorconnect-ecc82a256094.herokuapp.com'
+      'https://mentorconnect-ecc82a256094.herokuapp.com',
+      'https://mentorconnectcanada.com',
+      'https://www.mentorconnectcanada.com',
+      'https://lifeguardinghub.ca'
     ],
     credentials: true
   },

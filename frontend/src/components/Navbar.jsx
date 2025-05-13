@@ -11,7 +11,7 @@ import { updateProfile } from '../features/profile/updateProfile';
 import Container from './Container.jsx';
 import CreateCourseModal from './Course/CreateCourseModal';
 import AvatarFallback from './AvatarFallback';
-import { io } from 'socket.io-client';
+import { initializeSocket } from '../services/socket';
 import './NotificationDropDown.css';
 
 const ALL_CERTIFICATIONS = [
@@ -318,28 +318,9 @@ const Navbar = () => {
   // Socket.IO setup for real-time notifications
   useEffect(() => {
     if (!user?._id) return;
-    if (!socketRef.current) {
-      const socketUrl = import.meta.env.VITE_API_URL;
-      console.log('Connecting to Socket.IO at:', socketUrl);
-      socketRef.current = io(socketUrl, {
-        withCredentials: true,
-        transports: ['websocket'],
-        path: '/socket.io',
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000
-      });
-
-      socketRef.current.on('connect', () => {
-        console.log('Socket.IO connected successfully');
-      });
-
-      socketRef.current.on('connect_error', (error) => {
-        console.error('Socket.IO connection error:', error);
-      });
-    }
-    const socket = socketRef.current;
-    socket.emit('authenticate', user._id);
+    
+    const socket = initializeSocket(user._id);
+    
     socket.on('notification', (notification) => {
       setNotifications((prev) => {
         // If notification already exists (by _id), update it; else, prepend
@@ -352,6 +333,7 @@ const Navbar = () => {
         return [notification, ...prev];
       });
     });
+
     return () => {
       socket.off('notification');
     };

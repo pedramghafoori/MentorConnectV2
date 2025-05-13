@@ -98,14 +98,15 @@ const userSockets: Map<string, string> = new Map();
 io.on('connection', (socket) => {
   console.log('New Socket.IO connection:', socket.id);
   
-  // Listen for user authentication (client should emit 'authenticate' with userId after connecting)
-  socket.on('authenticate', (userId: string) => {
-    if (userId) {
-      userSockets.set(userId, socket.id);
-      (socket as any).userId = userId;
-      console.log(`User ${userId} authenticated with socket ${socket.id}`);
-    }
-  });
+  // Get userId from auth object
+  const userId = socket.handshake.auth.userId;
+  if (userId) {
+    userSockets.set(userId, socket.id);
+    (socket as any).userId = userId;
+    console.log(`User ${userId} authenticated with socket ${socket.id}`);
+  } else {
+    console.log('Socket connected without userId:', socket.id);
+  }
 
   socket.on('disconnect', () => {
     const userId = (socket as any).userId;

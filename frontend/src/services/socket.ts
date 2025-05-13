@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 export const initializeSocket = (userId: string) => {
   if (!socket) {
     const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace('/api', '');
-    socket = io(baseUrl, {
+    socket = io(baseUrl + '/', {
       withCredentials: true,
       transports: ['websocket'],
       path: '/socket.io',

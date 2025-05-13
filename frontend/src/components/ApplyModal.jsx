@@ -53,24 +53,34 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
 
   useEffect(() => {
     if (isOpen) {
-      setPrerequisites({
-        verified: false,
-        method: null,
-        verifiedAt: null,
-        signedAt: null
-      });
-      setSignatures({
-        menteeSignature: null,
-        amaSignature: null
-      });
-      setPaymentIntent(null);
-      setError(null);
-
-      // If no verification needed, start at agreement step
       if (!needsVerification) {
+        setPrerequisites({
+          verified: true,
+          method: 'scraper',
+          verifiedAt: new Date(),
+          signedAt: null
+        });
         setCurrentStep(2);
-        console.log('[ApplyModal] Skipping verification, setting currentStep to 2');
+        setSignatures({
+          menteeSignature: null,
+          amaSignature: null
+        });
+        setPaymentIntent(null);
+        setError(null);
+        console.log('[ApplyModal] Skipping verification, setting currentStep to 2 and prerequisites to verified');
       } else {
+        setPrerequisites({
+          verified: false,
+          method: null,
+          verifiedAt: null,
+          signedAt: null
+        });
+        setSignatures({
+          menteeSignature: null,
+          amaSignature: null
+        });
+        setPaymentIntent(null);
+        setError(null);
         setCurrentStep(1);
         console.log('[ApplyModal] Needs verification, setting currentStep to 1');
       }

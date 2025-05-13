@@ -133,7 +133,8 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 2rem;
-  text-align: left;
+  color: #1f2937;
+  text-align: center;
 }
 
 .dashboard-content {

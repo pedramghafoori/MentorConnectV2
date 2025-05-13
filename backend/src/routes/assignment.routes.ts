@@ -103,4 +103,58 @@ router.get(
   }
 );
 
+// Get mentor assignments
+router.get(
+  '/mentor',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      console.log('GET /assignments/mentor called with:', {
+        range: req.query.range,
+        mentorId: req.user?.userId
+      });
+
+      const { range } = req.query;
+      const mentorId = req.user?.userId;
+
+      if (!mentorId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const today = new Date();
+      const nextMonth = new Date();
+      nextMonth.setMonth(today.getMonth() + 1);
+
+      const filter: any = { mentorId };
+      switch (range) {
+        case 'future':
+          filter.startDate = { $gt: nextMonth };
+          break;
+        case 'active':
+          filter.status = 'ACTIVE';
+          break;
+        case 'completed':
+          filter.status = 'COMPLETED';
+          break;
+        default:
+          filter.status = { $ne: 'COMPLETED' };
+      }
+
+      console.log('MongoDB filter:', filter);
+
+      const assignments = await Assignment
+        .find(filter)
+        .populate('menteeId', 'firstName lastName avatarUrl')
+        .sort({ startDate: 1 });
+
+      console.log('Found assignments:', assignments.length);
+
+      res.json(assignments);
+    } catch (error) {
+      console.error('Error in GET /assignments/mentor:', error);
+      res.status(500).json({ message: 'Error fetching assignments' });
+    }
+  }
+);
+
 export default router; 

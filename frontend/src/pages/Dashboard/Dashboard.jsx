@@ -130,9 +130,8 @@ export default function Dashboard() {
   const { user, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const params = new URLSearchParams(location.search);
-  const cityParam = params.get('city');
-  const orgParam = params.get('organization');
+  const userCity = user?.city || '';
+  const orgParam = new URLSearchParams(location.search).get('organization');
 
   const [opportunities, setOpportunities] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -140,21 +139,17 @@ export default function Dashboard() {
 
   const fetchOpportunities = async (city, organization) => {
     if (!city) return;
-    
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-    
     setSearchLoading(true);
     try {
       let url = `/api/opportunities?city=${encodeURIComponent(city)}`;
       if (organization) {
         url += `&organization=${encodeURIComponent(organization)}`;
       }
-      
       const opportunitiesRes = await fetch(url, { signal });
       const opportunitiesData = await opportunitiesRes.json();
       setOpportunities(Array.isArray(opportunitiesData) ? opportunitiesData : []);
@@ -169,36 +164,27 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (loading) return;
-    if (cityParam) {
-      fetchOpportunities(cityParam, orgParam);
+    if (userCity) {
+      fetchOpportunities(userCity, orgParam);
     }
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [loading, cityParam, orgParam]);
-
-  const handleSearch = (searchParams) => {
-    const { city, organization } = searchParams;
-    const newParams = new URLSearchParams();
-    if (city) newParams.set('city', city);
-    if (organization) newParams.set('organization', organization);
-    navigate(`/dashboard?${newParams.toString()}`);
-  };
+  }, [loading, userCity, orgParam]);
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-title">Find Opportunities</h1>
-      <OpportunitySearch onSearch={handleSearch} />
+      <h1 className="dashboard-title">Current Available Opportunities</h1>
       <div className="dashboard-content">
         {searchLoading ? (
           <div className="text-center py-8">Loading opportunities...</div>
         ) : opportunities.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            {cityParam ? 'No opportunities found.' : 'Enter a city to search for opportunities.'}
+            {userCity ? 'No opportunities found.' : 'Location not set. Please allow location access and refresh.'}
           </div>
         ) : (
           <div className="opportunity-grid">

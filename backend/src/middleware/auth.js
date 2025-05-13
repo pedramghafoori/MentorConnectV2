@@ -10,7 +10,7 @@ export const authenticateToken = (req, res, next) => {
       console.log('Token verification failed:', err);
       return res.status(403).json({ message: 'Invalid token' });
     }
-    console.log('Decoded token:', decoded);
+  
     req.user = decoded;
     console.log('Attached user to request:', req.user);
     next();

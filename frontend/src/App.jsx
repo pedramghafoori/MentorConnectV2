@@ -13,6 +13,7 @@ import TestPager1 from './pages/TestPager1.jsx';
 import ForumHome from './pages/forum/ForumHome';
 import ThreadPage from './pages/forum/ThreadPage';
 import AskQuestionPage from './pages/forum/AskQuestionPage';
+import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -35,6 +36,9 @@ const App = () => {
             <Route path="/mentor-agreement" element={<MentorAgreementPage />} />
             <Route path="/courses/my-courses" element={user ? <MyCourses /> : <Navigate to="/" />} />
             <Route path="/courses/edit/:courseId" element={user ? <MyCourses /> : <Navigate to="/" />} />
+            
+            {/* Mentor Routes */}
+            <Route path="/mentor/assignments" element={user ? <MentorAssignmentsPage /> : <Navigate to="/" />} />
             
             {/* Forum Routes */}
             <Route path="/forum" element={<ForumHome />} />

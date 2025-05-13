@@ -1,0 +1,80 @@
+/* Assignment Card Styles */
+.assignment-card {
+  @apply bg-white shadow rounded p-5 flex items-center justify-between hover:shadow-lg transition cursor-pointer;
+}
+
+.assignment-card-content {
+  @apply flex items-center space-x-4;
+}
+
+.assignment-avatar {
+  @apply w-12 h-12 rounded-full object-cover;
+}
+
+.assignment-info {
+  @apply font-medium;
+}
+
+.assignment-date {
+  @apply text-sm text-gray-500;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge-active {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.status-badge-pending {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-badge-completed {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-badge-future {
+  @apply bg-violet-100 text-violet-800;
+}
+
+.status-badge-default {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Tabs Styles */
+.assignments-tabs {
+  @apply flex gap-4 border-b mb-6;
+}
+
+.tab-button {
+  @apply pb-2 border-b-2;
+}
+
+.tab-button-active {
+  @apply border-blue-600 font-semibold;
+}
+
+.tab-button-inactive {
+  @apply border-transparent;
+}
+
+/* Page Layout */
+.assignments-page {
+  @apply mx-auto max-w-6xl p-6;
+}
+
+.assignments-grid {
+  @apply grid lg:grid-cols-2 gap-6;
+}
+
+/* Spinner Styles */
+.spinner-container {
+  @apply flex justify-center items-center p-8;
+}
+
+.spinner {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+} 

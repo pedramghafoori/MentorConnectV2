@@ -63,7 +63,7 @@ export class AssignmentService {
         ...data,
         paymentIntentId,
         status: 'PENDING',
-        mentor: opportunity.mentor
+        mentorId: opportunity.mentor
       }], { session });
 
       // Send notification to mentor

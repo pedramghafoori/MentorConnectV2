@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import ReusableModal from '../ReusableModal';
+import api from '../../lib/api';
 
 export default function LoginForm({ onClose, onSwitchToRegister }) {
   const { login } = useAuth();
@@ -16,13 +17,52 @@ export default function LoginForm({ onClose, onSwitchToRegister }) {
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState(null);
   const [showRestoredModal, setShowRestoredModal] = useState(false);
+  const [locationError, setLocationError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setLocationError(null);
     try {
       const response = await login({ email, password });
+      // After login, get geolocation and update user profile
+      let locationUpdated = false;
+      if (navigator.geolocation) {
+        await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              // Use Nominatim for reverse geocoding
+              try {
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const geoData = await geoRes.json();
+                const address = geoData.address || {};
+                const city = address.city || address.town || address.village || '';
+                const province = address.state || '';
+                if (city && province) {
+                  await api.patch('/users/me', { city, province });
+                  locationUpdated = true;
+                }
+              } catch (geoErr) {
+                console.error('Reverse geocoding failed:', geoErr);
+                setLocationError('Could not determine your location.');
+              }
+              resolve();
+            },
+            (error) => {
+              setLocationError('Location permission denied or unavailable.');
+              resolve();
+            }
+          );
+        });
+      }
+      // Refetch user profile if location was updated
+      if (locationUpdated && typeof window !== 'undefined' && window.location) {
+        // Force reload to get updated profile
+        window.location.reload();
+        return;
+      }
       if (response.user.wasRestored) {
         setShowRestoredModal(true);
       } else {
@@ -94,6 +134,7 @@ export default function LoginForm({ onClose, onSwitchToRegister }) {
                 </div>
                 
                 {error && <div className="text-red-500 text-sm">{error}</div>}
+                {locationError && <div className="text-yellow-600 text-sm">{locationError}</div>}
                 <button
                   type="submit"
                   className="w-full bg-[#d33] text-white py-2 rounded-[9999px] font-semibold hover:bg-[#b22] transition-colors"

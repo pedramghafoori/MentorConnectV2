@@ -482,37 +482,17 @@ export default function ProfilePage() {
                 Certified Mentor
               </div>
             )}
-            {/* Location display */}
+            {/* Location display - now static, not clickable */}
             <div className="location-wrapper">
-              {!showLocationSelect ? (
-                <button
-                  className="location-text"
-                  onClick={() => isOwnProfile && setShowLocationSelect(true)}
-                  disabled={!isOwnProfile}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <circle cx="12" cy="10" r="2.9" fill="currentColor" />
-                  </svg>
-                  <span>
-                    {location.split(',')[0]}
-                  </span>
-                </button>
-              ) : (
-                isOwnProfile && (
-                  <select
-                    value={location}
-                    onChange={e => setLocation(e.target.value)}
-                    onBlur={() => { handleSaveLocation(); setShowLocationSelect(false); }}
-                    autoFocus
-                    className="form-select"
-                    style={{ minWidth: 140 }}
-                  >
-                    <option value="Toronto, ON">Toronto, ON</option>
-                    <option value="Ottawa, ON">Ottawa, ON</option>
-                  </select>
-                )
-              )}
+              <span className="location-text" style={{ cursor: 'default' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s7-7.58 7-12A7 7 0 1 0 5 10c0 4.42 7 12 7 12z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                  <circle cx="12" cy="10" r="2.9" fill="currentColor" />
+                </svg>
+                <span>
+                  {location.split(',')[0]}
+                </span>
+              </span>
             </div>
           </div>
           <div className="profile-meta-row">

@@ -18,22 +18,17 @@ declare global {
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  // Try to get token from cookie first, then from Authorization header
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-  
+  const token = req.cookies.token;
+
   if (!token) {
-    console.log('No token provided');
     return res.status(401).json({ message: 'No token provided' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    console.log('Decoded token:', decoded);
     req.user = decoded;
-    // console.log('Attached user to request:', req.user);
     next();
   } catch (error) {
-    console.log('Token verification failed:', error);
-    return res.status(403).json({ message: 'Invalid token' });
+    return res.status(401).json({ message: 'Invalid token' });
   }
 }; 

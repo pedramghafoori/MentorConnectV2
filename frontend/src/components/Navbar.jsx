@@ -319,7 +319,9 @@ const Navbar = () => {
   useEffect(() => {
     if (!user?._id) return;
     if (!socketRef.current) {
-      socketRef.current = io('http://localhost:4000', {
+      const socketUrl = import.meta.env.VITE_API_URL;
+      console.log('Connecting to Socket.IO at:', socketUrl);
+      socketRef.current = io(socketUrl, {
         withCredentials: true,
         transports: ['websocket'],
       });

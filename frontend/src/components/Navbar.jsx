@@ -565,12 +565,6 @@ const Navbar = () => {
                             // RESTORE original detailed layout for expanded state
                             return (
                               <div key={notification._id} className="notification-dropdown-card">
-                                {/* Collapsed/Expanded toggle link */}
-                                <div style={{position:'absolute', top:8, right:16, fontSize:'13px', color:'#2563eb', cursor:'pointer', zIndex:2, fontWeight:500, textDecoration:'underline'}}
-                                  onClick={() => setExpandedNotifications(prev => ({...prev, [notification._id]: false}))}
-                                >
-                                  See less
-                                </div>
                                 {/* Left: Mentee info */}
                                 <div className="notification-mentee-info">
                                   <div className="notification-date">{new Date(notification.createdAt).toLocaleDateString()}</div>
@@ -612,6 +606,13 @@ const Navbar = () => {
                                       <span style={{fontWeight:600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize:'1.1em'}}>{statusLabel}</span>
                                     )}
                                   </div>
+                                  <div style={{paddingTop:8}}>
+                                    <span style={{fontSize:'13px', color:'#2563eb', cursor:'pointer', zIndex:2, fontWeight:500, textDecoration:'underline'}}
+                                      onClick={() => setExpandedNotifications(prev => ({...prev, [notification._id]: false}))}
+                                    >
+                                      See less
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -619,12 +620,6 @@ const Navbar = () => {
                           // Minimal/collapsed state
                           return (
                             <div key={notification._id} className="notification-dropdown-card" style={{width:'100%', padding:10, flexDirection:'row', alignItems:'center', gap:12, boxSizing:'border-box'}}>
-                              {/* Collapsed/Expanded toggle link */}
-                              <div style={{position:'absolute', top:8, right:16, fontSize:'13px', color:'#2563eb', cursor:'pointer', zIndex:2, fontWeight:500, textDecoration:'underline'}}
-                                onClick={() => setExpandedNotifications(prev => ({...prev, [notification._id]: true}))}
-                              >
-                                See more
-                              </div>
                               {/* Avatar */}
                               <img
                                 src={menteeAvatarUrl || '/default-avatar.png'}
@@ -636,23 +631,32 @@ const Navbar = () => {
                                 <div className="notification-opportunity-title" style={{fontSize:16, marginBottom:0}}>{opportunityTitle}</div>
                               </div>
                               {/* Actions or status */}
-                              <div className="notification-action-row" style={{marginTop:0, gap:8, alignItems:'center'}}>
-                                {showActions ? (
-                                  <>
-                                    <button
-                                      className="notification-reject-btn"
-                                      style={{fontSize:12, padding:'4px 10px'}}
-                                      onClick={() => handleRejectApplication(assignmentId, notification._id)}
-                                    >Reject</button>
-                                    <button
-                                      className="notification-accept-btn"
-                                      style={{fontSize:12, padding:'4px 10px'}}
-                                      onClick={() => handleAcceptApplication(assignmentId, notification._id)}
-                                    >Accept</button>
-                                  </>
-                                ) : (
-                                  <span style={{fontWeight:600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize:'0.95em'}}>{statusLabel}</span>
-                                )}
+                              <div className="notification-action-row" style={{marginTop:0, gap:8, alignItems:'center', flexDirection:'column', justifyContent:'center'}}>
+                                <div style={{display:'flex', gap:8}}>
+                                  {showActions ? (
+                                    <>
+                                      <button
+                                        className="notification-reject-btn"
+                                        style={{fontSize:12, padding:'4px 10px'}}
+                                        onClick={() => handleRejectApplication(assignmentId, notification._id)}
+                                      >Reject</button>
+                                      <button
+                                        className="notification-accept-btn"
+                                        style={{fontSize:12, padding:'4px 10px'}}
+                                        onClick={() => handleAcceptApplication(assignmentId, notification._id)}
+                                      >Accept</button>
+                                    </>
+                                  ) : (
+                                    <span style={{fontWeight:600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize:'0.95em'}}>{statusLabel}</span>
+                                  )}
+                                </div>
+                                <div style={{paddingTop:8}}>
+                                  <span style={{fontSize:'13px', color:'#2563eb', cursor:'pointer', zIndex:2, fontWeight:500, textDecoration:'underline'}}
+                                    onClick={() => setExpandedNotifications(prev => ({...prev, [notification._id]: true}))}
+                                  >
+                                    See more
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           );

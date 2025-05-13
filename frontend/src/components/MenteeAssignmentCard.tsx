@@ -18,17 +18,26 @@ interface AssignmentCardProps {
 }
 
 const StatusBadge = ({ status }: { status: string }) => {
-  const colors = {
-    ACTIVE: 'bg-blue-100 text-blue-800',
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    COMPLETED: 'bg-green-100 text-green-800',
-    FUTURE: 'bg-violet-100 text-violet-800',
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+      case 'CHARGED':
+        return 'bg-blue-100 text-blue-800';
+      case 'PENDING':
+      case 'ACCEPTED':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-800';
+      case 'REJECTED':
+      case 'CANCELED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  const color = colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
       {status}
     </span>
   );

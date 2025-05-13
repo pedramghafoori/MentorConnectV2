@@ -324,6 +324,18 @@ const Navbar = () => {
       socketRef.current = io(socketUrl, {
         withCredentials: true,
         transports: ['websocket'],
+        path: '/socket.io',
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+      });
+
+      socketRef.current.on('connect', () => {
+        console.log('Socket.IO connected successfully');
+      });
+
+      socketRef.current.on('connect_error', (error) => {
+        console.error('Socket.IO connection error:', error);
       });
     }
     const socket = socketRef.current;

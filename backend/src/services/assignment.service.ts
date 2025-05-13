@@ -4,6 +4,7 @@ import { User } from '../models/user.js';
 import { StripeService } from './stripe.service.js';
 import { NotificationService } from './notification.service.js';
 import mongoose from 'mongoose';
+import { Notification } from '../models/notification.js';
 
 export class AssignmentService {
   static async createAssignment(data: {
@@ -82,7 +83,8 @@ export class AssignmentService {
             (opportunity.facility && typeof opportunity.facility === 'object' && 'name' in opportunity.facility)
               ? `${(opportunity.facility as any).name}${(opportunity.facility as any).address ? ', ' + (opportunity.facility as any).address : ''}`
               : (opportunity.city || 'N/A'),
-          opportunityPrice: opportunity.price || 0
+          opportunityPrice: opportunity.price || 0,
+          assignmentStatus: assignment[0].status
         }
       });
 
@@ -101,18 +103,28 @@ export class AssignmentService {
     session.startTransaction();
 
     try {
+      console.log('[acceptAssignment] assignmentId:', assignmentId);
       const assignment = await Assignment.findById(assignmentId);
+      console.log('[acceptAssignment] found assignment:', assignment);
       if (!assignment) {
+        console.error('[acceptAssignment] Assignment not found');
         throw new Error('Assignment not found');
       }
 
       if (assignment.status !== 'PENDING') {
+        console.error('[acceptAssignment] Assignment is not in PENDING state:', assignment.status);
         throw new Error('Assignment is not in PENDING state');
       }
 
       // Capture payment if there's a payment intent
       if (assignment.paymentIntentId) {
-        await StripeService.capturePaymentIntent(assignment.paymentIntentId);
+        try {
+          console.log('[acceptAssignment] Capturing paymentIntent:', assignment.paymentIntentId);
+          await StripeService.capturePaymentIntent(assignment.paymentIntentId);
+        } catch (stripeError) {
+          console.error('[acceptAssignment] Error capturing paymentIntent:', stripeError);
+          throw stripeError;
+        }
       }
 
       // Update assignment status
@@ -126,13 +138,26 @@ export class AssignmentService {
         { session }
       );
 
+      // Update mentor's notification assignmentStatus
+      await Notification.updateMany(
+        {
+          'data.assignmentId': assignment._id,
+          type: 'MENTOR_APPLICATION_RECEIVED'
+        },
+        { $set: { 'data.assignmentStatus': assignment.status } }
+      );
+
       // Send notification to mentee
+      const opportunity = await Opportunity.findById(assignment.opportunityId);
+      const mentor = opportunity ? await User.findById(opportunity.mentor) : null;
       await NotificationService.send({
         userId: assignment.menteeId.toString(),
         type: 'APPLICATION_ACCEPTED',
         data: {
           assignmentId: assignment._id,
-          opportunityId: assignment.opportunityId
+          opportunityId: assignment.opportunityId,
+          assignmentStatus: assignment.status,
+          mentorAvatarUrl: mentor?.avatarUrl || null
         }
       });
 
@@ -140,6 +165,7 @@ export class AssignmentService {
       return assignment;
     } catch (error) {
       await session.abortTransaction();
+      console.error('[acceptAssignment] Error:', error);
       throw error;
     } finally {
       session.endSession();
@@ -151,31 +177,54 @@ export class AssignmentService {
     session.startTransaction();
 
     try {
+      console.log('[rejectAssignment] assignmentId:', assignmentId);
       const assignment = await Assignment.findById(assignmentId);
+      console.log('[rejectAssignment] found assignment:', assignment);
       if (!assignment) {
+        console.error('[rejectAssignment] Assignment not found');
         throw new Error('Assignment not found');
       }
 
       if (assignment.status !== 'PENDING') {
+        console.error('[rejectAssignment] Assignment is not in PENDING state:', assignment.status);
         throw new Error('Assignment is not in PENDING state');
       }
 
       // Cancel payment intent if exists
       if (assignment.paymentIntentId) {
-        await StripeService.cancelPaymentIntent(assignment.paymentIntentId);
+        try {
+          console.log('[rejectAssignment] Canceling paymentIntent:', assignment.paymentIntentId);
+          await StripeService.cancelPaymentIntent(assignment.paymentIntentId);
+        } catch (stripeError) {
+          console.error('[rejectAssignment] Error canceling paymentIntent:', stripeError);
+          throw stripeError;
+        }
       }
 
       // Update assignment status
       assignment.status = 'REJECTED';
       await assignment.save({ session });
 
+      // Update mentor's notification assignmentStatus
+      await Notification.updateMany(
+        {
+          'data.assignmentId': assignment._id,
+          type: 'MENTOR_APPLICATION_RECEIVED'
+        },
+        { $set: { 'data.assignmentStatus': assignment.status } }
+      );
+
       // Send notification to mentee
+      const opportunity = await Opportunity.findById(assignment.opportunityId);
+      const mentor = opportunity ? await User.findById(opportunity.mentor) : null;
       await NotificationService.send({
         userId: assignment.menteeId.toString(),
         type: 'APPLICATION_REJECTED',
         data: {
           assignmentId: assignment._id,
-          opportunityId: assignment.opportunityId
+          opportunityId: assignment.opportunityId,
+          assignmentStatus: assignment.status,
+          mentorAvatarUrl: mentor?.avatarUrl || null
         }
       });
 
@@ -183,6 +232,7 @@ export class AssignmentService {
       return assignment;
     } catch (error) {
       await session.abortTransaction();
+      console.error('[rejectAssignment] Error:', error);
       throw error;
     } finally {
       session.endSession();

@@ -53,6 +53,7 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const socketRef = useRef(null);
+  const [expandedNotifications, setExpandedNotifications] = useState({});
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -290,16 +291,25 @@ const Navbar = () => {
   const handleAcceptApplication = async (assignmentId, notificationId) => {
     try {
       await axios.post(`/api/assignments/${assignmentId}/accept`);
-      setNotifications(notifications.filter(n => n._id !== notificationId));
+      setNotifications(notifications.map(n =>
+        n._id === notificationId
+          ? { ...n, data: { ...n.data, assignmentStatus: 'CHARGED' } }
+          : n
+      ));
     } catch (error) {
-      alert('Failed to accept application.');
+      console.error('Error accepting application:', error);
+      alert('Failed to accept application. Please try again later.');
     }
   };
 
   const handleRejectApplication = async (assignmentId, notificationId) => {
     try {
       await axios.post(`/api/assignments/${assignmentId}/reject`);
-      setNotifications(notifications.filter(n => n._id !== notificationId));
+      setNotifications(notifications.map(n =>
+        n._id === notificationId
+          ? { ...n, data: { ...n.data, assignmentStatus: 'REJECTED' } }
+          : n
+      ));
     } catch (error) {
       alert('Failed to reject application.');
     }
@@ -539,40 +549,110 @@ const Navbar = () => {
                     ) : (
                       notifications.map(notification => {
                         if (notification.type === 'MENTOR_APPLICATION_RECEIVED') {
-                          const { menteeName, assignmentId, menteeId, menteeAvatarUrl, opportunityTitle, opportunityDate, opportunityLocation } = notification.data;
-                          return (
-                            <div key={notification._id} className="notification-dropdown-card">
-                              {/* Left: Mentee info */}
-                              <div className="notification-mentee-info">
-                                <div className="notification-date">{new Date(notification.createdAt).toLocaleDateString()}</div>
-                                <img
-                                  src={menteeAvatarUrl || '/default-avatar.png'}
-                                  alt={menteeName}
-                                  className="notification-mentee-avatar"
-                                />
-                                <div className="notification-mentee-name">{menteeName}</div>
-                                <button
-                                  className="notification-profile-btn"
-                                  onClick={() => navigate(`/profile/${menteeId}`)}
-                                >View Profile</button>
+                          const { menteeName, assignmentId, menteeId, menteeAvatarUrl, opportunityTitle, opportunityDate, opportunityLocation, assignmentStatus } = notification.data;
+                          // Only show Accept/Reject if status is PENDING
+                          let statusLabel = null;
+                          let showActions = true;
+                          if (assignmentStatus && assignmentStatus !== 'PENDING') {
+                            showActions = false;
+                            if (assignmentStatus === 'CHARGED' || assignmentStatus === 'ACCEPTED') statusLabel = 'Accepted';
+                            else if (assignmentStatus === 'REJECTED') statusLabel = 'Rejected';
+                            else if (assignmentStatus === 'CANCELED') statusLabel = 'Canceled';
+                            else statusLabel = assignmentStatus;
+                          }
+                          const isExpanded = expandedNotifications[notification._id];
+                          if (isExpanded) {
+                            // RESTORE original detailed layout for expanded state
+                            return (
+                              <div key={notification._id} className="notification-dropdown-card">
+                                {/* Collapsed/Expanded toggle link */}
+                                <div style={{position:'absolute', top:8, right:16, fontSize:'13px', color:'#2563eb', cursor:'pointer', zIndex:2, fontWeight:500, textDecoration:'underline'}}
+                                  onClick={() => setExpandedNotifications(prev => ({...prev, [notification._id]: false}))}
+                                >
+                                  See less
+                                </div>
+                                {/* Left: Mentee info */}
+                                <div className="notification-mentee-info">
+                                  <div className="notification-date">{new Date(notification.createdAt).toLocaleDateString()}</div>
+                                  <img
+                                    src={menteeAvatarUrl || '/default-avatar.png'}
+                                    alt={menteeName}
+                                    className="notification-mentee-avatar"
+                                  />
+                                  <div className="notification-mentee-name">{menteeName}</div>
+                                  <button
+                                    className="notification-profile-btn"
+                                    onClick={() => {
+                                      console.log('Navigating to profile:', menteeId);
+                                      navigate(`/profile/${menteeId}`);
+                                      setShowNotifications(false);
+                                    }}
+                                  >View Profile</button>
+                                </div>
+                                {/* Right: Opportunity info and actions */}
+                                <div className="notification-opportunity-info">
+                                  <div>
+                                    <div className="notification-opportunity-title">{opportunityTitle}</div>
+                                    <div className="notification-opportunity-date">{opportunityDate ? new Date(opportunityDate).toLocaleDateString() : ''}</div>
+                                    <div className="notification-opportunity-location">{opportunityLocation}</div>
+                                  </div>
+                                  <div className="notification-action-row">
+                                    {showActions ? (
+                                      <>
+                                        <button
+                                          className="notification-reject-btn"
+                                          onClick={() => handleRejectApplication(assignmentId, notification._id)}
+                                        >Reject</button>
+                                        <button
+                                          className="notification-accept-btn"
+                                          onClick={() => handleAcceptApplication(assignmentId, notification._id)}
+                                        >Accept</button>
+                                      </>
+                                    ) : (
+                                      <span style={{fontWeight:600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize:'1.1em'}}>{statusLabel}</span>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              {/* Right: Opportunity info and actions */}
-                              <div className="notification-opportunity-info">
-                                <div>
-                                  <div className="notification-opportunity-title">{opportunityTitle}</div>
-                                  <div className="notification-opportunity-date">{opportunityDate ? new Date(opportunityDate).toLocaleDateString() : ''}</div>
-                                  <div className="notification-opportunity-location">{opportunityLocation}</div>
-                                </div>
-                                <div className="notification-action-row">
-                                  <button
-                                    className="notification-reject-btn"
-                                    onClick={() => handleRejectApplication(assignmentId, notification._id)}
-                                  >Reject</button>
-                                  <button
-                                    className="notification-accept-btn"
-                                    onClick={() => handleAcceptApplication(assignmentId, notification._id)}
-                                  >Accept</button>
-                                </div>
+                            );
+                          }
+                          // Minimal/collapsed state
+                          return (
+                            <div key={notification._id} className="notification-dropdown-card" style={{width:'100%', padding:10, flexDirection:'row', alignItems:'center', gap:12, boxSizing:'border-box'}}>
+                              {/* Collapsed/Expanded toggle link */}
+                              <div style={{position:'absolute', top:8, right:16, fontSize:'13px', color:'#2563eb', cursor:'pointer', zIndex:2, fontWeight:500, textDecoration:'underline'}}
+                                onClick={() => setExpandedNotifications(prev => ({...prev, [notification._id]: true}))}
+                              >
+                                See more
+                              </div>
+                              {/* Avatar */}
+                              <img
+                                src={menteeAvatarUrl || '/default-avatar.png'}
+                                alt={menteeName}
+                                className="notification-mentee-avatar"
+                                style={{width:48, height:48, marginBottom:0}}
+                              />
+                              <div style={{flex:1, display:'flex', flexDirection:'column', justifyContent:'center', minWidth:0}}>
+                                <div className="notification-opportunity-title" style={{fontSize:16, marginBottom:0}}>{opportunityTitle}</div>
+                              </div>
+                              {/* Actions or status */}
+                              <div className="notification-action-row" style={{marginTop:0, gap:8, alignItems:'center'}}>
+                                {showActions ? (
+                                  <>
+                                    <button
+                                      className="notification-reject-btn"
+                                      style={{fontSize:12, padding:'4px 10px'}}
+                                      onClick={() => handleRejectApplication(assignmentId, notification._id)}
+                                    >Reject</button>
+                                    <button
+                                      className="notification-accept-btn"
+                                      style={{fontSize:12, padding:'4px 10px'}}
+                                      onClick={() => handleAcceptApplication(assignmentId, notification._id)}
+                                    >Accept</button>
+                                  </>
+                                ) : (
+                                  <span style={{fontWeight:600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize:'0.95em'}}>{statusLabel}</span>
+                                )}
                               </div>
                             </div>
                           );
@@ -583,6 +663,13 @@ const Navbar = () => {
                             className="flex items-start gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
                             onClick={() => handleNotificationClick(notification._id)}
                           >
+                            {notification.data && notification.data.mentorAvatarUrl && (
+                              <img
+                                src={notification.data.mentorAvatarUrl || '/default-avatar.png'}
+                                alt="Mentor Avatar"
+                                className="w-9 h-9 rounded-full object-cover bg-gray-200 mr-2"
+                              />
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-gray-900">
                                 {notification.type === 'APPLICATION_ACCEPTED' && (

@@ -164,6 +164,18 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
     setLoading(true);
     setError(null);
 
+    // Validation: ensure required fields are present
+    if (!signatures.menteeSignature) {
+      setError('Please sign the agreement before submitting.');
+      setLoading(false);
+      return;
+    }
+    if (!prerequisites.method) {
+      setError('Verification method is required.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const assignment = await AssignmentService.createAssignment({
         opportunityId: opportunity._id,
@@ -205,19 +217,29 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
         );
       case 2:
         return (
-          <div>
-            <h3>Sign Mentee Agreement</h3>
-            <p>Please review and sign the mentee agreement below.</p>
-            <div className="mentee-agreement-text" style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16, background: '#f9f9f9', maxHeight: 200, overflowY: 'auto'}}>
+          <div className="mentee-sign-step" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 8 }}>Sign Mentee Agreement</h3>
+            <p style={{ marginBottom: 16, color: '#444', fontSize: '1rem' }}>
+              Please review the agreement below and sign to continue your application.
+            </p>
+            <div className="mentee-agreement-text" style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 20, marginBottom: 20, background: '#f9f9f9', maxWidth: 480, width: '100%', fontSize: '1rem', color: '#222' }}>
               <strong>Mentee Agreement</strong>
-              <p>
-                By signing this agreement, you acknowledge your commitment to attend all sessions, complete all required preparation, and communicate promptly with your mentor. Failure to do so may result in removal from the opportunity.
-              </p>
-              <p>
+              <p style={{ marginTop: 8 }}>
+                By signing this agreement, you acknowledge your commitment to attend all sessions, complete all required preparation, and communicate promptly with your mentor. Failure to do so may result in removal from the opportunity.<br />
                 You agree to uphold the standards and expectations set by the mentor and the organization.
               </p>
             </div>
-            <SignaturePad onSign={handleMenteeSignature} />
+            <div style={{ width: 320, marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Your Signature</label>
+              <SignaturePad onSign={handleMenteeSignature} />
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+              <button onClick={() => setSignatures(prev => ({ ...prev, menteeSignature: null }))} className="btn btn-secondary" style={{ padding: '8px 24px', borderRadius: 6, background: '#f3f4f6', color: '#222', border: '1px solid #ccc' }}>Clear</button>
+              <button onClick={handleSubmit} className="btn btn-primary" style={{ padding: '8px 32px', borderRadius: 6, background: '#2563eb', color: '#fff', fontWeight: 600 }} disabled={loading}>
+                {loading ? 'Submitting...' : 'Sign & Continue'}
+              </button>
+            </div>
+            {error && <div className="error-message" style={{ color: '#d33', marginTop: 12 }}>{error}</div>}
           </div>
         );
       case 2.5:

@@ -15,6 +15,7 @@ import ThreadPage from './pages/forum/ThreadPage';
 import AskQuestionPage from './pages/forum/AskQuestionPage';
 import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
 import { MenteeAssignmentsPage } from './pages/MenteeAssignmentsPage';
+import { AssignmentsPage } from './pages/AssignmentsPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -27,27 +28,23 @@ const App = () => {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            <Route path="/testpager1" element={<TestPager1 />} />
+            {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
-            <Route path="/profile/:userId" element={<ProfilePage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/mentor-agreement" element={<MentorAgreementPage />} />
+            <Route path="/testpager1" element={<TestPager1 />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/forum" element={<ForumHome />} />
+            <Route path="/forum/:slug" element={<ThreadPage />} />
+
+            {/* Protected Routes */}
+            <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+            <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
             <Route path="/courses/my-courses" element={user ? <MyCourses /> : <Navigate to="/" />} />
             <Route path="/courses/edit/:courseId" element={user ? <MyCourses /> : <Navigate to="/" />} />
-            
-            {/* Mentor Routes */}
-            <Route path="/mentor/assignments" element={user ? <MentorAssignmentsPage /> : <Navigate to="/" />} />
-            
-            {/* Mentee Routes */}
-            <Route path="/mentee/assignments" element={user ? <MenteeAssignmentsPage /> : <Navigate to="/" />} />
-            
-            {/* Forum Routes */}
-            <Route path="/forum" element={<ForumHome />} />
+            <Route path="/assignments" element={user ? <AssignmentsPage /> : <Navigate to="/" />} />
             <Route path="/forum/ask" element={user ? <AskQuestionPage /> : <Navigate to="/" />} />
-            <Route path="/forum/:slug" element={<ThreadPage />} />
           </Routes>
         </main>
         <Footer />

@@ -697,10 +697,10 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link 
-                  to="/dashboard" 
+                  to="/assignments" 
                   className="hidden sm:block text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors"
                 >
-                  Find Mentors
+                  My Assignments
                 </Link>
                 {/* Profile Picture and Dropdown */}
                 <div className="relative" ref={profileDropdownRef}>

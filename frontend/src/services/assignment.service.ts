@@ -14,6 +14,7 @@ export interface AssignmentData {
     amaSignature?: string;
   };
   paymentIntentId?: string;
+  startDate: Date;
 }
 
 export interface Assignment {
@@ -32,6 +33,13 @@ export interface Assignment {
   status: 'PENDING' | 'ACCEPTED' | 'ACTIVE' | 'COMPLETED' | 'REJECTED' | 'CANCELED' | 'CHARGED';
 }
 
+interface ApiError extends Error {
+  response?: {
+    data: any;
+    status: number;
+  };
+}
+
 export class AssignmentService {
   static async createAssignment(data: AssignmentData) {
     const response = await api.post('/assignments', data);
@@ -39,8 +47,19 @@ export class AssignmentService {
   }
 
   static async getMentorAssignments(range: 'active' | 'future' | 'completed'): Promise<Assignment[]> {
-    const response = await api.get(`/assignments/mentor?range=${range}`);
-    return response.data;
+    console.log('=== getMentorAssignments Request ===');
+    console.log('Request params:', { range });
+    
+    try {
+      const response = await api.get(`/assignments/mentor?range=${range}`);
+      console.log('Response data:', response.data);
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Error in getMentorAssignments:', apiError);
+      console.error('Error response:', apiError.response?.data);
+      throw apiError;
+    }
   }
 
   static async getMenteeAssignments(range: 'active' | 'future' | 'completed'): Promise<Assignment[]> {

@@ -14,6 +14,7 @@ router.post(
   validateRequest(z.object({
     opportunityId: z.string(),
     feeSnapshot: z.number(),
+    startDate: z.string().datetime().transform(str => new Date(str)),
     prerequisites: z.object({
       verified: z.boolean(),
       method: z.enum(['scraper', 'ama']),
@@ -131,7 +132,7 @@ router.get(
           filter.startDate = { $gt: nextMonth };
           break;
         case 'active':
-          filter.status = 'ACTIVE';
+          filter.status = { $in: ['ACTIVE', 'CHARGED'] };
           break;
         case 'completed':
           filter.status = 'COMPLETED';

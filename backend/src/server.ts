@@ -15,7 +15,7 @@ import lssRoutes from './lss/lssRoutes.js';
 import stripeRoutes from './routes/stripe.routes.js';
 import waiverRoutes from './routes/waiverRoutes.js';
 import http from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { Server } from 'socket.io';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -77,15 +77,19 @@ app.get('*', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = new SocketIOServer(server, {
+
+// Initialize Socket.IO
+export const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://www.mentorconnectcanada.com', 'https://mentorconnect-ecc82a256094.herokuapp.com'],
-    credentials: true,
+    origin: [
+      'http://localhost:5173',
+      'http://www.mentorconnectcanada.com',
+      'https://mentorconnect-ecc82a256094.herokuapp.com'
+    ],
+    credentials: true
   },
   path: '/socket.io',
-  transports: ['websocket'],
-  pingTimeout: 60000,
-  pingInterval: 25000
+  transports: ['websocket']
 });
 
 // UserID to socket mapping

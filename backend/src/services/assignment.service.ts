@@ -5,6 +5,7 @@ import { StripeService } from './stripe.service.js';
 import { NotificationService } from './notification.service.js';
 import mongoose from 'mongoose';
 import { Notification } from '../models/notification.js';
+import { io } from '../server.js';
 
 export class AssignmentService {
   static async createAssignment(data: {
@@ -159,6 +160,12 @@ export class AssignmentService {
           assignmentStatus: assignment.status,
           mentorAvatarUrl: mentor?.avatarUrl || null
         }
+      });
+
+      // Emit socket event to notify clients about the assignment update
+      io.emit('assignment:update', {
+        assignmentId: assignment._id,
+        status: assignment.status
       });
 
       await session.commitTransaction();

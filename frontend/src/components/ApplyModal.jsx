@@ -187,6 +187,16 @@ const ApplyModal = ({ isOpen, onClose, opportunity, onSuccess }) => {
     }
 
     try {
+      const startDate = opportunity.schedule?.isExamOnly
+        ? opportunity.schedule.examDate
+        : (opportunity.schedule?.courseDates?.[0] || null);
+
+      if (!startDate) {
+        setError('Opportunity has no valid start date.');
+        setLoading(false);
+        return;
+      }
+
       const assignment = await AssignmentService.createAssignment({
         opportunityId: opportunity._id,
         feeSnapshot: opportunity.price || 0,
@@ -195,7 +205,8 @@ const ApplyModal = ({ isOpen, onClose, opportunity, onSuccess }) => {
           signedAt: new Date()
         },
         agreements: signatures,
-        paymentIntentId: paymentIntent?.id
+        paymentIntentId: paymentIntent?.id,
+        startDate: new Date(startDate)
       });
 
       toast.success('Application submitted successfully!');

@@ -44,6 +44,10 @@ router.post('/me/profile-picture', authenticateToken, upload.single('avatar'), a
       if (process.env.NODE_ENV === 'production') {
         // Extract the key from the old avatarUrl (e.g., 'avatars/1234567890.jpg')
         const oldKey = user.avatarUrl.split('/').slice(-2).join('/');
+        const bucket = process.env.DO_SPACES_BUCKET;
+        if (!bucket || !oldKey) {
+          throw new Error('Missing S3 bucket or key');
+        }
         const s3Client = new AWS.S3({
           endpoint: process.env.DO_SPACES_ENDPOINT,
           region: process.env.DO_SPACES_REGION,
@@ -53,7 +57,7 @@ router.post('/me/profile-picture', authenticateToken, upload.single('avatar'), a
           signatureVersion: 'v4'
         });
         await s3Client.deleteObject({
-          Bucket: process.env.DO_SPACES_BUCKET,
+          Bucket: bucket,
           Key: oldKey
         }).promise();
       } else {

@@ -1,1 +1,2 @@
-web: pnpm --filter backend start 
+web: pnpm --filter backend start
+release: cd frontend && pnpm build 

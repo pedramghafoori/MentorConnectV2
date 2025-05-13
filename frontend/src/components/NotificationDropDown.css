@@ -1,0 +1,138 @@
+.notification-dropdown-card {
+  display: flex;
+  flex-direction: row;
+  border: 1.5px solid #7a7a7a;
+  border-radius: 24px;
+  padding: 20px;
+
+  margin: 12px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  min-width: 420px;
+  max-width: 600px;
+  align-items: flex-start;
+  gap: 32px;
+  margin-left: 20px;
+  margin-right: 10px;
+  position: relative;
+}
+
+.notification-mentee-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.notification-date {
+  font-size: 13px;
+  color: #040404;
+  margin-bottom: 8px;
+}
+
+.notification-mentee-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 90px;
+  object-fit: cover;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.notification-mentee-name {
+  font-weight: 600;
+  font-size: 17px;
+  color: #222;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.notification-profile-btn {
+  background: #ffffff7e;
+  color: #686868;
+  border: 2px solid #9b9b9b;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 6px 18px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.notification-opportunity-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 180px;
+  height: 100%;
+}
+
+.notification-opportunity-title {
+  font-weight: 700;
+  font-size: 24px;
+  color: #223;
+  margin-bottom: 6px;
+}
+
+.notification-opportunity-date {
+  font-size: 16px;
+  color: #4b5563;
+  margin-bottom: 2px;
+}
+
+.notification-opportunity-location {
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.notification-action-row {
+  display: flex;
+  gap: 18px;
+  margin-top: 130px;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.notification-reject-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 32px;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 8px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notification-accept-btn {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 32px;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 8px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notification-dropdown-panel {
+  width: 640px !important;
+  max-width: 98vw;
+  min-width: 420px;
+  background: rgba(165, 170, 169, 0.568); /* seaglass color, semi-transparent */
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  border: 1.5px solid rgba(120, 141, 137, 0.18); /* subtle border */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+  border-radius: 24px;
+  /* Optional: subtle inner shadow for matte effect */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10), inset 0 1.5px 8px rgba(255,255,255,0.12);
+} 

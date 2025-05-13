@@ -14,6 +14,8 @@ import uploadRoutes from './routes/upload.js';
 import lssRoutes from './lss/lssRoutes.js';
 import stripeRoutes from './routes/stripe.routes.js';
 import waiverRoutes from './routes/waiverRoutes.js';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -74,8 +76,44 @@ app.get('*', (req, res) => {
   }
 });
 
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: ['http://localhost:5173', 'http://www.mentorconnectcanada.com', 'https://mentorconnect-ecc82a256094.herokuapp.com'],
+    credentials: true,
+  }
+});
+
+// UserID to socket mapping
+const userSockets: Map<string, string> = new Map();
+
+io.on('connection', (socket) => {
+  // Listen for user authentication (client should emit 'authenticate' with userId after connecting)
+  socket.on('authenticate', (userId: string) => {
+    if (userId) {
+      userSockets.set(userId, socket.id);
+      (socket as any).userId = userId;
+    }
+  });
+
+  socket.on('disconnect', () => {
+    const userId = (socket as any).userId;
+    if (userId) {
+      userSockets.delete(userId);
+    }
+  });
+});
+
+// Helper to emit a notification to a user by userId
+export function sendRealtimeNotification(userId: string, notification: any) {
+  const socketId = userSockets.get(userId?.toString());
+  if (socketId) {
+    io.to(socketId).emit('notification', notification);
+  }
+}
+
 const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 }); 

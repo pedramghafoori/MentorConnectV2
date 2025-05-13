@@ -23,7 +23,7 @@ try {
   console.error('Error initializing Stripe:', error);
 }
 
-const ApplyModal = ({ isOpen, onClose, opportunity }) => {
+const ApplyModal = ({ isOpen, onClose, opportunity, onSuccess }) => {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [prerequisites, setPrerequisites] = useState({
@@ -69,18 +69,18 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
         setError(null);
         console.log('[ApplyModal] Skipping verification, setting currentStep to 2 and prerequisites to verified');
       } else {
-        setPrerequisites({
-          verified: false,
-          method: null,
-          verifiedAt: null,
-          signedAt: null
-        });
-        setSignatures({
-          menteeSignature: null,
-          amaSignature: null
-        });
-        setPaymentIntent(null);
-        setError(null);
+      setPrerequisites({
+        verified: false,
+        method: null,
+        verifiedAt: null,
+        signedAt: null
+      });
+      setSignatures({
+        menteeSignature: null,
+        amaSignature: null
+      });
+      setPaymentIntent(null);
+      setError(null);
         setCurrentStep(1);
         console.log('[ApplyModal] Needs verification, setting currentStep to 1');
       }
@@ -199,10 +199,16 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
       });
 
       toast.success('Application submitted successfully!');
+      onSuccess();
       onClose();
     } catch (error) {
       setError('Failed to submit application. Please try again.');
       toast.error('Failed to submit application. Please try again.');
+      // If error is duplicate key, re-check application status
+      if (error?.response?.data?.error?.includes('duplicate key')) {
+        onSuccess();
+        onClose();
+      }
     } finally {
       setLoading(false);
     }
@@ -241,7 +247,7 @@ const ApplyModal = ({ isOpen, onClose, opportunity }) => {
             </div>
             <div style={{ width: 320, marginBottom: 16 }}>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Your Signature</label>
-              <SignaturePad onSign={handleMenteeSignature} />
+            <SignaturePad onSign={handleMenteeSignature} />
             </div>
             <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
               <button onClick={() => setSignatures(prev => ({ ...prev, menteeSignature: null }))} className="btn btn-secondary" style={{ padding: '8px 24px', borderRadius: 6, background: '#f3f4f6', color: '#222', border: '1px solid #ccc' }}>Clear</button>
@@ -317,7 +323,8 @@ ApplyModal.propTypes = {
   opportunity: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     price: PropTypes.number.isRequired
-  }).isRequired
+  }).isRequired,
+  onSuccess: PropTypes.func.isRequired
 };
 
 export default ApplyModal; 

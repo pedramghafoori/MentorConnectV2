@@ -1,21 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import locationPin from '../assets/icons/location-pin.png';
 import calendarIcon from '../assets/icons/calendar.svg';
 import clipboardIcon from '../assets/icons/clipboard.svg';
 import ReusableModal from './ReusableModal';
 import ApplyModal from './ApplyModal';
+import api from '../lib/api';
 
 export default function OpportunityCard({ opportunity, hideRibbon }) {
   const { user } = useAuth();
   const [mentorModalOpen, setMentorModalOpen] = useState(false);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
   const mentor = opportunity.mentor || {};
   const facility = opportunity.facility || {};
   const prepReqs = opportunity.prepRequirements || [];
   const date = opportunity.schedule?.isExamOnly
     ? opportunity.schedule.examDate
     : (opportunity.schedule?.courseDates?.[0] || null);
+
+  useEffect(() => {
+    const checkApplicationStatus = async () => {
+      if (user && opportunity._id) {
+        try {
+          const response = await api.get(`/assignments?opportunityId=${opportunity._id}&menteeId=${user._id}`);
+          setHasApplied(response.data.length > 0);
+        } catch (error) {
+          console.error('Error checking application status:', error);
+        }
+      }
+    };
+    checkApplicationStatus();
+  }, [user, opportunity._id]);
 
   // Add debug logging
   const handleApplyClick = () => {
@@ -58,6 +74,7 @@ export default function OpportunityCard({ opportunity, hideRibbon }) {
         isOpen={applyModalOpen}
         onClose={() => setApplyModalOpen(false)}
         opportunity={opportunity}
+        onSuccess={() => setHasApplied(true)}
       />
       <div className="opportunity-card">
         {!hideRibbon && (
@@ -119,12 +136,53 @@ export default function OpportunityCard({ opportunity, hideRibbon }) {
                   </span>
                 </div>
                 {user && (
-                  <button
-                    className="opportunity-card-apply-btn"
-                    onClick={handleApplyClick}
-                  >
-                    Apply
-                  </button>
+                  hasApplied ? (
+                    <>
+                      <button
+                        className="opportunity-card-apply-btn applied-success"
+                        style={{ background: '#dcfce7', borderColor: '#22c55e', color: '#166534', cursor: 'not-allowed' }}
+                        disabled
+                      >
+                        Applied - Awaiting Mentor Confirmation
+                      </button>
+                      <button
+                        className="withdraw-request-link"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#2563eb',
+                          textDecoration: 'underline',
+                          marginTop: 8,
+                          cursor: 'pointer',
+                          fontSize: '0.98rem',
+                          fontWeight: 500
+                        }}
+                        onClick={async () => {
+                          try {
+                            // Find the assignment for this opportunity and user
+                            const response = await api.get(`/assignments?opportunityId=${opportunity._id}&menteeId=${user._id}`);
+                            const assignment = response.data[0];
+                            if (assignment) {
+                              await api.post(`/assignments/${assignment._id}/cancel`);
+                              setHasApplied(false);
+                            }
+                          } catch (err) {
+                            alert('Failed to withdraw request.');
+                          }
+                        }}
+                      >
+                        Withdraw your request
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className={`opportunity-card-apply-btn`}
+                      onClick={handleApplyClick}
+                      disabled={hasApplied}
+                    >
+                      Apply
+                    </button>
+                  )
                 )}
                 {!user && (
                   <button

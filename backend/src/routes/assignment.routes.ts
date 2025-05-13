@@ -3,6 +3,7 @@ import { AssignmentService } from '../services/assignment.service.js';
 import { authenticateToken } from '../middleware/auth.js';
 import validateRequest from '../middleware/validateRequest.js';
 import { z } from 'zod';
+import { Assignment } from '../models/assignment.js';
 
 const router = Router();
 
@@ -16,12 +17,12 @@ router.post(
     prerequisites: z.object({
       verified: z.boolean(),
       method: z.enum(['scraper', 'ama']),
-      verifiedAt: z.date().optional(),
-      signedAt: z.date().optional()
+      verifiedAt: z.string().datetime().optional().transform(str => str ? new Date(str) : undefined),
+      signedAt: z.string().datetime().optional().transform(str => str ? new Date(str) : undefined)
     }),
     agreements: z.object({
       menteeSignature: z.string(),
-      amaSignature: z.string().optional()
+      amaSignature: z.string().nullable().optional()
     }),
     paymentIntentId: z.string().optional()
   })),
@@ -80,6 +81,24 @@ router.post(
       res.json(assignment);
     } catch (error: any) {
       res.status(400).json({ error: error.message || 'Failed to cancel assignment' });
+    }
+  }
+);
+
+// Get assignments filtered by opportunityId and/or menteeId
+router.get(
+  '/',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const { opportunityId, menteeId } = req.query;
+      const filter: any = {};
+      if (opportunityId) filter['opportunityId'] = opportunityId;
+      if (menteeId) filter['menteeId'] = menteeId;
+      const assignments = await Assignment.find(filter);
+      res.json(assignments);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch assignments' });
     }
   }
 );

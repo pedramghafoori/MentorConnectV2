@@ -27,7 +27,7 @@ export class AssignmentService {
 
     try {
       // Check if opportunity exists and is available
-      const opportunity = await Opportunity.findById(data.opportunityId);
+      const opportunity = await Opportunity.findById(data.opportunityId).populate('facility');
       if (!opportunity) {
         throw new Error('Opportunity not found');
       }
@@ -68,11 +68,21 @@ export class AssignmentService {
       // Send notification to mentor
       await NotificationService.send({
         userId: opportunity.mentor.toString(),
-        type: 'MENTEE_APPLICATION',
+        type: 'MENTOR_APPLICATION_RECEIVED',
         data: {
           assignmentId: assignment[0]._id,
           menteeName: `${mentee.firstName} ${mentee.lastName}`,
-          opportunityTitle: opportunity.title
+          menteeId: mentee._id,
+          menteeAvatarUrl: mentee.avatarUrl || null,
+          opportunityTitle: opportunity.title,
+          opportunityDate: opportunity.schedule?.isExamOnly
+            ? opportunity.schedule.examDate
+            : (opportunity.schedule?.courseDates?.[0] || null),
+          opportunityLocation:
+            (opportunity.facility && typeof opportunity.facility === 'object' && 'name' in opportunity.facility)
+              ? `${(opportunity.facility as any).name}${(opportunity.facility as any).address ? ', ' + (opportunity.facility as any).address : ''}`
+              : (opportunity.city || 'N/A'),
+          opportunityPrice: opportunity.price || 0
         }
       });
 

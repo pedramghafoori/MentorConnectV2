@@ -11,6 +11,8 @@ import { updateProfile } from '../features/profile/updateProfile';
 import Container from './Container.jsx';
 import CreateCourseModal from './Course/CreateCourseModal';
 import AvatarFallback from './AvatarFallback';
+import { io } from 'socket.io-client';
+import './NotificationDropDown.css';
 
 const ALL_CERTIFICATIONS = [
   { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
@@ -48,6 +50,9 @@ const Navbar = () => {
   const [selectedCertifications, setSelectedCertifications] = useState([]);
   const [searchMode, setSearchMode] = useState('name'); // 'name' or 'certs'
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const socketRef = useRef(null);
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -153,6 +158,23 @@ const Navbar = () => {
     }
   }, [showNotifications, user]);
 
+  // Fetch notifications when dropdown is opened
+  useEffect(() => {
+    if (showNotifications && user) {
+      setLoadingNotifications(true);
+      axios.get('/api/notifications')
+        .then(response => {
+          setNotifications(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching notifications:', error);
+        })
+        .finally(() => {
+          setLoadingNotifications(false);
+        });
+    }
+  }, [showNotifications, user]);
+
   // Click-away listener for notifications
   useEffect(() => {
     if (!showNotifications) return;
@@ -253,6 +275,63 @@ const Navbar = () => {
     window.addEventListener('open-login-modal', handleGlobalLoginModal);
     return () => window.removeEventListener('open-login-modal', handleGlobalLoginModal);
   }, []);
+
+  const handleNotificationClick = async (notificationId) => {
+    try {
+      await axios.post(`/api/notifications/${notificationId}/read`);
+      setNotifications(notifications.map(n => 
+        n._id === notificationId ? { ...n, read: true } : n
+      ));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const handleAcceptApplication = async (assignmentId, notificationId) => {
+    try {
+      await axios.post(`/api/assignments/${assignmentId}/accept`);
+      setNotifications(notifications.filter(n => n._id !== notificationId));
+    } catch (error) {
+      alert('Failed to accept application.');
+    }
+  };
+
+  const handleRejectApplication = async (assignmentId, notificationId) => {
+    try {
+      await axios.post(`/api/assignments/${assignmentId}/reject`);
+      setNotifications(notifications.filter(n => n._id !== notificationId));
+    } catch (error) {
+      alert('Failed to reject application.');
+    }
+  };
+
+  // Socket.IO setup for real-time notifications
+  useEffect(() => {
+    if (!user?._id) return;
+    if (!socketRef.current) {
+      socketRef.current = io('http://localhost:4000', {
+        withCredentials: true,
+        transports: ['websocket'],
+      });
+    }
+    const socket = socketRef.current;
+    socket.emit('authenticate', user._id);
+    socket.on('notification', (notification) => {
+      setNotifications((prev) => {
+        // If notification already exists (by _id), update it; else, prepend
+        const idx = prev.findIndex(n => n._id === notification._id);
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = notification;
+          return updated;
+        }
+        return [notification, ...prev];
+      });
+    });
+    return () => {
+      socket.off('notification');
+    };
+  }, [user?._id]);
 
   return (
     <>
@@ -440,56 +519,89 @@ const Navbar = () => {
                 <button
                   className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2 relative"
                   onClick={() => setShowNotifications((v) => !v)}
-                  aria-label="Connection Requests"
+                  aria-label="Notifications"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6.002 6.002 0 0 0-4-5.659V5a2 2 0 1 0-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
                   </svg>
-                  {connectionRequests.length > 0 && showNotifications && (
+                  {notifications.length > 0 && (
                     <span className="absolute top-1 right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
-                {/* Dropdown for connection requests */}
+                {/* Dropdown for notifications */}
                 {showNotifications && (
-                  <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
-                    <div className="p-4 border-b text-lg font-semibold text-gray-800">Connection Requests</div>
-                    {loadingRequests ? (
+                  <div className="absolute right-0 top-full mt-2 rounded-2xl shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50 notification-dropdown-panel">
+                    <div className="p-4 border-b text-lg font-semibold text-gray-800">Notifications</div>
+                    {loadingNotifications ? (
                       <div className="px-4 py-6 text-center text-gray-400 text-sm">Loading...</div>
-                    ) : connectionRequests.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-gray-400 text-sm">No pending requests.</div>
+                    ) : notifications.length === 0 ? (
+                      <div className="px-4 py-6 text-center text-gray-400 text-sm">No notifications.</div>
                     ) : (
-                      connectionRequests.map(request => (
-                        <div key={request._id} className="flex items-center gap-3 px-3 py-2 border-b last:border-b-0">
-                          <img
-                            src={request.avatarUrl || '/default-avatar.png'}
-                            alt={request.firstName}
-                            className="w-9 h-9 rounded-full object-cover bg-gray-200"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900 truncate">
-                              {request.firstName} {request.lastName}
+                      notifications.map(notification => {
+                        if (notification.type === 'MENTOR_APPLICATION_RECEIVED') {
+                          const { menteeName, assignmentId, menteeId, menteeAvatarUrl, opportunityTitle, opportunityDate, opportunityLocation } = notification.data;
+                          return (
+                            <div key={notification._id} className="notification-dropdown-card">
+                              {/* Left: Mentee info */}
+                              <div className="notification-mentee-info">
+                                <div className="notification-date">{new Date(notification.createdAt).toLocaleDateString()}</div>
+                                <img
+                                  src={menteeAvatarUrl || '/default-avatar.png'}
+                                  alt={menteeName}
+                                  className="notification-mentee-avatar"
+                                />
+                                <div className="notification-mentee-name">{menteeName}</div>
+                                <button
+                                  className="notification-profile-btn"
+                                  onClick={() => navigate(`/profile/${menteeId}`)}
+                                >View Profile</button>
+                              </div>
+                              {/* Right: Opportunity info and actions */}
+                              <div className="notification-opportunity-info">
+                                <div>
+                                  <div className="notification-opportunity-title">{opportunityTitle}</div>
+                                  <div className="notification-opportunity-date">{opportunityDate ? new Date(opportunityDate).toLocaleDateString() : ''}</div>
+                                  <div className="notification-opportunity-location">{opportunityLocation}</div>
+                                </div>
+                                <div className="notification-action-row">
+                                  <button
+                                    className="notification-reject-btn"
+                                    onClick={() => handleRejectApplication(assignmentId, notification._id)}
+                                  >Reject</button>
+                                  <button
+                                    className="notification-accept-btn"
+                                    onClick={() => handleAcceptApplication(assignmentId, notification._id)}
+                                  >Accept</button>
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-500 truncate">
-                              {request.lssId}
+                          );
+                        }
+                        return (
+                          <div 
+                            key={notification._id} 
+                            className="flex items-start gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleNotificationClick(notification._id)}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900">
+                                {notification.type === 'APPLICATION_ACCEPTED' && (
+                                  <>Your application was accepted</>
+                                )}
+                                {notification.type === 'APPLICATION_REJECTED' && (
+                                  <>Your application was rejected</>
+                                )}
+                              </div>
+                              <div className="text-sm text-gray-500 mt-1">
+                                {new Date(notification.createdAt).toLocaleDateString()}
+                              </div>
                             </div>
+                            {!notification.read && (
+                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            )}
                           </div>
-                          <button
-                            className="px-3 py-1 rounded-full bg-green-500 text-white text-xs font-semibold hover:bg-green-600 mr-1"
-                            onClick={async () => {
-                              await respondToConnectionRequest(request._id, 'accept');
-                              setConnectionRequests(cr => cr.filter(r => r._id !== request._id));
-                              queryClient.invalidateQueries(['connections']);
-                            }}
-                          >Accept</button>
-                          <button
-                            className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold hover:bg-red-600"
-                            onClick={async () => {
-                              await respondToConnectionRequest(request._id, 'reject');
-                              setConnectionRequests(cr => cr.filter(r => r._id !== request._id));
-                            }}
-                          >Reject</button>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 )}

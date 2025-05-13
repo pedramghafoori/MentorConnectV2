@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
-  type: 'MENTEE_APPLICATION' | 'APPLICATION_ACCEPTED' | 'APPLICATION_REJECTED' | 'APPLICATION_CANCELED';
+  type: 'MENTEE_APPLICATION' | 'APPLICATION_ACCEPTED' | 'APPLICATION_REJECTED' | 'APPLICATION_CANCELED' | 'MENTOR_APPLICATION_RECEIVED';
   data: Record<string, any>;
   read: boolean;
   createdAt: Date;
@@ -13,7 +13,7 @@ const notificationSchema = new Schema<INotification>({
   type: { 
     type: String, 
     required: true,
-    enum: ['MENTEE_APPLICATION', 'APPLICATION_ACCEPTED', 'APPLICATION_REJECTED', 'APPLICATION_CANCELED']
+    enum: ['MENTEE_APPLICATION', 'APPLICATION_ACCEPTED', 'APPLICATION_REJECTED', 'APPLICATION_CANCELED', 'MENTOR_APPLICATION_RECEIVED']
   },
   data: { type: Schema.Types.Mixed, required: true },
   read: { type: Boolean, default: false },

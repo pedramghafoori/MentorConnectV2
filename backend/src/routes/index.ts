@@ -12,6 +12,7 @@ import certificationCategories from './certificationCategories.js';
 import accountRoutes from './account.js';
 import forumRoutes from './forum.js';
 import assignmentRoutes from './assignment.routes.js';
+import notificationRoutes from './notification.routes.js';
 
 const router = Router();
 
@@ -38,5 +39,6 @@ router.use('/account', authenticateToken, accountRoutes);
 router.use('/v1/forum', forumRoutes);
 
 router.use('/assignments', assignmentRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router; 

@@ -30,7 +30,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     console.log('Decoded token:', decoded);
     req.user = decoded;
-    console.log('Attached user to request:', req.user);
+    // console.log('Attached user to request:', req.user);
     next();
   } catch (error) {
     console.log('Token verification failed:', error);

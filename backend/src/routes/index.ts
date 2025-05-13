@@ -11,6 +11,7 @@ import facilityRoutes from './facility.js';
 import certificationCategories from './certificationCategories.js';
 import accountRoutes from './account.js';
 import forumRoutes from './forum.js';
+import assignmentRoutes from './assignment.routes.js';
 
 const router = Router();
 
@@ -35,5 +36,7 @@ router.use('/account', authenticateToken, accountRoutes);
 
 // Forum routes - mounted at /api/v1/forum
 router.use('/v1/forum', forumRoutes);
+
+router.use('/assignments', assignmentRoutes);
 
 export default router; 

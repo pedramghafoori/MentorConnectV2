@@ -20,7 +20,7 @@ export interface AssignmentData {
 
 export class AssignmentService {
   static async createAssignment(data: AssignmentData) {
-    const response = await axios.post(`${API_URL}/assignments`, data);
+    const response = await axios.post(`${API_URL}/assignments`, data, { withCredentials: true });
     return response.data;
   }
 

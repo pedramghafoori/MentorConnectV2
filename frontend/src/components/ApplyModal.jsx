@@ -10,7 +10,18 @@ import PaymentForm from './PaymentForm';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+// Initialize Stripe with error handling
+let stripePromise = null;
+try {
+  const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+  if (!key) {
+    console.error('Stripe public key is not defined in environment variables');
+  } else {
+    stripePromise = loadStripe(key);
+  }
+} catch (error) {
+  console.error('Error initializing Stripe:', error);
+}
 
 const ApplyModal = ({ isOpen, onClose, opportunity }) => {
   const { user } = useAuth();

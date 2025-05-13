@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { User } from '../models/user.model.js';
+import { User } from '../models/user.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil'
@@ -44,12 +44,18 @@ export class StripeService {
   }
 
   static async handleOAuthCallback(code: string): Promise<string> {
+    console.log('[StripeService] Handling OAuth callback with code:', code ? 'present' : 'missing');
     const response = await stripe.oauth.token({
       grant_type: 'authorization_code',
       code,
     });
+    console.log('[StripeService] OAuth token response:', {
+      hasStripeUserId: !!response.stripe_user_id,
+      accountId: response.stripe_user_id
+    });
 
     if (!response.stripe_user_id) {
+      console.error('[StripeService] No Stripe user ID in response');
       throw new Error('Failed to get Stripe user ID');
     }
 
@@ -57,13 +63,17 @@ export class StripeService {
   }
 
   static async updateUserStripeAccount(userId: string, stripeAccountId: string): Promise<void> {
-    console.log('Updating user', userId, 'with Stripe account ID:', stripeAccountId);
+    console.log('[StripeService] Updating user', userId, 'with Stripe account ID:', stripeAccountId);
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { stripeAccountId },
       { new: true }
     );
-    console.log('Updated user:', updatedUser);
+    console.log('[StripeService] User update result:', {
+      success: !!updatedUser,
+      hasStripeAccountId: !!updatedUser?.stripeAccountId,
+      stripeAccountId: updatedUser?.stripeAccountId
+    });
   }
 
   static async createPaymentIntent({

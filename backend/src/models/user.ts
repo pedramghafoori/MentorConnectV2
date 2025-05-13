@@ -48,6 +48,7 @@ export interface IUser extends Document {
   mentorAgreementSigned: boolean;
   hasExaminerCourse?: boolean;
   hasTrainerCourse?: boolean;
+  stripeAccountId?: string;
 }
 
 const certificationSchema = new Schema({
@@ -229,6 +230,10 @@ const userSchema = new Schema<IUser>({
   },
   hasExaminerCourse: { type: Boolean, default: false },
   hasTrainerCourse: { type: Boolean, default: false },
+  stripeAccountId: {
+    type: String,
+    required: false,
+  },
 }, {
   timestamps: true
 });

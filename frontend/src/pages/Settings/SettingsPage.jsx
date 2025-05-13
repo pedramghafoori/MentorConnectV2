@@ -181,22 +181,40 @@ export default function SettingsPage() {
   // Check for success message in URL params and refresh user data
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    console.log('URL params:', Object.fromEntries(params.entries()));
-    console.log('Current user data:', fullUserData);
+    console.log('[SettingsPage] URL params:', Object.fromEntries(params.entries()));
+    console.log('[SettingsPage] Current user data:', fullUserData);
+    console.log('[SettingsPage] User from auth context:', user);
     
     if (params.get('success')) {
-      console.log('Success param found, refreshing user data...');
+      console.log('[SettingsPage] Success param found, starting refresh process...');
       setSuccess('Stripe account connected successfully!');
-      // Refresh user data to get updated stripeAccountId
-      refetch().then(() => {
-        console.log('User data refreshed');
+      
+      // First invalidate all relevant queries
+      console.log('[SettingsPage] Invalidating queries...');
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      if (user?._id) {
+        queryClient.invalidateQueries({ queryKey: ['user', user._id] });
+      }
+      
+      // Then refetch the data
+      console.log('[SettingsPage] Refetching user data...');
+      refetch().then((result) => {
+        console.log('[SettingsPage] User data refreshed successfully:', result.data);
+        console.log('[SettingsPage] Stripe account ID in refreshed data:', result.data?.stripeAccountId);
+        // Force a hard refresh of the page to ensure all components update
+        console.log('[SettingsPage] Forcing page reload...');
+        window.location.reload();
       }).catch(error => {
-        console.error('Error refreshing user data:', error);
+        console.error('[SettingsPage] Error refreshing user data:', error);
       });
+      
       // Clear the success message after 5 seconds
-      setTimeout(() => setSuccess(null), 5000);
+      setTimeout(() => {
+        console.log('[SettingsPage] Clearing success message');
+        setSuccess(null);
+      }, 5000);
     }
-  }, [refetch, fullUserData]);
+  }, [refetch, fullUserData, queryClient, user?._id]);
 
   // Fetch waiver status for this mentor
   useEffect(() => {
@@ -443,7 +461,9 @@ export default function SettingsPage() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.post('/api/stripe/create-oauth-link');
+      const response = await axios.post('/api/stripe/create-oauth-link', {
+        state: user._id
+      });
       window.location.href = response.data.url;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to enable payouts. Please try again.');

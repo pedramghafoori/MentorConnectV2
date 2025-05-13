@@ -17,7 +17,7 @@ const WaiverModal = ({ isOpen, onClose, onSigned }: Props) => {
   useEffect(() => {
     if (isOpen) {
       const fetchWaiver = async () => {
-        console.log('WaiverModal: Starting to fetch waiver...');
+
         try {
           console.log('WaiverModal: Making API request to /waivers/latest');
           const response = await api.get('/waivers/latest');

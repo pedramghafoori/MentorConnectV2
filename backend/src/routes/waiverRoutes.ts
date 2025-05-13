@@ -27,6 +27,6 @@ router.get('/signed', authenticateToken, getSignedWaivers); // Get all signed wa
 router.get('/verify/:mentorId', authenticateToken, verifyMentorSignature); // Verify if the mentor has signed
 router.get('/:id/pdf', authenticateToken, downloadSignedWaiverPdf);
 
-console.log('Waiver routes registered successfully');
+
 
 export default router; 

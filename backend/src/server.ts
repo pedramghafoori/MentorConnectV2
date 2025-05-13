@@ -81,18 +81,25 @@ const io = new SocketIOServer(server, {
   cors: {
     origin: ['http://localhost:5173', 'http://www.mentorconnectcanada.com', 'https://mentorconnect-ecc82a256094.herokuapp.com'],
     credentials: true,
-  }
+  },
+  path: '/socket.io',
+  transports: ['websocket'],
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 // UserID to socket mapping
 const userSockets: Map<string, string> = new Map();
 
 io.on('connection', (socket) => {
+  console.log('New Socket.IO connection:', socket.id);
+  
   // Listen for user authentication (client should emit 'authenticate' with userId after connecting)
   socket.on('authenticate', (userId: string) => {
     if (userId) {
       userSockets.set(userId, socket.id);
       (socket as any).userId = userId;
+      console.log(`User ${userId} authenticated with socket ${socket.id}`);
     }
   });
 
@@ -100,6 +107,7 @@ io.on('connection', (socket) => {
     const userId = (socket as any).userId;
     if (userId) {
       userSockets.delete(userId);
+      console.log(`User ${userId} disconnected from socket ${socket.id}`);
     }
   });
 });

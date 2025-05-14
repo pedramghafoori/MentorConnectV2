@@ -8,6 +8,8 @@
   border: 1px solid rgba(176, 176, 176, 0.728);
   transition: all 0.3s ease;
   cursor: pointer;
+  width: 100%;
+  margin: 0;
 }
 
 .assignment-card:hover {
@@ -34,6 +36,8 @@
 .assignment-card-info {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
   gap: 0.7rem;
   flex: 1;
 }
@@ -53,16 +57,19 @@
 
 /* Status Badge Styles */
 .status-badge {
+  align-self: flex-end;
   display: inline-block;
-  padding: 0.4rem 1rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  backdrop-filter: blur(8px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
   width: auto !important;
   min-width: 0 !important;
+  max-width: max-content !important;
   flex: none !important;
+  padding: 0.2rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .status-badge-active {
@@ -166,6 +173,13 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
+  padding: 0 2rem;
+}
+
+@media (max-width: 600px) {
+  .assignments-grid {
+    padding: 0 0.5rem;
+  }
 }
 
 /* Spinner Styles */

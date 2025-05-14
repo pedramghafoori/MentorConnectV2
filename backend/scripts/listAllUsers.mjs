@@ -14,21 +14,10 @@ async function listAllUsers() {
     
     
     users.forEach(user => {
-      console.log('\nUser:', {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        isDummy: user.isDummy,
-        dummyBatch: user.dummyBatch,
-        role: user.role,
-        certifications: user.certifications,
-        // Show all fields that exist
-        allFields: Object.keys(user.toObject())
-      });
+      
     });
   } catch (error) {
-    console.error('Error listing users:', error);
+    
   } finally {
     await mongoose.disconnect();
   }

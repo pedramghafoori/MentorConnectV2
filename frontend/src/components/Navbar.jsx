@@ -246,15 +246,15 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="navbar-header flex justify-between items-center py-2 sm:py-3" style={{ minHeight: '56px' }}>
+      <header className="navbar-header">
         <Container className="navbar-container">
-          <div className="flex items-center gap-4" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
+          <div className="navbar-left-group">
             <Link to="/" className="navbar-logo">
               MentorConnect
             </Link>
-            <Link to="/forum" className="navbar-forum-link">
-              Forum
-            </Link>
+          </div>
+          <div className="navbar-right-group">
+            
           </div>
           <nav className="navbar-nav hide-on-mobile">
             {/* Desktop bell icon (dropdown trigger) as first item in nav, only on desktop */}

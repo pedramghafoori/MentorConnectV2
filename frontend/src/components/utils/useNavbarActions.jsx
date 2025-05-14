@@ -97,7 +97,7 @@ export default function useNavbarActions() {
   }, [showProfileDropdown]);
 
   // Profile display logic
-  const ProfileDisplay = () => {
+  const ProfileDisplay = ({ size = 40 }) => {
     const displayData = fullUserData || user;
     if (!displayData) return null;
     const defaultCrop = { offset: { x: 0, y: 0 }, scale: 1, rotate: 0 };
@@ -105,7 +105,6 @@ export default function useNavbarActions() {
     const relativeOffset = savedCrop.offset || defaultCrop.offset;
     const scale = savedCrop.scale || defaultCrop.scale;
     const rotate = savedCrop.rotate || defaultCrop.rotate;
-    const size = 40;
     const pixelOffset = {
       x: relativeOffset.x * size,
       y: relativeOffset.y * size,
@@ -116,7 +115,7 @@ export default function useNavbarActions() {
           <img
             src={displayData.profilePicture || displayData.avatarUrl}
             alt={`${displayData.firstName || 'User'}'s profile`}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', position: 'absolute', top: '50%', left: '50%', transform: `translate(-50%, -50%) translate(${pixelOffset.x}px, ${pixelOffset.y}px) scale(${scale}) rotate(${rotate}deg)` }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
       );

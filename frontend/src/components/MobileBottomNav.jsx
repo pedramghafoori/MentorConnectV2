@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import useNavbarActions from './utils/useNavbarActions.jsx';
 import AvatarFallback from './AvatarFallback';
@@ -45,12 +45,21 @@ const MobileBottomNav = () => {
   } = useNavbarActions();
   const location = useLocation();
 
+  // Add state variables for animation
+  const [searchAnimatingOut, setSearchAnimatingOut] = useState(false);
+  const [searchSlideIn, setSearchSlideIn] = useState(false);
+  const [profileAnimatingOut, setProfileAnimatingOut] = useState(false);
+  const [profileSlideIn, setProfileSlideIn] = useState(false);
+
   if (!user) return null;
 
   // Helper: Render the search UI (copied from Navbar, but styled for mobile)
   const renderSearchUI = () => (
     <div className="mobile-search-overlay" onClick={() => setShowSearch(false)}>
-      <div className="mobile-search-panel" onClick={e => e.stopPropagation()}>
+      <div className="mobile-search-panel" onClick={e => e.stopPropagation()} style={{
+        transform: searchAnimatingOut ? 'translateY(100%)' : searchSlideIn ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.35s cubic-bezier(.4,0,.2,1)'
+      }}>
         <input
           type="text"
           value={searchValue}
@@ -104,7 +113,10 @@ const MobileBottomNav = () => {
   // Helper: Render profile dropdown (copy from Navbar, but styled for mobile, appears above avatar)
   const renderProfileDropdown = () => (
     <div className="mobile-profile-dropdown" onClick={() => setShowProfileDropdown(false)}>
-      <div className="mobile-profile-panel" onClick={e => e.stopPropagation()}>
+      <div className="mobile-profile-panel" onClick={e => e.stopPropagation()} style={{
+        transform: profileAnimatingOut ? 'translateY(100%)' : profileSlideIn ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.35s cubic-bezier(.4,0,.2,1)'
+      }}>
         {/* Copy dropdown panel logic from Navbar, but vertical and mobile-friendly */}
         <button onClick={() => { setShowProfileDropdown(false); setShowCreateCourseModal(true); }}>Post an Opportunity</button>
         <button onClick={() => { setShowProfileDropdown(false); navigate('/profile'); }}>Profile</button>
@@ -115,10 +127,28 @@ const MobileBottomNav = () => {
     </div>
   );
 
+  // Update useEffect for search overlay
+  useEffect(() => {
+    if (showSearch && !searchAnimatingOut) {
+      setSearchSlideIn(true);
+    } else {
+      setSearchSlideIn(false);
+    }
+  }, [showSearch, searchAnimatingOut]);
+
+  // Update useEffect for profile dropdown
+  useEffect(() => {
+    if (showProfileDropdown && !profileAnimatingOut) {
+      setProfileSlideIn(true);
+    } else {
+      setProfileSlideIn(false);
+    }
+  }, [showProfileDropdown, profileAnimatingOut]);
+
   return (
     <>
       <nav className="mobile-bottom-nav" style={{ zIndex: 2100 }}>
-        <button className={`nav-item${location.pathname.startsWith('/dashboard') ? ' active' : ''}`} aria-label="Home" onClick={() => {
+        <button className={`nav-item${location.pathname.startsWith('/dashboard') && !showSearch && !showNotificationOverlay && !showProfileDropdown ? ' active' : ''}`} aria-label="Home" onClick={() => {
           setShowSearch(false);
           setShowNotificationOverlay(false);
           setShowProfileDropdown(false);
@@ -148,7 +178,7 @@ const MobileBottomNav = () => {
         }}>
           {/* Render avatar (ProfileDisplay) or fallback */}
           <span className="mobile-avatar-wrapper">
-            <ProfileDisplay />
+            <ProfileDisplay size={58} />
           </span>
         </button>
       </nav>
@@ -163,4 +193,4 @@ const MobileBottomNav = () => {
   );
 };
 
-export default MobileBottomNav; 
+export default MobileBottomNav;

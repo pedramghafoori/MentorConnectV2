@@ -90,7 +90,7 @@
 .notification-action-row {
   display: flex;
   gap: 18px;
-  margin-top: 130px;
+  margin-top: 0px;
   justify-content: flex-end;
   align-items: flex-end;
   margin-left: auto;
@@ -127,7 +127,7 @@
   width: 640px !important;
   max-width: 98vw;
   min-width: 420px;
-  background: rgba(165, 170, 169, 0.568); /* seaglass color, semi-transparent */
+  background: rgba(255, 255, 255, 0.636); /* seaglass color, semi-transparent */
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   border: 1.5px solid rgba(120, 141, 137, 0.18); /* subtle border */

@@ -3,7 +3,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/context/NotificationContext';
 import { markRead } from '@/services/notification.service';
 import { acceptApplication, rejectApplication } from '@/services/application.service';
+import { useUserAvatar } from '@/hooks/useUserAvatar';
 import './NotificationDropDown.css';
+
+function NotificationMenteeAvatar({ menteeId, fallback, alt, ...props }) {
+  const { data: liveAvatarUrl } = useUserAvatar(menteeId);
+  return (
+    <img
+      src={liveAvatarUrl || fallback || '/default-avatar.png'}
+      alt={alt}
+      {...props}
+    />
+  );
+}
 
 /* Bell icon identical to the one used in the old Navbar */
 const BellIcon = ({ unread }) => (
@@ -55,8 +67,8 @@ export default function LegacyNotificationDropdown() {
       {/* panel */}
       {open && (
         <div
-          className="notification-dropdown-panel absolute right-0 top-full mt-2 rounded-2xl shadow-lg border border-gray-200 z-50 backdrop-blur-lg bg-white/70"
-          style={{ width: 320, maxHeight: 380, overflowY: 'auto' }}
+          className="notification-dropdown-panel"
+          style={{ maxHeight: 380, overflowY: 'auto', position: 'absolute', right: 0, top: '100%', marginTop: 8, zIndex: 50 }}
         >
           <div className="p-4 border-b text-lg font-semibold text-gray-800">
             Notifications
@@ -68,93 +80,132 @@ export default function LegacyNotificationDropdown() {
             </div>
           ) : (
             notifications.map(n => {
-              /* ---------- mentor application ---------- */
               if (n.type === 'MENTOR_APPLICATION_RECEIVED') {
                 const d = n.data || {};
                 const isExpanded = expanded[n._id];
                 const status = d.assignmentStatus || 'PENDING';
                 const showActions = status === 'PENDING';
                 const statusLabel = status === 'CHARGED' || status === 'ACCEPTED' ? 'Accepted' :
-                                 status === 'REJECTED' ? 'Rejected' :
-                                 status === 'CANCELED' ? 'Canceled' : status;
+                  status === 'REJECTED' ? 'Rejected' :
+                  status === 'CANCELED' ? 'Canceled' : status;
 
-                return (
-                  <div
-                    key={n._id}
-                    className="notification-dropdown-card flex gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50"
-                  >
-                    {/* avatar */}
-                    <img
-                      src={d.menteeAvatarUrl || '/default-avatar.png'}
-                      alt={d.menteeName}
-                      className="w-10 h-10 rounded-full object-cover bg-gray-200"
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold truncate">
-                        {d.opportunityTitle}
+                if (isExpanded) {
+                  // Expanded view
+                  return (
+                    <div key={n._id} className="notification-dropdown-card">
+                      <div className="notification-mentee-info">
+                        <div className="notification-date">{new Date(n.createdAt).toLocaleDateString()}</div>
+                        <NotificationMenteeAvatar
+                          menteeId={d.menteeId}
+                          fallback={d.menteeAvatarUrl}
+                          alt={d.menteeName}
+                          className="notification-mentee-avatar"
+                        />
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(n.createdAt).toLocaleDateString()}
-                      </div>
-
-                      {isExpanded && (
-                        <div className="mt-2 text-xs">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-medium">{d.menteeName}</span>
-                            <button
-                              className="text-blue-600 hover:text-blue-800 text-[11px] underline"
-                              onClick={() => navigate(`/profile/${d.menteeId}`)}
+                      <div className="notification-opportunity-info">
+                        <div>
+                          <div className="notification-opportunity-title">{d.opportunityTitle}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 10px 0' }}>
+                            <span className="notification-mentee-name" style={{ marginBottom: 0 }}>{d.menteeName}</span>
+                            <a
+                              href={`/profile/${d.menteeId}`}
+                              style={{ color: '#2563eb', textDecoration: 'underline', fontSize: 15, fontWeight: 500 }}
+                              onClick={e => {
+                                e.preventDefault();
+                                navigate(`/profile/${d.menteeId}`);
+                              }}
                             >
                               View Profile
-                            </button>
+                            </a>
                           </div>
-                          <div>{d.opportunityLocation}</div>
-                          <div>{d.opportunityDate}</div>
-                          <div className="flex gap-2 mt-2">
-                            {showActions ? (
-                              <>
-                                <button
-                                  className="notification-reject-btn"
-                                  onClick={() => handleAction(n, 'reject')}
-                                >
-                                  Reject
-                                </button>
-                                <button
-                                  className="notification-accept-btn"
-                                  onClick={() => handleAction(n, 'accept')}
-                                >
-                                  Accept
-                                </button>
-                              </>
-                            ) : (
-                              <span className="font-medium" style={{
-                                color: statusLabel === 'Accepted' ? '#22c55e' : 
-                                       statusLabel === 'Rejected' ? '#ef4444' : '#888'
-                              }}>
-                                {statusLabel}
-                              </span>
-                            )}
-                          </div>
+                          <div className="notification-opportunity-date">{d.opportunityDate}</div>
+                          <div className="notification-opportunity-location">{d.opportunityLocation}</div>
                         </div>
-                      )}
-
-                      <button
-                        onClick={() => toggleExpand(n._id)}
-                        className="mt-2 text-[11px] text-blue-600 underline"
-                      >
-                        {isExpanded ? 'See less' : 'See more'}
-                      </button>
+                        <div className="notification-action-row">
+                          {showActions ? (
+                            <>
+                              <button
+                                className="notification-reject-btn"
+                                onClick={() => handleAction(n, 'reject')}
+                              >
+                                Reject
+                              </button>
+                              <button
+                                className="notification-accept-btn"
+                                onClick={() => handleAction(n, 'accept')}
+                              >
+                                Accept
+                              </button>
+                            </>
+                          ) : (
+                            <span style={{
+                              fontWeight: 600,
+                              color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888',
+                            }}>{statusLabel}</span>
+                          )}
+                        </div>
+                        <div style={{ paddingTop: 8 }}>
+                          <span
+                            style={{ fontSize: '13px', color: '#2563eb', cursor: 'pointer', zIndex: 2, fontWeight: 500, textDecoration: 'underline' }}
+                            onClick={() => toggleExpand(n._id)}
+                          >
+                            See less
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
+                  );
+                } else {
+                  // Collapsed view
+                  return (
+                    <div key={n._id} className="notification-dropdown-card" style={{ width: '100%', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 12, boxSizing: 'border-box' }}>
+                      <NotificationMenteeAvatar
+                        menteeId={d.menteeId}
+                        fallback={d.menteeAvatarUrl}
+                        alt={d.menteeName}
+                        className="notification-mentee-avatar"
+                      />
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
+                        <div className="notification-opportunity-title" style={{ fontSize: 16, marginBottom: 0 }}>{d.opportunityTitle}</div>
+                      </div>
+                      <div className="notification-action-row" style={{ marginTop: 0, gap: 8, alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {showActions ? (
+                            <>
+                              <button
+                                className="notification-reject-btn"
+                                style={{ fontSize: 12, padding: '4px 10px' }}
+                                onClick={() => handleAction(n, 'reject')}
+                              >Reject</button>
+                              <button
+                                className="notification-accept-btn"
+                                style={{ fontSize: 12, padding: '4px 10px' }}
+                                onClick={() => handleAction(n, 'accept')}
+                              >Accept</button>
+                            </>
+                          ) : (
+                            <span style={{ fontWeight: 600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize: '0.95em' }}>{statusLabel}</span>
+                          )}
+                        </div>
+                        <div style={{ paddingTop: 8 }}>
+                          <span
+                            style={{ fontSize: '13px', color: '#2563eb', cursor: 'pointer', zIndex: 2, fontWeight: 500, textDecoration: 'underline' }}
+                            onClick={() => toggleExpand(n._id)}
+                          >
+                            See more
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
               }
 
               /* ---------- default/simple notification ---------- */
               return (
                 <div
                   key={n._id}
-                  className="notification-dropdown-card flex gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                  className="notification-dropdown-card"
                   onClick={() => {
                     if (!n.read) markRead(n._id);
                     if (n.link) navigate(n.link);
@@ -164,20 +215,20 @@ export default function LegacyNotificationDropdown() {
                     <img
                       src={n.data.mentorAvatarUrl}
                       alt="Mentor Avatar"
-                      className="w-10 h-10 rounded-full object-cover bg-gray-200"
+                      className="notification-mentee-avatar"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs uppercase font-semibold">
+                    <div className="notification-mentee-avatar flex items-center justify-center text-xs uppercase font-semibold">
                       {n.type[0]}
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">
+                  <div className="notification-opportunity-info">
+                    <div className="notification-opportunity-title">
                       {n.type === 'APPLICATION_ACCEPTED' && 'Your application was accepted'}
                       {n.type === 'APPLICATION_REJECTED' && 'Your application was rejected'}
                       {n.message}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="notification-opportunity-date">
                       {new Date(n.createdAt).toLocaleDateString()}
                     </div>
                   </div>

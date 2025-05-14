@@ -44,70 +44,6 @@ router.post(
   }
 );
 
-// Get assignment by ID
-router.get(
-  '/:id',
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const assignment = await Assignment.findById(req.params.id)
-        .populate('menteeId', 'firstName lastName avatarUrl')
-        .populate('mentorId', 'firstName lastName avatarUrl');
-      
-      if (!assignment) {
-        return res.status(404).json({ message: 'Assignment not found' });
-      }
-      
-      res.json(assignment);
-    } catch (error) {
-      console.error('Error fetching assignment:', error);
-      res.status(500).json({ message: 'Error fetching assignment' });
-    }
-  }
-);
-
-// Accept assignment
-router.post(
-  '/:id/accept',
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const assignment = await AssignmentService.acceptAssignment(req.params.id);
-      res.json(assignment);
-    } catch (error) {
-      res.status(500).json({ message: 'Error accepting assignment', error });
-    }
-  }
-);
-
-// Reject assignment
-router.post(
-  '/:id/reject',
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const assignment = await AssignmentService.rejectAssignment(req.params.id);
-      res.json(assignment);
-    } catch (error) {
-      res.status(500).json({ message: 'Error rejecting assignment', error });
-    }
-  }
-);
-
-// Cancel assignment
-router.post(
-  '/:id/cancel',
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const assignment = await AssignmentService.cancelAssignment(req.params.id);
-      res.json(assignment);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message || 'Failed to cancel assignment' });
-    }
-  }
-);
-
 // Get assignments filtered by opportunityId and/or menteeId
 router.get(
   '/',
@@ -186,15 +122,6 @@ router.get(
   authenticateToken,
   async (req, res) => {
     try {
-      console.log('=== GET /assignments/mentee ===');
-      console.log('Request details:', {
-        range: req.query.range,
-        menteeId: req.user?.userId,
-        user: req.user,
-        headers: req.headers,
-        cookies: req.cookies
-      });
-
       const { range } = req.query;
       const menteeId = req.user?.userId;
 
@@ -202,70 +129,98 @@ router.get(
         return res.status(401).json({ message: 'User not authenticated' });
       }
 
-      // Debug: Check all assignments for this mentee
-      const allAssignments = await Assignment.find({ menteeId });
-      console.log('Debug - All assignments for mentee:', {
-        total: allAssignments.length,
-        assignments: allAssignments.map(a => ({
-          id: a._id,
-          status: a.status,
-          startDate: a.startDate,
-          mentorId: a.mentorId
-        }))
-      });
-
       const today = new Date();
       const nextMonth = new Date();
       nextMonth.setMonth(today.getMonth() + 1);
 
-      console.log('Date ranges:', {
-        today: today.toISOString(),
-        nextMonth: nextMonth.toISOString()
-      });
-
       const filter: any = { menteeId };
-      console.log('Initial filter:', filter);
-
       switch (range) {
         case 'future':
           filter.startDate = { $gt: nextMonth };
-          console.log('Future filter applied:', filter);
           break;
         case 'active':
-          filter.status = { $in: ['ACTIVE', 'CHARGED', 'PENDING', 'ACCEPTED'] };
-          console.log('Active filter applied:', filter);
+          filter.status = { $in: ['ACTIVE', 'CHARGED'] };
           break;
         case 'completed':
-          filter.status = { $in: ['COMPLETED', 'REJECTED', 'CANCELED'] };
-          console.log('Completed filter applied:', filter);
+          filter.status = 'COMPLETED';
           break;
         default:
-          filter.status = { $nin: ['COMPLETED', 'REJECTED', 'CANCELED'] };
-          console.log('Default filter applied:', filter);
+          filter.status = { $ne: 'COMPLETED' };
       }
-
-      console.log('Final MongoDB filter:', JSON.stringify(filter, null, 2));
 
       const assignments = await Assignment
         .find(filter)
         .populate('mentorId', 'firstName lastName avatarUrl')
         .sort({ startDate: 1 });
 
-      console.log('Query results:', {
-        totalFound: assignments.length,
-        assignments: assignments.map(a => ({
-          id: a._id,
-          status: a.status,
-          startDate: a.startDate,
-          mentorId: a.mentorId
-        }))
-      });
-
       res.json(assignments);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in GET /assignments/mentee:', error);
-      console.error('Error stack:', error.stack);
       res.status(500).json({ message: 'Error fetching assignments' });
+    }
+  }
+);
+
+// Get assignment by ID
+router.get(
+  '/:id',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const assignment = await Assignment.findById(req.params.id)
+        .populate('menteeId', 'firstName lastName avatarUrl')
+        .populate('mentorId', 'firstName lastName avatarUrl');
+      
+      if (!assignment) {
+        return res.status(404).json({ message: 'Assignment not found' });
+      }
+      
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error fetching assignment:', error);
+      res.status(500).json({ message: 'Error fetching assignment' });
+    }
+  }
+);
+
+// Accept assignment
+router.post(
+  '/:id/accept',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const assignment = await AssignmentService.acceptAssignment(req.params.id);
+      res.json(assignment);
+    } catch (error) {
+      res.status(500).json({ message: 'Error accepting assignment', error });
+    }
+  }
+);
+
+// Reject assignment
+router.post(
+  '/:id/reject',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const assignment = await AssignmentService.rejectAssignment(req.params.id);
+      res.json(assignment);
+    } catch (error) {
+      res.status(500).json({ message: 'Error rejecting assignment', error });
+    }
+  }
+);
+
+// Cancel assignment
+router.post(
+  '/:id/cancel',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const assignment = await AssignmentService.cancelAssignment(req.params.id);
+      res.json(assignment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'Failed to cancel assignment' });
     }
   }
 );

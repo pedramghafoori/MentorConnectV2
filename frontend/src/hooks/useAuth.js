@@ -1,5 +1,5 @@
 import useUserStore from '../stores/userStore';
-import * as api from '../services/api';
+import * as api from '../lib/api';
 
 const useAuth = () => {
   const { user, setUser } = useUserStore();

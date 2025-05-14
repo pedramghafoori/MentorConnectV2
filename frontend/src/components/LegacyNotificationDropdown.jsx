@@ -41,8 +41,8 @@ export default function LegacyNotificationDropdown() {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
   const handleAction = async (n, action) => {
-    if (action === 'accept') await acceptApplication(n.applicationId);
-    else await rejectApplication(n.applicationId);
+    if (action === 'accept') await acceptApplication(n.data.assignmentId);
+    else await rejectApplication(n.data.assignmentId);
   };
 
   return (
@@ -70,9 +70,13 @@ export default function LegacyNotificationDropdown() {
             notifications.map(n => {
               /* ---------- mentor application ---------- */
               if (n.type === 'MENTOR_APPLICATION_RECEIVED') {
+                const d = n.data || {};
                 const isExpanded = expanded[n._id];
-                const status = n.assignmentStatus || 'PENDING';
+                const status = d.assignmentStatus || 'PENDING';
                 const showActions = status === 'PENDING';
+                const statusLabel = status === 'CHARGED' || status === 'ACCEPTED' ? 'Accepted' :
+                                 status === 'REJECTED' ? 'Rejected' :
+                                 status === 'CANCELED' ? 'Canceled' : status;
 
                 return (
                   <div
@@ -81,14 +85,14 @@ export default function LegacyNotificationDropdown() {
                   >
                     {/* avatar */}
                     <img
-                      src={n.menteeAvatarUrl || '/default-avatar.png'}
-                      alt={n.menteeName}
+                      src={d.menteeAvatarUrl || '/default-avatar.png'}
+                      alt={d.menteeName}
                       className="w-10 h-10 rounded-full object-cover bg-gray-200"
                     />
 
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate">
-                        {n.opportunityTitle}
+                        {d.opportunityTitle}
                       </div>
                       <div className="text-xs text-gray-500">
                         {new Date(n.createdAt).toLocaleDateString()}
@@ -96,8 +100,17 @@ export default function LegacyNotificationDropdown() {
 
                       {isExpanded && (
                         <div className="mt-2 text-xs">
-                          <div>{n.opportunityLocation}</div>
-                          <div>{n.opportunityDate}</div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-medium">{d.menteeName}</span>
+                            <button
+                              className="text-blue-600 hover:text-blue-800 text-[11px] underline"
+                              onClick={() => navigate(`/profile/${d.menteeId}`)}
+                            >
+                              View Profile
+                            </button>
+                          </div>
+                          <div>{d.opportunityLocation}</div>
+                          <div>{d.opportunityDate}</div>
                           <div className="flex gap-2 mt-2">
                             {showActions ? (
                               <>
@@ -115,7 +128,12 @@ export default function LegacyNotificationDropdown() {
                                 </button>
                               </>
                             ) : (
-                              <span className="font-medium">{status}</span>
+                              <span className="font-medium" style={{
+                                color: statusLabel === 'Accepted' ? '#22c55e' : 
+                                       statusLabel === 'Rejected' ? '#ef4444' : '#888'
+                              }}>
+                                {statusLabel}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -142,17 +160,30 @@ export default function LegacyNotificationDropdown() {
                     if (n.link) navigate(n.link);
                   }}
                 >
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs uppercase font-semibold">
-                    {n.type[0]}
-                  </div>
+                  {n.data?.mentorAvatarUrl ? (
+                    <img
+                      src={n.data.mentorAvatarUrl}
+                      alt="Mentor Avatar"
+                      className="w-10 h-10 rounded-full object-cover bg-gray-200"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs uppercase font-semibold">
+                      {n.type[0]}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">
+                      {n.type === 'APPLICATION_ACCEPTED' && 'Your application was accepted'}
+                      {n.type === 'APPLICATION_REJECTED' && 'Your application was rejected'}
                       {n.message}
                     </div>
                     <div className="text-xs text-gray-500">
                       {new Date(n.createdAt).toLocaleDateString()}
                     </div>
                   </div>
+                  {!n.read && (
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  )}
                 </div>
               );
             })

@@ -246,9 +246,8 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="navbar-header flex justify-between items-center py-2 sm:py-3"
-      >
-        <Container className="navbar-container" >
+      <header className="navbar-header flex justify-between items-center py-2 sm:py-3" style={{ minHeight: '56px' }}>
+        <Container className="navbar-container">
           <div className="flex items-center gap-4" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
             <Link to="/" className="navbar-logo">
               MentorConnect
@@ -257,7 +256,7 @@ const Navbar = () => {
               Forum
             </Link>
           </div>
-          <nav className="navbar-nav">
+          <nav className="navbar-nav hide-on-mobile">
             {/* Desktop bell icon (dropdown trigger) as first item in nav, only on desktop */}
             {user && (
               <button
@@ -286,7 +285,7 @@ const Navbar = () => {
             )}
             {/* Search Icon and Animated Search Box */}
             {user && (
-              <div className="relative flex items-center" ref={searchRef}>
+              <div className="relative flex items-center">
                 {/* Backdrop overlay for mobile */}
                 {showSearch && (
                   <div 

@@ -90,11 +90,11 @@ export default function NotificationOverlay({ open, onClose }) {
           display: 'flex',
           flexDirection: 'column',
           transform: animatingOut
-            ? 'translateY(-100%)'
+            ? 'translateY(100%)'
             : slideIn
             ? 'translateY(0)'
-            : 'translateY(-100%)',
-          transition: hasMounted ? 'transform 0.35s cubic-bezier(.4,0,.2,1)' : 'none',
+            : 'translateY(100%)',
+          transition: hasMounted || animatingOut ? 'transform 0.35s cubic-bezier(.4,0,.2,1)' : 'none',
         }}
       >
         <header style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 16, borderBottom: '1px solid #eee' }}>

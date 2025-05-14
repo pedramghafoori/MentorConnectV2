@@ -16,6 +16,7 @@ import AskQuestionPage from './pages/forum/AskQuestionPage';
 import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
 import { MenteeAssignmentsPage } from './pages/MenteeAssignmentsPage';
 import { AssignmentsPage } from './pages/AssignmentsPage';
+import MobileBottomNav from './components/MobileBottomNav';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/forum/ask" element={user ? <AskQuestionPage /> : <Navigate to="/" />} />
           </Routes>
         </main>
+        <MobileBottomNav />
         <Footer />
       </div>
     </BrowserRouter>

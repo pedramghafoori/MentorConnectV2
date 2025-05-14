@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './MentorCard.css';
-import { useAuth } from '../src/context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const formatCertificationName = (name) => {
   if (!name) return '';

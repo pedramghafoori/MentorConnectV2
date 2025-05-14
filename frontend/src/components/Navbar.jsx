@@ -640,6 +640,24 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Show login/register on mobile if not logged in */}
+      {!user && (
+        <div className="flex sm:hidden gap-2 mt-2 w-full justify-end pr-2">
+          <button 
+            onClick={handleOpenLogin}
+            className="text-gray-800 font-semibold text-sm sm:text-lg hover:text-[#d33] hover:bg-gray-50 px-3 sm:px-5 py-1.5 sm:py-2 rounded-[9999px] transition-colors"
+          >
+            Login
+          </button>
+          <button 
+            onClick={handleOpenRegister}
+            className="text-gray-800 font-semibold text-sm sm:text-lg hover:text-[#d33] hover:bg-gray-50 px-3 sm:px-5 py-1.5 sm:py-2 rounded-[9999px] transition-colors"
+          >
+            Register
+          </button>
+        </div>
+      )}
     </>
   );
 };

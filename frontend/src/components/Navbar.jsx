@@ -39,6 +39,7 @@ const Navbar = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
   const searchRef = useRef();
+  const searchIconRef = useRef();
   
   const [connectionRequests, setConnectionRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
@@ -46,6 +47,7 @@ const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
   const profileDropdownRef = useRef();
+  const profileButtonRef = useRef();
   const [dropdownPanel, setDropdownPanel] = useState('main');
   const queryClient = useQueryClient();
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -294,6 +296,7 @@ const Navbar = () => {
                 )}
                 {/* Search icon */}
                 <button
+                  ref={searchIconRef}
                   className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition mr-1 sm:mr-2"
                   onClick={() => setShowSearch((v) => !v)}
                   aria-label="Search users"
@@ -316,7 +319,7 @@ const Navbar = () => {
                     </svg>
                   </button>
                 )}
-                {/* Search bar and dropdown */}
+                {/* Search bar and advanced panel inside navbar, as in old Navbar.jsx */}
                 <div
                   className={`transition-all duration-300 z-50 ${
                     showSearch 
@@ -408,48 +411,7 @@ const Navbar = () => {
                         </div>
                       </div>
                     )}
-                    {/* Search results dropdown */}
-                    {!showAdvancedSearch && (
-                      (searchMode === 'name' && searchValue.trim() !== '') ||
-                      (searchMode === 'certs' && selectedCertifications.length > 0)
-                    ) && (
-                      <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-200 max-h-[calc(100vh-200px)] overflow-y-auto z-50">
-                        {searchLoading && (
-                          <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
-                        )}
-                        {searchError && (
-                          <div className="px-4 py-3 text-center text-red-400 text-sm">{searchError}</div>
-                        )}
-                        {!searchLoading && !searchError && searchResults.length === 0 && (
-                          <div className="px-4 py-6 text-center text-gray-400 text-sm">No users found.</div>
-                        )}
-                        {!searchLoading && !searchError && searchResults.map(user => (
-                          <div
-                            key={user._id}
-                            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition rounded-lg cursor-pointer"
-                            onMouseDown={() => {
-                              setShowSearch(false);
-                              setShowAdvancedSearch(false);
-                              navigate(`/profile/${user._id}`);
-                            }}
-                          >
-                            <img
-                              src={user.avatarUrl || '/default-avatar.png'}
-                              alt={user.firstName}
-                              className="w-9 h-9 rounded-full object-cover bg-gray-200"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 truncate">
-                                {user.firstName} {user.lastName}
-                              </div>
-                              <div className="text-xs text-gray-500 truncate">
-                                {user.lssId}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {/* Search results dropdown is NOT rendered here, only input and advanced panel */}
                   </div>
                 </div>
               </div>
@@ -490,81 +452,14 @@ const Navbar = () => {
                   My Assignments
                 </Link>
                 {/* Profile Picture and Dropdown */}
-                <div className="relative" ref={profileDropdownRef}>
+                <div className="relative">
                   <button
+                    ref={profileButtonRef}
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full focus:outline-none ring-2 ring-gray-200 hover:ring-[#d33] transition-all duration-200 overflow-hidden"
                   >
                     <ProfileDisplay />
                   </button>
-                  {showProfileDropdown && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                      {/* Sliding panels */}
-                      <div className="relative w-full">
-                        {/* Main panel */}
-                        <div className={`transition-transform duration-300 ${dropdownPanel === 'main' ? 'translate-x-0' : '-translate-x-full'} bg-white`}>
-                          {user.role === 'MENTOR' && (
-                            <button
-                              onClick={() => {
-                                setShowProfileDropdown(false);
-                                setShowCreateCourseModal(true);
-                              }}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                              </svg>
-                              <span>Post an Opportunity</span>
-                            </button>
-                          )}
-                          <Link
-                            to="/profile"
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
-                            onClick={() => setShowProfileDropdown(false)}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                            <span>Profile</span>
-                          </Link>
-                          {user.role === 'MENTOR' && (
-                            <Link
-                              to="/courses/my-courses"
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
-                              onClick={() => setShowProfileDropdown(false)}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                              </svg>
-                              <span>My Courses</span>
-                            </Link>
-                          )}
-                          <Link
-                            to="/settings"
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
-                            onClick={() => setShowProfileDropdown(false)}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                            </svg>
-                            <span>Settings</span>
-                          </Link>
-                          <button
-                            onClick={() => {
-                              setShowProfileDropdown(false);
-                              handleLogout();
-                            }}
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                            </svg>
-                            <span>Logout</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </>
             ) : (
@@ -613,6 +508,139 @@ const Navbar = () => {
 
       {/* Notification overlay for mobile */}
       <NotificationOverlay open={showNotificationOverlay} onClose={() => setShowNotificationOverlay(false)} />
+
+      {/* Profile dropdown absolutely positioned, anchored to profile button */}
+      {showProfileDropdown && profileButtonRef.current && (
+        <div
+          className="hidden md:block"
+          style={{
+            position: 'absolute',
+            top: profileButtonRef.current.getBoundingClientRect().bottom + window.scrollY + 8,
+            left: profileButtonRef.current.getBoundingClientRect().right + window.scrollX - 256, // w-64 = 256px
+            zIndex: 1000,
+            width: 256, // w-64
+          }}
+        >
+          <div className="w-64 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50">
+            {/* Sliding panels */}
+            <div className="relative w-full">
+              {/* Main panel */}
+              <div className={`transition-transform duration-300 ${dropdownPanel === 'main' ? 'translate-x-0' : '-translate-x-full'} bg-white`}>
+                {user.role === 'MENTOR' && (
+                  <button
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      setShowCreateCourseModal(true);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                    <span>Post an Opportunity</span>
+                  </button>
+                )}
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
+                  onClick={() => setShowProfileDropdown(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  <span>Profile</span>
+                </Link>
+                {user.role === 'MENTOR' && (
+                  <Link
+                    to="/courses/my-courses"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
+                    onClick={() => setShowProfileDropdown(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span>My Courses</span>
+                  </Link>
+                )}
+                <Link
+                  to="/settings"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full"
+                  onClick={() => setShowProfileDropdown(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                  </svg>
+                  <span>Settings</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    handleLogout();
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 w-full text-left"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                  </svg>
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search results dropdown absolutely positioned, anchored to search icon */}
+      {showSearch && searchIconRef.current && (
+        <div
+          className="hidden md:block"
+          style={{
+            position: 'absolute',
+            top: searchIconRef.current.getBoundingClientRect().bottom + window.scrollY + 8,
+            left: searchIconRef.current.getBoundingClientRect().left + window.scrollX,
+            zIndex: 1000,
+            width: 320,
+          }}
+        >
+          <div className="w-80 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden z-50">
+            {/* Render search results here, same as before */}
+            {searchLoading && (
+              <div className="px-4 py-3 text-center text-gray-400 text-sm">Searching...</div>
+            )}
+            {searchError && (
+              <div className="px-4 py-3 text-center text-red-400 text-sm">{searchError}</div>
+            )}
+            {!searchLoading && !searchError && searchResults.length === 0 && (
+              <div className="px-4 py-6 text-center text-gray-400 text-sm">No users found.</div>
+            )}
+            {!searchLoading && !searchError && searchResults.map(user => (
+              <div
+                key={user._id}
+                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition rounded-lg cursor-pointer"
+                onMouseDown={() => {
+                  setShowSearch(false);
+                  setShowAdvancedSearch(false);
+                  navigate(`/profile/${user._id}`);
+                }}
+              >
+                <img
+                  src={user.avatarUrl || '/default-avatar.png'}
+                  alt={user.firstName}
+                  className="w-9 h-9 rounded-full object-cover bg-gray-200"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate">
+                    {user.firstName} {user.lastName}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {user.lssId}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 };

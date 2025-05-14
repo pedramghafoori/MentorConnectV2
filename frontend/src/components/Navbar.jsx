@@ -13,6 +13,7 @@ import CreateCourseModal from './Course/CreateCourseModal';
 import AvatarFallback from './AvatarFallback';
 import { useNotifications } from '@/context/NotificationContext';
 import LegacyNotificationDropdown from '@/components/LegacyNotificationDropdown';
+import NotificationOverlay from './NotificationOverlay';
 
 const ALL_CERTIFICATIONS = [
   { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
@@ -51,8 +52,7 @@ const Navbar = () => {
   const [searchMode, setSearchMode] = useState('name'); // 'name' or 'certs'
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
   const { unread } = useNotifications();
-
-
+  const [showNotificationOverlay, setShowNotificationOverlay] = useState(false);
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -150,10 +150,6 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSearch]);
 
-
-
- 
-
   // Click-away listener for profile dropdown
   useEffect(() => {
     if (!showProfileDropdown) return;
@@ -242,11 +238,6 @@ const Navbar = () => {
     window.addEventListener('open-login-modal', handleGlobalLoginModal);
     return () => window.removeEventListener('open-login-modal', handleGlobalLoginModal);
   }, []);
-
-
-  
-
- 
 
   return (
     <>
@@ -436,8 +427,14 @@ const Navbar = () => {
             {/* ---------- Notifications ---------- */}
             {user && (
               <>
-                {/* Mobile bell just routes to full page */}
-                <Link to="/notifications" className="md:hidden relative" aria-label="Notifications">
+                {/* Mobile bell opens overlay, desktop shows dropdown */}
+                <button
+                  type="button"
+                  className="md:hidden relative"
+                  aria-label="Notifications"
+                  onClick={() => setShowNotificationOverlay(true)}
+                  style={{ background: 'none', border: 'none', padding: 0 }}
+                >
                   <svg
                     viewBox="0 0 24 24"
                     className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700"
@@ -452,7 +449,7 @@ const Navbar = () => {
                   {unread > 0 && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full" />
                   )}
-                </Link>
+                </button>
 
                 {/* Desktop legacy dropdown (old look) */}
                 <div className="hidden md:block">
@@ -580,6 +577,9 @@ const Navbar = () => {
         isOpen={showCreateCourseModal} 
         onClose={() => setShowCreateCourseModal(false)} 
       />
+
+      {/* Notification overlay for mobile */}
+      <NotificationOverlay open={showNotificationOverlay} onClose={() => setShowNotificationOverlay(false)} />
     </>
   );
 };

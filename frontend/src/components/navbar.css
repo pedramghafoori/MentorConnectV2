@@ -4,6 +4,8 @@
   max-width: 100vw;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .navbar-container {
@@ -11,8 +13,7 @@
   justify-content: space-between;
   align-items: center;
   max-width: 100vw;
-  padding-left: 0;
-  padding-right: 0;
+  position: relative;
 }
 
 .navbar-left-group {
@@ -40,17 +41,18 @@
 }
 
 .navbar-forum-link {
-  color: #222c3a;
+  color: #222c3a97;
   font-weight: 600;
   font-size: 1.125rem;
-  padding: 0.5rem 1.25rem;
+  padding: 0.15rem 1rem;
   border-radius: 9999px;
   transition: color 0.2s, background 0.2s;
   text-decoration: none;
+  transform: translateY(6px);
 }
 .navbar-forum-link:hover {
-  color: #d33;
-  background: #f9fafb;
+  color: #163a6d;
+  background: #163a6d3d;
 }
 
 .navbar-nav {

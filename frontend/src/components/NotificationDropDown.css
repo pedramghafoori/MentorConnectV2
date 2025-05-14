@@ -149,4 +149,25 @@
 
 .notification-dropdown-panel::-webkit-scrollbar-thumb {
   background-color: transparent;
+}
+
+@media (max-width: 767px) {
+  .notification-dropdown-panel {
+    width: 100vw !important;
+    min-width: 0;
+    max-width: 100vw;
+    left: 0 !important;
+    border-radius: 0 0 16px 16px;
+    padding-left: 5vw;
+    padding-right: 5vw;
+    box-sizing: border-box;
+  }
+  .notification-dropdown-card {
+    width: auto;
+    max-width: 480px;
+    min-width: 0;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
 } 

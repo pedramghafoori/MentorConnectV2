@@ -48,23 +48,42 @@ const BellIcon = ({ unread }) => (
   </button>
 );
 
-export default function LegacyNotificationDropdown() {
-  const { list: notifications, unread } = useNotifications();
-  const [open, setOpen] = useState(false);
+function LegacyNotificationDropdown({ open, anchorRef, onClose }) {
+  const { list: notifications = [], unread } = useNotifications();
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef();
 
-  // Close dropdown when clicking outside
+  // Positioning logic
+  const [panelStyle, setPanelStyle] = useState({});
+  useEffect(() => {
+    if (open && anchorRef && anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      const panelWidth = 400; // adjust to your actual dropdown width
+      let left = rect.right + window.scrollX - panelWidth;
+      left = Math.max(8, Math.min(left, window.innerWidth - panelWidth - 8));
+      setPanelStyle({
+        position: 'absolute',
+        top: rect.bottom + window.scrollY + 8,
+        left,
+        zIndex: 1000,
+        width: panelWidth,
+      });
+    }
+  }, [open, anchorRef]);
+
+  // Click-away to close
   useEffect(() => {
     if (!open) return;
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && anchorRef.current && !anchorRef.current.contains(event.target)) {
+        onClose();
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+  }, [open, onClose, anchorRef]);
+
+  if (!open) return null;
 
   const handleAction = async (n, action) => {
     if (action === 'accept') await acceptApplication(n.data.assignmentId);
@@ -72,135 +91,125 @@ export default function LegacyNotificationDropdown() {
   };
 
   return (
-    <div className="relative flex items-center" ref={dropdownRef}>
-      {/* toggle button */}
-      <div onClick={() => setOpen(v => !v)}>
-        <BellIcon unread={unread} />
+    <div ref={dropdownRef} className="notification-dropdown-panel" style={panelStyle}>
+      <div className="p-4 border-b text-lg font-semibold text-gray-800">
+        Notifications
       </div>
-
-      {/* panel */}
-      {open && (
-        <div
-          className="notification-dropdown-panel"
-          style={{ maxHeight: 380, overflowY: 'auto', overflowX: 'hidden', position: 'absolute', right: 0, top: '100%', marginTop: 8, zIndex: 50, width: 320, minWidth: 280 }}
-        >
-          <div className="p-4 border-b text-lg font-semibold text-gray-800">
-            Notifications
-          </div>
-
-          {notifications.length === 0 ? (
-            <div className="px-4 py-6 text-center text-gray-400 text-sm">
-              No notifications.
-            </div>
-          ) : (
-            notifications.map(n => {
-              if (n.type === 'MENTOR_APPLICATION_RECEIVED') {
-                const d = n.data || {};
-                const status = d.assignmentStatus || 'PENDING';
-                const showActions = status === 'PENDING';
-                const statusLabel = status === 'CHARGED' || status === 'ACCEPTED' ? 'Accepted' :
-                  status === 'REJECTED' ? 'Rejected' :
-                  status === 'CANCELED' ? 'Canceled' : status;
-
-                return (
-                  <div key={n._id} className="notification-dropdown-card" style={{ width: '100%', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 12, boxSizing: 'border-box', overflowX: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: 8, right: 8, fontSize: '13px', color: '#6b7280' }}>
-                      {dayjs(n.createdAt).fromNow()}
-                    </div>
-                    <NotificationMenteeAvatar
-                      menteeId={d.menteeId}
-                      fallback={d.menteeAvatarUrl}
-                      alt={d.menteeName}
-                      className="notification-mentee-avatar"
-                    />
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div className="notification-opportunity-title" style={{ fontSize: 20, marginBottom: 0 }}>{d.opportunityTitle}</div>
-                        <div className="notification-opportunity-date" style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', color: '#6b7280', fontSize: 15 }}>
-                          <img src={calendarIcon} alt="calendar" style={{ width: 18, height: 18, marginRight: 5, opacity: 0.7 }} />
-                          {d.opportunityDate ? dayjs(d.opportunityDate).format('MMM D, YYYY') : ''}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 10px 0' }}>
-                        <span className="notification-mentee-name" style={{ marginBottom: 0 }}>{d.menteeName}</span>
-                        <a
-                          href={`/profile/${d.menteeId}`}
-                          style={{ color: '#2563eb', textDecoration: 'underline', fontSize: 15, fontWeight: 500 }}
-                          onClick={e => {
-                            e.preventDefault();
-                            setOpen(false);
-                            navigate(`/profile/${d.menteeId}`);
-                          }}
-                        >
-                          View Profile
-                        </a>
-                      </div>
-                      <div style={{ marginTop: -4, marginBottom: 8 }}>
-                        <span style={{ fontWeight: 600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize: '0.95em' }}>{statusLabel}</span>
-                      </div>
-                    </div>
-                    <div className="notification-action-row" style={{ marginTop: 0, gap: 8, alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        {showActions ? (
-                          <>
-                            <button
-                              className="notification-reject-btn"
-                              style={{ fontSize: 12, padding: '4px 10px' }}
-                              onClick={() => handleAction(n, 'reject')}
-                            >Reject</button>
-                            <button
-                              className="notification-accept-btn"
-                              style={{ fontSize: 12, padding: '4px 10px' }}
-                              onClick={() => handleAction(n, 'accept')}
-                            >Accept</button>
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
-              /* ---------- default/simple notification ---------- */
-              return (
-                <div
-                  key={n._id}
-                  className="notification-dropdown-card"
-                  onClick={() => {
-                    if (!n.read) markRead(n._id);
-                    if (n.link) navigate(n.link);
-                  }}
-                >
-                  {n.data?.mentorAvatarUrl ? (
-                    <img
-                      src={n.data.mentorAvatarUrl}
-                      alt="Mentor Avatar"
-                      className="notification-mentee-avatar"
-                    />
-                  ) : (
-                    <div className="notification-mentee-avatar flex items-center justify-center text-xs uppercase font-semibold">
-                      {n.type[0]}
-                    </div>
-                  )}
-                  <div className="notification-opportunity-info">
-                    <div className="notification-opportunity-title">
-                      {n.type === 'APPLICATION_ACCEPTED' && 'Your application was accepted'}
-                      {n.type === 'APPLICATION_REJECTED' && 'Your application was rejected'}
-                      {n.message}
-                    </div>
-                    <div className="notification-opportunity-date">
-                      {dayjs(n.createdAt).fromNow()}
-                    </div>
-                  </div>
-                  {!n.read && (
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                  )}
-                </div>
-              );
-            })
-          )}
+      {notifications.length === 0 ? (
+        <div className="px-4 py-6 text-center text-gray-400 text-sm">
+          No notifications.
         </div>
+      ) : (
+        notifications.map(n => {
+          if (n.type === 'MENTOR_APPLICATION_RECEIVED') {
+            const d = n.data || {};
+            const status = d.assignmentStatus || 'PENDING';
+            const showActions = status === 'PENDING';
+            const statusLabel = status === 'CHARGED' || status === 'ACCEPTED' ? 'Accepted' :
+              status === 'REJECTED' ? 'Rejected' :
+              status === 'CANCELED' ? 'Canceled' : status;
+
+            return (
+              <div key={n._id} className="notification-dropdown-card" style={{ width: '100%', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 12, boxSizing: 'border-box', overflowX: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 8, right: 8, fontSize: '13px', color: '#6b7280' }}>
+                  {dayjs(n.createdAt).fromNow()}
+                </div>
+                <NotificationMenteeAvatar
+                  menteeId={d.menteeId}
+                  fallback={d.menteeAvatarUrl}
+                  alt={d.menteeName}
+                  className="notification-mentee-avatar"
+                />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div className="notification-opportunity-title" style={{ fontSize: 20, marginBottom: 0 }}>{d.opportunityTitle}</div>
+                    <div className="notification-opportunity-date" style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', color: '#6b7280', fontSize: 15 }}>
+                      <img src={calendarIcon} alt="calendar" style={{ width: 18, height: 18, marginRight: 5, opacity: 0.7 }} />
+                      {d.opportunityDate ? dayjs(d.opportunityDate).format('MMM D, YYYY') : ''}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 10px 0' }}>
+                    <span className="notification-mentee-name" style={{ marginBottom: 0 }}>{d.menteeName}</span>
+                    <a
+                      href={`/profile/${d.menteeId}`}
+                      style={{ color: '#2563eb', textDecoration: 'underline', fontSize: 15, fontWeight: 500 }}
+                      onClick={e => {
+                        e.preventDefault();
+                        onClose();
+                        navigate(`/profile/${d.menteeId}`);
+                      }}
+                    >
+                      View Profile
+                    </a>
+                  </div>
+                  <div style={{ marginTop: -4, marginBottom: 8 }}>
+                    <span style={{ fontWeight: 600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize: '0.95em' }}>{statusLabel}</span>
+                  </div>
+                </div>
+                <div className="notification-action-row" style={{ marginTop: 0, gap: 8, alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {showActions ? (
+                      <>
+                        <button
+                          className="notification-reject-btn"
+                          style={{ fontSize: 12, padding: '4px 10px' }}
+                          onClick={() => handleAction(n, 'reject')}
+                        >Reject</button>
+                        <button
+                          className="notification-accept-btn"
+                          style={{ fontSize: 12, padding: '4px 10px' }}
+                          onClick={() => handleAction(n, 'accept')}
+                        >Accept</button>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          // Default/simple notification
+          return (
+            <div
+              key={n._id}
+              className="notification-dropdown-card"
+              onClick={() => {
+                if (!n.read) markRead(n._id);
+                if (n.link) {
+                  onClose();
+                  navigate(n.link);
+                }
+              }}
+            >
+              {n.data?.mentorAvatarUrl ? (
+                <img
+                  src={n.data.mentorAvatarUrl}
+                  alt="Mentor Avatar"
+                  className="notification-mentee-avatar"
+                />
+              ) : (
+                <div className="notification-mentee-avatar flex items-center justify-center text-xs uppercase font-semibold">
+                  {n.type[0]}
+                </div>
+              )}
+              <div className="notification-opportunity-info">
+                <div className="notification-opportunity-title">
+                  {n.type === 'APPLICATION_ACCEPTED' && 'Your application was accepted'}
+                  {n.type === 'APPLICATION_REJECTED' && 'Your application was rejected'}
+                  {n.message}
+                </div>
+                <div className="notification-opportunity-date">
+                  {dayjs(n.createdAt).fromNow()}
+                </div>
+              </div>
+              {!n.read && (
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+              )}
+            </div>
+          );
+        })
       )}
     </div>
   );
 }
+
+export default LegacyNotificationDropdown;

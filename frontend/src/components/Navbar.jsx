@@ -54,6 +54,8 @@ const Navbar = () => {
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
   const { unread } = useNotifications();
   const [showNotificationOverlay, setShowNotificationOverlay] = useState(false);
+  const [showDesktopDropdown, setShowDesktopDropdown] = useState(false);
+  const bellRef = useRef();
 
   // Use React Query to fetch user data
   const { data: fullUserData, refetch } = useQuery({
@@ -242,10 +244,9 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center py-2 sm:py-3 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]"
-        style={{ overflowX: 'hidden', maxWidth: '100vw' }}
+      <header className="navbar-header flex justify-between items-center py-2 sm:py-3"
       >
-        <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '100vw', paddingLeft: 0, paddingRight: 0 }}>
+        <Container className="navbar-container" >
           <div className="flex items-center gap-4" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
             <Link to="/" className="navbar-logo">
               MentorConnect
@@ -255,6 +256,32 @@ const Navbar = () => {
             </Link>
           </div>
           <nav className="navbar-nav">
+            {/* Desktop bell icon (dropdown trigger) as first item in nav, only on desktop */}
+            {user && (
+              <button
+                ref={bellRef}
+                type="button"
+                className="navbar-bell-btn hidden md:inline-flex"
+                aria-label="Notifications"
+                onClick={() => setShowDesktopDropdown(v => !v)}
+                style={{ position: 'relative' }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="navbar-bell-icon"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unread > 0 && (
+                  <span className="navbar-bell-dot" />
+                )}
+              </button>
+            )}
             {/* Search Icon and Animated Search Box */}
             {user && (
               <div className="relative flex items-center" ref={searchRef}>
@@ -430,10 +457,10 @@ const Navbar = () => {
             {/* ---------- Notifications ---------- */}
             {user && (
               <>
-                {/* Mobile bell opens overlay, desktop shows dropdown */}
+                {/* Mobile bell opens overlay, only visible on mobile */}
                 <button
                   type="button"
-                  className="navbar-bell-btn"
+                  className="navbar-bell-btn md:hidden"
                   aria-label="Notifications"
                   onClick={() => setShowNotificationOverlay(true)}
                 >
@@ -452,11 +479,6 @@ const Navbar = () => {
                     <span className="navbar-bell-dot" />
                   )}
                 </button>
-
-                {/* Desktop legacy dropdown (old look) */}
-                <div className="hidden md:block">
-                  <LegacyNotificationDropdown />
-                </div>
               </>
             )}
             {user ? (
@@ -564,6 +586,15 @@ const Navbar = () => {
           </nav>
         </Container>
       </header>
+
+      {/* Desktop notification dropdown absolutely positioned, anchored to bell icon */}
+      {user && (
+        <LegacyNotificationDropdown
+          open={showDesktopDropdown}
+          anchorRef={bellRef}
+          onClose={() => setShowDesktopDropdown(false)}
+        />
+      )}
 
       {/* Auth Modals */}
       <Modal isOpen={showLoginModal} onClose={handleCloseModals}>

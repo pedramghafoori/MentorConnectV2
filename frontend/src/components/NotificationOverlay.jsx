@@ -16,15 +16,26 @@ export default function NotificationOverlay({ open, onClose }) {
       setAnimatingOut(false);
       setSlideIn(false);
       setHasMounted(false);
+      // Prevent background scroll
+      document.body.style.overflow = 'hidden';
     } else if (visible) {
       setAnimatingOut(true);
       setSlideIn(false);
       const timeout = setTimeout(() => {
         setVisible(false);
         setAnimatingOut(false);
+        // Restore scroll
+        document.body.style.overflow = '';
       }, 350); // match transition duration
       return () => clearTimeout(timeout);
+    } else {
+      // Restore scroll if overlay is closed without animation
+      document.body.style.overflow = '';
     }
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [open]);
 
   // Trigger slide-in after mount

@@ -16,6 +16,7 @@ import AskQuestionPage from './pages/forum/AskQuestionPage';
 import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
 import { MenteeAssignmentsPage } from './pages/MenteeAssignmentsPage';
 import { AssignmentsPage } from './pages/AssignmentsPage';
+import NotificationsPage from '../pages/NotificationsPage';
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -36,6 +37,7 @@ const App = () => {
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/forum" element={<ForumHome />} />
             <Route path="/forum/:slug" element={<ThreadPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
 
             {/* Protected Routes */}
             <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />

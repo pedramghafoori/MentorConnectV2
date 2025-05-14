@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/context/NotificationContext';
 import { markRead } from '@/services/notification.service';
@@ -6,6 +6,10 @@ import { acceptApplication, rejectApplication } from '@/services/application.ser
 import { useUserAvatar } from '@/hooks/useUserAvatar';
 import './NotificationDropDown.css';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import calendarIcon from '@/assets/icons/calendar.svg';
+
+dayjs.extend(relativeTime);
 
 function NotificationMenteeAvatar({ menteeId, fallback, alt, ...props }) {
   const { data: liveAvatarUrl } = useUserAvatar(menteeId);
@@ -47,11 +51,20 @@ const BellIcon = ({ unread }) => (
 export default function LegacyNotificationDropdown() {
   const { list: notifications, unread } = useNotifications();
   const [open, setOpen] = useState(false);
-  const [expanded, setExpanded] = useState({});
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  const toggleExpand = id =>
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
   const handleAction = async (n, action) => {
     if (action === 'accept') await acceptApplication(n.data.assignmentId);
@@ -59,7 +72,7 @@ export default function LegacyNotificationDropdown() {
   };
 
   return (
-    <div className="relative flex items-center">
+    <div className="relative flex items-center" ref={dropdownRef}>
       {/* toggle button */}
       <div onClick={() => setOpen(v => !v)}>
         <BellIcon unread={unread} />
@@ -69,7 +82,7 @@ export default function LegacyNotificationDropdown() {
       {open && (
         <div
           className="notification-dropdown-panel"
-          style={{ maxHeight: 380, overflowY: 'auto', position: 'absolute', right: 0, top: '100%', marginTop: 8, zIndex: 50 }}
+          style={{ maxHeight: 380, overflowY: 'auto', overflowX: 'hidden', position: 'absolute', right: 0, top: '100%', marginTop: 8, zIndex: 50, width: 320, minWidth: 280 }}
         >
           <div className="p-4 border-b text-lg font-semibold text-gray-800">
             Notifications
@@ -83,125 +96,69 @@ export default function LegacyNotificationDropdown() {
             notifications.map(n => {
               if (n.type === 'MENTOR_APPLICATION_RECEIVED') {
                 const d = n.data || {};
-                const isExpanded = expanded[n._id];
                 const status = d.assignmentStatus || 'PENDING';
                 const showActions = status === 'PENDING';
                 const statusLabel = status === 'CHARGED' || status === 'ACCEPTED' ? 'Accepted' :
                   status === 'REJECTED' ? 'Rejected' :
                   status === 'CANCELED' ? 'Canceled' : status;
 
-                if (isExpanded) {
-                  // Expanded view
-                  return (
-                    <div key={n._id} className="notification-dropdown-card">
-                      <div className="notification-mentee-info">
-                        <div className="notification-date">{new Date(n.createdAt).toLocaleDateString()}</div>
-                        <NotificationMenteeAvatar
-                          menteeId={d.menteeId}
-                          fallback={d.menteeAvatarUrl}
-                          alt={d.menteeName}
-                          className="notification-mentee-avatar"
-                        />
-                      </div>
-                      <div className="notification-opportunity-info">
-                        <div>
-                          <div className="notification-opportunity-title">{d.opportunityTitle}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 10px 0' }}>
-                            <span className="notification-mentee-name" style={{ marginBottom: 0 }}>{d.menteeName}</span>
-                            <a
-                              href={`/profile/${d.menteeId}`}
-                              style={{ color: '#2563eb', textDecoration: 'underline', fontSize: 15, fontWeight: 500 }}
-                              onClick={e => {
-                                e.preventDefault();
-                                navigate(`/profile/${d.menteeId}`);
-                              }}
-                            >
-                              View Profile
-                            </a>
-                          </div>
-                          <div className="notification-opportunity-date">
-                            {d.opportunityDate ? dayjs(d.opportunityDate).format('MMM D, YYYY') : ''}
-                          </div>
-                          <div className="notification-opportunity-location">{d.opportunityLocation}</div>
-                        </div>
-                        <div className="notification-action-row">
-                          {showActions ? (
-                            <>
-                              <button
-                                className="notification-reject-btn"
-                                onClick={() => handleAction(n, 'reject')}
-                              >
-                                Reject
-                              </button>
-                              <button
-                                className="notification-accept-btn"
-                                onClick={() => handleAction(n, 'accept')}
-                              >
-                                Accept
-                              </button>
-                            </>
-                          ) : (
-                            <span style={{
-                              fontWeight: 600,
-                              color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888',
-                            }}>{statusLabel}</span>
-                          )}
-                        </div>
-                        <div style={{ paddingTop: 8 }}>
-                          <span
-                            style={{ fontSize: '13px', color: '#2563eb', cursor: 'pointer', zIndex: 2, fontWeight: 500, textDecoration: 'underline' }}
-                            onClick={() => toggleExpand(n._id)}
-                          >
-                            See less
-                          </span>
-                        </div>
-                      </div>
+                return (
+                  <div key={n._id} className="notification-dropdown-card" style={{ width: '100%', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 12, boxSizing: 'border-box', overflowX: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: 8, right: 8, fontSize: '13px', color: '#6b7280' }}>
+                      {dayjs(n.createdAt).fromNow()}
                     </div>
-                  );
-                } else {
-                  // Collapsed view
-                  return (
-                    <div key={n._id} className="notification-dropdown-card" style={{ width: '100%', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 12, boxSizing: 'border-box' }}>
-                      <NotificationMenteeAvatar
-                        menteeId={d.menteeId}
-                        fallback={d.menteeAvatarUrl}
-                        alt={d.menteeName}
-                        className="notification-mentee-avatar"
-                      />
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
+                    <NotificationMenteeAvatar
+                      menteeId={d.menteeId}
+                      fallback={d.menteeAvatarUrl}
+                      alt={d.menteeName}
+                      className="notification-mentee-avatar"
+                    />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div className="notification-opportunity-title" style={{ fontSize: 20, marginBottom: 0 }}>{d.opportunityTitle}</div>
+                        <div className="notification-opportunity-date" style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', color: '#6b7280', fontSize: 15 }}>
+                          <img src={calendarIcon} alt="calendar" style={{ width: 18, height: 18, marginRight: 5, opacity: 0.7 }} />
+                          {d.opportunityDate ? dayjs(d.opportunityDate).format('MMM D, YYYY') : ''}
+                        </div>
                       </div>
-                      <div className="notification-action-row" style={{ marginTop: 0, gap: 8, alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          {showActions ? (
-                            <>
-                              <button
-                                className="notification-reject-btn"
-                                style={{ fontSize: 12, padding: '4px 10px' }}
-                                onClick={() => handleAction(n, 'reject')}
-                              >Reject</button>
-                              <button
-                                className="notification-accept-btn"
-                                style={{ fontSize: 12, padding: '4px 10px' }}
-                                onClick={() => handleAction(n, 'accept')}
-                              >Accept</button>
-                            </>
-                          ) : (
-                            <span style={{ fontWeight: 600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize: '0.95em' }}>{statusLabel}</span>
-                          )}
-                        </div>
-                        <div style={{ paddingTop: 8 }}>
-                          <span
-                            style={{ fontSize: '13px', color: '#2563eb', cursor: 'pointer', zIndex: 2, fontWeight: 500, textDecoration: 'underline' }}
-                            onClick={() => toggleExpand(n._id)}
-                          >
-                            See more
-                          </span>
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 10px 0' }}>
+                        <span className="notification-mentee-name" style={{ marginBottom: 0 }}>{d.menteeName}</span>
+                        <a
+                          href={`/profile/${d.menteeId}`}
+                          style={{ color: '#2563eb', textDecoration: 'underline', fontSize: 15, fontWeight: 500 }}
+                          onClick={e => {
+                            e.preventDefault();
+                            setOpen(false);
+                            navigate(`/profile/${d.menteeId}`);
+                          }}
+                        >
+                          View Profile
+                        </a>
+                      </div>
+                      <div style={{ marginTop: -4, marginBottom: 8 }}>
+                        <span style={{ fontWeight: 600, color: statusLabel === 'Accepted' ? '#22c55e' : statusLabel === 'Rejected' ? '#ef4444' : '#888', fontSize: '0.95em' }}>{statusLabel}</span>
                       </div>
                     </div>
-                  );
-                }
+                    <div className="notification-action-row" style={{ marginTop: 0, gap: 8, alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        {showActions ? (
+                          <>
+                            <button
+                              className="notification-reject-btn"
+                              style={{ fontSize: 12, padding: '4px 10px' }}
+                              onClick={() => handleAction(n, 'reject')}
+                            >Reject</button>
+                            <button
+                              className="notification-accept-btn"
+                              style={{ fontSize: 12, padding: '4px 10px' }}
+                              onClick={() => handleAction(n, 'accept')}
+                            >Accept</button>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
               }
 
               /* ---------- default/simple notification ---------- */
@@ -232,7 +189,7 @@ export default function LegacyNotificationDropdown() {
                       {n.message}
                     </div>
                     <div className="notification-opportunity-date">
-                      {new Date(n.createdAt).toLocaleDateString()}
+                      {dayjs(n.createdAt).fromNow()}
                     </div>
                   </div>
                   {!n.read && (

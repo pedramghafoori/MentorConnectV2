@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import NotificationList from '@/components/NotificationList';
 import { markAllRead } from '@/services/notification.service';
 import { useNotifications } from '@/context/NotificationContext';
+import { useEffect } from 'react';
 
 /* simple back arrow */
 const BackArrow = () => (
@@ -20,6 +21,19 @@ const BackArrow = () => (
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { list, unread } = useNotifications();
+
+  // Redirect to home if screen is desktop size
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        navigate('/');
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    // Run once on mount
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, [navigate]);
 
   return (
     <div className="flex flex-col h-full md:hidden">
@@ -41,7 +55,7 @@ export default function NotificationsPage() {
 
       {/* body */}
       {list.length === 0 ? (
-        <p className="m-auto text-gray-500">You’re all caught up 🎉</p>
+        <p className="m-auto text-gray-500">You're all caught up 🎉</p>
       ) : (
         <NotificationList list={list} />
       )}

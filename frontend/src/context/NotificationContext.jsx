@@ -5,7 +5,7 @@ import {
     useMemo,
   } from 'react';
   import { useQuery, useQueryClient } from '@tanstack/react-query';
-  import socket from '@/utils/socket';                          // your existing util
+  import { initializeSocket } from '@/services/socket';
   import {
     fetchNotifications,      // GET /api/notifications
   } from '@/services/notification.service';
@@ -21,17 +21,26 @@ import {
     const qc = useQueryClient();
   
     /* pull list from backend */
-    const { data: list = [], refetch } = useQuery(
-      ['notifications'],
-      fetchNotifications,
-      { staleTime: 30_000 }              // 30 s cache
-    );
+    const { data: list = [], refetch } = useQuery({
+      queryKey: ['notifications'],
+      queryFn: fetchNotifications,
+      staleTime: 30_000              // 30 s cache
+    });
   
-    /* on socket push, refresh list */
+    /* initialize socket */
     useEffect(() => {
-      const invalidate = () => qc.invalidateQueries(['notifications']);
-      socket.on('notifications:new', invalidate);
-      return () => socket.off('notifications:new', invalidate);
+      // You'll need to get the user ID from your auth context or similar
+      const userId = localStorage.getItem('userId'); // or however you store the user ID
+      if (userId) {
+        const socket = initializeSocket(userId);
+        
+        const invalidate = () => qc.invalidateQueries({ queryKey: ['notifications'] });
+        socket.on('notifications:new', invalidate);
+        
+        return () => {
+          socket.off('notifications:new', invalidate);
+        };
+      }
     }, [qc]);
   
     /* derived values */

@@ -1,5 +1,6 @@
 import { Disclosure } from '@headlessui/react';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { useNavigate } from 'react-router-dom';
 
 import { markRead } from '@/services/notification.service';
@@ -7,6 +8,9 @@ import {
   acceptApplication,
   rejectApplication,
 } from '@/services/application.service';
+
+// Configure dayjs plugins
+dayjs.extend(relativeTime);
 
 export default function NotificationList({ list }) {
   const navigate = useNavigate();

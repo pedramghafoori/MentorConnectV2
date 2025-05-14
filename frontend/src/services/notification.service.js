@@ -21,8 +21,8 @@ export const fetchNotifications = () =>
 
 // Mark ONE notification read
 export const markRead = id =>
-  api.patch(`/notifications/${id}/read`);
+  api.post(`/notifications/${id}/read`);
 
 // Mark ALL notifications read
 export const markAllRead = () =>
-  api.patch('/notifications/read-all');
+  api.post('/notifications/read-all');

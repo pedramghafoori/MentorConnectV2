@@ -14,6 +14,7 @@ import AvatarFallback from './AvatarFallback';
 import { useNotifications } from '@/context/NotificationContext';
 import LegacyNotificationDropdown from '@/components/LegacyNotificationDropdown';
 import NotificationOverlay from './NotificationOverlay';
+import './navbar.css';
 
 const ALL_CERTIFICATIONS = [
   { label: 'First Aid Instructor', value: 'FIRST_AID_INSTRUCTOR' },
@@ -241,17 +242,19 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center py-2 sm:py-3 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]">
-        <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-xl sm:text-2xl font-bold text-[#d33] tracking-tight font-['Inter',system-ui,sans-serif]">
+      <header className="flex justify-between items-center py-2 sm:py-3 bg-white shadow-[0_1px_4px_rgba(0,0,0,.06)]"
+        style={{ overflowX: 'hidden', maxWidth: '100vw' }}
+      >
+        <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '100vw', paddingLeft: 0, paddingRight: 0 }}>
+          <div className="flex items-center gap-4" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
+            <Link to="/" className="navbar-logo">
               MentorConnect
             </Link>
-            <Link to="/forum" className="text-gray-800 font-semibold text-lg hover:text-[#d33] hover:bg-gray-50 px-5 py-2 rounded-[9999px] transition-colors">
-              Lifeguard Forum
+            <Link to="/forum" className="navbar-forum-link">
+              Forum
             </Link>
           </div>
-          <nav className="flex gap-2 sm:gap-4 items-center">
+          <nav className="navbar-nav">
             {/* Search Icon and Animated Search Box */}
             {user && (
               <div className="relative flex items-center" ref={searchRef}>
@@ -430,14 +433,13 @@ const Navbar = () => {
                 {/* Mobile bell opens overlay, desktop shows dropdown */}
                 <button
                   type="button"
-                  className="md:hidden relative"
+                  className="navbar-bell-btn"
                   aria-label="Notifications"
                   onClick={() => setShowNotificationOverlay(true)}
-                  style={{ background: 'none', border: 'none', padding: 0 }}
                 >
                   <svg
                     viewBox="0 0 24 24"
-                    className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700"
+                    className="navbar-bell-icon"
                     strokeWidth="1.5"
                     stroke="currentColor"
                     fill="none"
@@ -447,7 +449,7 @@ const Navbar = () => {
                     <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                   {unread > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full" />
+                    <span className="navbar-bell-dot" />
                   )}
                 </button>
 

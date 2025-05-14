@@ -7,8 +7,6 @@ import RegisterForm from '../../components/Auth/RegisterForm';
 import "../../css/HomePage.css";
 import mentorHero from "../../assets/mentor-hero1.png";
 import FeaturedUsersCarousel from './FeaturedUsersCarousel';
-import CanadaMentorMap from "../../../components/CanadaMentorMap.jsx";
-import { cityCoordinates } from '../../../components/cityCoordinates';
 import Container from '../../components/Container';
 import OurThreeProngedApproach from '../../components/ThreeProngApproach';
 import cities from '../../lib/cities.json';
@@ -246,19 +244,6 @@ const HomePage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const usersWithCoords = mentorUsers
-    .map(user => {
-      const key = `${user.city},${user.province}`;
-      const coords = cityCoordinates[key];
-      if (!coords) return null;
-      return {
-        ...user,
-        latitude: coords.lat,
-        longitude: coords.lng,
-      };
-    })
-    .filter(Boolean);
-
   return (
     <div className="home-container">
       <Container>
@@ -369,8 +354,6 @@ const HomePage = () => {
           {/* Featured Carousel (Order 3) */}
           <FeaturedUsersCarousel />
         </div>
-        {/* Mentor Map Section - always last */}
-        {isDesktop && <CanadaMentorMap users={usersWithCoords} />}
       </Container>
 
       {/* Auth Modals */}

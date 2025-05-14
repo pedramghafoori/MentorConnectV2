@@ -1,6 +1,13 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import { CertificationCategory } from '../models/certificationCategory.js';
+import {
+  getAllCategories,
+  getCategoriesByLevel,
+  getCategoriesByType,
+  getCertificationHierarchy,
+  getCategoryByCode
+} from '../controllers/certificationCategoryController.js';
 
 const router = express.Router();
 
@@ -14,8 +21,15 @@ const isDeveloper = (req: express.Request, res: express.Response, next: express.
   }
 };
 
-// Get all certification categories
-router.get('/', authenticateToken, async (req, res) => {
+// Public GET routes
+router.get('/', getAllCategories);
+router.get('/hierarchy', getCertificationHierarchy);
+router.get('/level/:level', getCategoriesByLevel);
+router.get('/type/:category', getCategoriesByType);
+router.get('/code/:code', getCategoryByCode);
+
+// Protected routes (require authentication)
+router.get('/admin', authenticateToken, async (req, res) => {
   try {
     const categories = await CertificationCategory.find().sort('level');
     res.json(categories);
@@ -24,7 +38,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Update a certification category
+// Developer-only routes
 router.put('/:id', authenticateToken, isDeveloper, async (req, res) => {
   try {
     const { id } = req.params;
@@ -46,7 +60,6 @@ router.put('/:id', authenticateToken, isDeveloper, async (req, res) => {
   }
 });
 
-// Create a new certification category
 router.post('/', authenticateToken, isDeveloper, async (req, res) => {
   try {
     const { name, level, validAwards } = req.body;
@@ -66,7 +79,6 @@ router.post('/', authenticateToken, isDeveloper, async (req, res) => {
   }
 });
 
-// Delete a certification category
 router.delete('/:id', authenticateToken, isDeveloper, async (req, res) => {
   try {
     const { id } = req.params;
@@ -77,7 +89,6 @@ router.delete('/:id', authenticateToken, isDeveloper, async (req, res) => {
   }
 });
 
-// Add this after your PUT route
 router.patch('/:id', authenticateToken, isDeveloper, async (req, res) => {
   try {
     const { id } = req.params;

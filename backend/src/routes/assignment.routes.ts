@@ -44,6 +44,28 @@ router.post(
   }
 );
 
+// Get assignment by ID
+router.get(
+  '/:id',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const assignment = await Assignment.findById(req.params.id)
+        .populate('menteeId', 'firstName lastName avatarUrl')
+        .populate('mentorId', 'firstName lastName avatarUrl');
+      
+      if (!assignment) {
+        return res.status(404).json({ message: 'Assignment not found' });
+      }
+      
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error fetching assignment:', error);
+      res.status(500).json({ message: 'Error fetching assignment' });
+    }
+  }
+);
+
 // Accept assignment
 router.post(
   '/:id/accept',

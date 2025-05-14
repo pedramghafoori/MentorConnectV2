@@ -176,10 +176,18 @@ const MobileBottomNav = () => {
           setShowSearch(false);
           setShowNotificationOverlay(false);
         }}>
-          {/* Render avatar (ProfileDisplay) or fallback */}
-          <span className="mobile-avatar-wrapper">
-            <ProfileDisplay size={58} />
-          </span>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              background: '#eee',
+            }}
+          >
+            <ProfileDisplay size={40} />
+          </div>
         </button>
       </nav>
       {/* Overlays/dropdowns rendered above the bottom nav */}

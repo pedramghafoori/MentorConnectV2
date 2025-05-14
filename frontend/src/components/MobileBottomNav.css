@@ -184,7 +184,7 @@
   display: block;
 }
 
-@media (min-width: 740px) {
+@media (min-width: 1000px) {
   .mobile-bottom-nav,
   .mobile-search-overlay,
   .mobile-notification-overlay,

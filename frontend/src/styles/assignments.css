@@ -1,114 +1,171 @@
 /* Assignment Card Styles */
 .assignment-card {
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 0.375rem;
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background: rgba(236, 236, 236, 0.696);
+  backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 1.2rem;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(176, 176, 176, 0.728);
+  transition: all 0.3s ease;
   cursor: pointer;
-  transition: box-shadow 0.2s ease;
 }
 
 .assignment-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .assignment-card-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-.assignment-avatar {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 9999px;
+.assignment-card-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
   object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.assignment-info {
+.assignment-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  flex: 1;
+}
+
+.assignment-card-name {
+  font-size: 1.35rem;
   font-weight: 500;
+  color: #22223b;
+  letter-spacing: 0.01em;
 }
 
-.assignment-date {
-  font-size: 0.875rem;
-  color: #6b7280;
+.assignment-card-date {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 400;
 }
 
 /* Status Badge Styles */
 .status-badge {
-  padding: 0.25rem 0.5rem;
+  display: inline-block;
+  padding: 0.4rem 1rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
+  backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: auto !important;
+  min-width: 0 !important;
+  flex: none !important;
 }
 
 .status-badge-active {
-  background-color: #dbeafe;
+  background: rgba(219, 234, 254, 0.7);
   color: #1e40af;
 }
 
 .status-badge-pending {
-  background-color: #fef3c7;
+  background: rgba(254, 243, 199, 0.7);
   color: #92400e;
 }
 
 .status-badge-completed {
-  background-color: #dcfce7;
+  background: rgba(220, 252, 231, 0.7);
   color: #166534;
 }
 
 .status-badge-future {
-  background-color: #ede9fe;
+  background: rgba(237, 233, 254, 0.7);
   color: #5b21b6;
 }
 
 .status-badge-default {
-  background-color: #f3f4f6;
+  background: rgba(243, 244, 246, 0.7);
   color: #1f2937;
 }
 
+.status-badge-charged {
+  background: #dde1f0;
+  color: #152c56;
+  border: 1px solid #a5b4fc;
+  padding: 0.1rem 0.4rem;
+}
+
 /* Tabs Styles */
-.assignments-tabs {
+.dashboard-tabs {
   display: flex;
   gap: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  justify-content: center;
 }
 
 .tab-button {
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid transparent;
+  padding: 0.8rem 1.8rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #22223b;
+  cursor: pointer;
 }
 
-.tab-button-active {
-  border-bottom-color: #2563eb;
-  font-weight: 600;
+.tab-button.active {
+  background: rgba(230, 57, 70, 0.9);
+  color: white;
+  border-color: rgba(230, 57, 70, 0.3);
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.2);
 }
 
-.tab-button-inactive {
-  border-bottom-color: transparent;
+.tab-button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
 }
 
 /* Page Layout */
-.assignments-page {
-  margin: 0 auto;
-  max-width: 72rem;
-  padding: 1.5rem;
+.dashboard-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 200;
+  margin-bottom: 0.5rem;
+  color: #4a1d1d;
+  text-align: center;
+}
+
+.dashboard-description {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 300;
+}
+
+.dashboard-content {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .assignments-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: 1fr;
   gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .assignments-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 /* Spinner Styles */
@@ -124,7 +181,8 @@
   border-radius: 9999px;
   height: 2rem;
   width: 2rem;
-  border-bottom: 2px solid #2563eb;
+  border: 2px solid rgba(37, 99, 235, 0.3);
+  border-top-color: #2563eb;
 }
 
 @keyframes spin {

@@ -26,13 +26,23 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://mentorconnect-ecc82a256094.herokuapp.com',
-    'https://mentorconnectcanada.com',
     'https://www.mentorconnectcanada.com',
+    'https://mentorconnectcanada.com',
     'https://lifeguardinghub.ca'
   ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Content-Length',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'X-CSRF-Token'
+  ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 24 hours
 }));
 app.use(express.json());
 app.use(cookieParser());
@@ -59,17 +69,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/waivers', waiverRoutes);
 
-
-app.use('/api/upload', (req, res, next) => {
-  
-  next();
-});
 app.use('/api/upload', uploadRoutes);
 
-
 app.use('/api/lss', lssRoutes);
-
-
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
@@ -92,8 +94,8 @@ export const io = new Server(server, {
     origin: [
       'http://localhost:5173',
       'https://mentorconnect-ecc82a256094.herokuapp.com',
-      'https://mentorconnectcanada.com',
       'https://www.mentorconnectcanada.com',
+      'https://mentorconnectcanada.com',
       'https://lifeguardinghub.ca'
     ],
     credentials: true
@@ -106,23 +108,23 @@ export const io = new Server(server, {
 const userSockets: Map<string, string> = new Map();
 
 io.on('connection', (socket) => {
-  console.log('New Socket.IO connection:', socket.id);
+
   
   // Get userId from auth object
   const userId = socket.handshake.auth.userId;
   if (userId) {
     userSockets.set(userId, socket.id);
     (socket as any).userId = userId;
-    console.log(`User ${userId} authenticated with socket ${socket.id}`);
+
   } else {
-    console.log('Socket connected without userId:', socket.id);
+
   }
 
   socket.on('disconnect', () => {
     const userId = (socket as any).userId;
     if (userId) {
       userSockets.delete(userId);
-      console.log(`User ${userId} disconnected from socket ${socket.id}`);
+
     }
   });
 });

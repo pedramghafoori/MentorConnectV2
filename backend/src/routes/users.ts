@@ -10,11 +10,15 @@ import { dirname } from 'path';
 import fs from 'fs';
 import { makeStorageFactory } from '../lib/storageFactory.js';
 import AWS from 'aws-sdk';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const router = Router();
+
+// Add CORS handling for all routes in this router
+router.options('*', cors());
 
 // Configure multer for profile picture upload
 const storage = makeStorageFactory();

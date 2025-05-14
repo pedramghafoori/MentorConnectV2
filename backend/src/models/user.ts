@@ -20,13 +20,13 @@ export interface IUser extends Document {
   showConnections?: boolean;
   isDummy?: boolean;
   dummyBatch?: string;
-  preferredNoticeDays?: number;
-  prepRequirements?: string[];
-  expectedMenteeInvolvement?: string;
-  prepSupportFee?: number;
-  feeCurrency?: string;
+ //preferredNoticeDays?: number;
+//prepRequirements?: string[];
+//expectedMenteeInvolvement?: string;
+//prepSupportFee?: number;
+//feeCurrency?: string;
   cancellationPolicyHours?: number;
-  maxApprentices?: number;
+ //maxApprentices?: number;
   languages?: string[];
   workplaces?: string[];
   collectsHST?: boolean;
@@ -135,46 +135,46 @@ const userSchema = new Schema<IUser>({
     type: Boolean,
     default: true
   },
-  preferredNoticeDays: {
-    type: Number,
-    default: 7,
-    min: 1,
-    max: 90
-  },
-  prepRequirements: {
-    type: [String],
-    default: [],
-    validate: {
-      validator: function(arr: string[]) {
-        return arr.every(val => ALLOWED_PREP_REQUIREMENTS.includes(val));
-      },
-      message: 'Invalid prep requirement value.'
-    }
-  },
-  expectedMenteeInvolvement: {
-    type: String,
-    enum: ['', 'full-course', 'exam-only'],
-    default: ''
-  },
-  prepSupportFee: {
-    type: Number,
-    min: 0
-  },
-  feeCurrency: {
-    type: String,
-    default: 'CAD'
-  },
+  //preferredNoticeDays: {
+  //  type: Number,
+  //  default: 7,
+  //  min: 1,
+  //  max: 90
+  //},
+  //prepRequirements: {
+    //type: [String],
+    //default: [],
+    //validate: {
+      //validator: function(arr: string[]) {
+        //return arr.every(val => ALLOWED_PREP_REQUIREMENTS.includes(val));
+      //},
+      //message: 'Invalid prep requirement value.'
+    //}
+  //},
+  //expectedMenteeInvolvement: {
+    //type: String,
+    //enum: ['', 'full-course', 'exam-only'],
+    //default: ''
+  //},
+  //prepSupportFee: {
+    //type: Number,
+    //min: 0
+  //},
+  //feeCurrency: {
+    //type: String,
+    //default: 'CAD'
+  //},
+  //maxApprentices: {
+    //type: Number,
+    //default: 1,
+    //min: 1,
+    //max: 10
+  //},
   cancellationPolicyHours: {
     type: Number,
     default: 48,
     min: 1,
     max: 168
-  },
-  maxApprentices: {
-    type: Number,
-    default: 1,
-    min: 1,
-    max: 10
   },
   languages: {
     type: [String],

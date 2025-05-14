@@ -20,10 +20,7 @@ const COURSE_OPTIONS = [
 const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
-  const [mentorSettings, setMentorSettings] = useState({
-    prepSupportFee: 0,
-    maxApprentices: 1
-  });
+  const [mentorSettings, setMentorSettings] = useState({});
   const [formData, setFormData] = useState(initialOpportunity ? {
     title: initialOpportunity.title,
     price: initialOpportunity.price || 0,
@@ -37,9 +34,7 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
       useProfileDefaults: true,
       customSettings: {
         price: initialOpportunity.price || 0,
-        prepSupportFee: initialOpportunity.prepSupportFee || 0,
         cancellationPolicyHours: 48,
-        maxApprentices: initialOpportunity.maxApprentices || 1,
         prepRequirements: initialOpportunity.prepRequirements || []
       }
     },
@@ -57,9 +52,7 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
       useProfileDefaults: true,
       customSettings: {
         price: 0,
-        prepSupportFee: 0,
         cancellationPolicyHours: 48,
-        maxApprentices: 1,
         prepRequirements: []
       }
     }
@@ -103,21 +96,17 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
       try {
         const profile = await getProfile();
         if (profile) {
-          const { prepSupportFee, maxApprentices } = profile;
-          setMentorSettings({
-            prepSupportFee: prepSupportFee || 0,
-            maxApprentices: maxApprentices || 1
-          });
+          setMentorSettings({});
           setFormData(prev => ({
             ...prev,
-            price: prepSupportFee || 0,
-            maxParticipants: maxApprentices || 1,
+            price: 0,
+            maxParticipants: 1,
             defaultSettings: {
               ...prev.defaultSettings,
               customSettings: {
                 ...prev.defaultSettings.customSettings,
-                prepSupportFee: prepSupportFee || 0,
-                maxApprentices: maxApprentices || 1
+                price: 0,
+                maxParticipants: 1
               }
             }
           }));
@@ -337,9 +326,7 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
           useProfileDefaults: true,
           customSettings: {
             price: initialOpportunity.price || 0,
-            prepSupportFee: initialOpportunity.prepSupportFee || 0,
             cancellationPolicyHours: 48,
-            maxApprentices: initialOpportunity.maxApprentices || 1,
             prepRequirements: prepReqs
           }
         },
@@ -618,9 +605,6 @@ const CreateCourseModal = ({ isOpen, onClose, initialOpportunity }) => {
                         min="1"
                         max="2"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Profile Default: {mentorSettings.maxApprentices}
-                      </p>
                     </div>
                   )}
                   

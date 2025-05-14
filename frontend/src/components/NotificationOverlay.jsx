@@ -8,10 +8,13 @@ export default function NotificationOverlay({ open, onClose }) {
   const [animatingOut, setAnimatingOut] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
 
   // Handle open/close animation
   useEffect(() => {
+    let timeout;
     if (open) {
+      setShouldRender(true);
       setVisible(true);
       setAnimatingOut(false);
       setSlideIn(false);
@@ -21,22 +24,25 @@ export default function NotificationOverlay({ open, onClose }) {
     } else if (visible) {
       setAnimatingOut(true);
       setSlideIn(false);
-      const timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         setVisible(false);
         setAnimatingOut(false);
+        setSlideIn(false);
+        setHasMounted(false);
+        setShouldRender(false); // Only unmount after animation
         // Restore scroll
         document.body.style.overflow = '';
       }, 350); // match transition duration
-      return () => clearTimeout(timeout);
     } else {
       // Restore scroll if overlay is closed without animation
       document.body.style.overflow = '';
     }
     // Cleanup on unmount
     return () => {
+      clearTimeout(timeout);
       document.body.style.overflow = '';
     };
-  }, [open]);
+  }, [open, visible]);
 
   // Trigger slide-in after mount
   useLayoutEffect(() => {
@@ -60,7 +66,7 @@ export default function NotificationOverlay({ open, onClose }) {
     return () => window.removeEventListener('resize', handleResize);
   }, [onClose]);
 
-  if (!visible) return null;
+  if (!shouldRender) return null;
 
   return (
     <div style={{

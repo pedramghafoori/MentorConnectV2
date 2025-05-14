@@ -117,7 +117,7 @@ const MobileBottomNav = () => {
 
   return (
     <>
-      <nav className="mobile-bottom-nav" style={{ zIndex: 1050 }}>
+      <nav className="mobile-bottom-nav" style={{ zIndex: 2100 }}>
         <button className={`nav-item${location.pathname.startsWith('/dashboard') ? ' active' : ''}`} aria-label="Home" onClick={() => {
           setShowSearch(false);
           setShowNotificationOverlay(false);

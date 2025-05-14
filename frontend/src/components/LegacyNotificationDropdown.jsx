@@ -5,6 +5,7 @@ import { markRead } from '@/services/notification.service';
 import { acceptApplication, rejectApplication } from '@/services/application.service';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
 import './NotificationDropDown.css';
+import dayjs from 'dayjs';
 
 function NotificationMenteeAvatar({ menteeId, fallback, alt, ...props }) {
   const { data: liveAvatarUrl } = useUserAvatar(menteeId);
@@ -118,7 +119,9 @@ export default function LegacyNotificationDropdown() {
                               View Profile
                             </a>
                           </div>
-                          <div className="notification-opportunity-date">{d.opportunityDate}</div>
+                          <div className="notification-opportunity-date">
+                            {d.opportunityDate ? dayjs(d.opportunityDate).format('MMM D, YYYY') : ''}
+                          </div>
                           <div className="notification-opportunity-location">{d.opportunityLocation}</div>
                         </div>
                         <div className="notification-action-row">
@@ -166,7 +169,7 @@ export default function LegacyNotificationDropdown() {
                         className="notification-mentee-avatar"
                       />
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
-                        <div className="notification-opportunity-title" style={{ fontSize: 16, marginBottom: 0 }}>{d.opportunityTitle}</div>
+                        <div className="notification-opportunity-title" style={{ fontSize: 20, marginBottom: 0 }}>{d.opportunityTitle}</div>
                       </div>
                       <div className="notification-action-row" style={{ marginTop: 0, gap: 8, alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
                         <div style={{ display: 'flex', gap: 8 }}>

@@ -55,6 +55,17 @@ router.get(
   authenticateToken,
   async (req, res) => {
     try {
+      // If user is admin, return all assignments
+      if (req.user?.role === 'ADMIN') {
+        const assignments = await Assignment.find()
+          .populate('mentorId', 'firstName lastName email')
+          .populate('menteeId', 'firstName lastName email')
+          .populate('opportunityId', 'title description')
+          .sort({ createdAt: -1 });
+        return res.json(assignments);
+      }
+
+      // Otherwise, filter by opportunityId and/or menteeId
       const { opportunityId, menteeId } = req.query;
       const filter: any = {};
       if (opportunityId) filter['opportunityId'] = opportunityId;

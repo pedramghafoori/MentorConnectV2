@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { AssignmentService } from '../services/assignment.service';
+import { AssignmentService, Assignment } from '../services/assignment.service';
 import { AssignmentCard } from '../components/AssignmentCard';
 import { Spinner } from '../components/Spinner';
 import { initializeSocket, getSocket } from '../services/socket';
 import '../styles/assignments.css';
-
-interface Assignment {
-  _id: string;
-  menteeId: {
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string;
-  };
-  startDate: string;
-  status: 'PENDING' | 'ACCEPTED' | 'ACTIVE' | 'COMPLETED' | 'REJECTED' | 'CANCELED' | 'CHARGED';
-}
 
 const TABS = [
   { key: 'active', label: 'Active Assignments' },
@@ -26,27 +15,48 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key'];
 
+interface ApiError extends Error {
+  response?: {
+    data: {
+      message?: string;
+    };
+  };
+}
+
 export const MentorAssignmentsPage = () => {
   const { user } = useAuth();
-  const [currentTab, setCurrentTab] = useState<'active' | 'future' | 'completed'>('active');
+  const [currentTab, setCurrentTab] = useState<TabKey>('active');
+  const [socketError, setSocketError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (user) {
-      const socket = initializeSocket(user._id);
-      socket.on('assignment:update', () => {
-        queryClient.invalidateQueries({ queryKey: ['assignments', currentTab] });
-      });
+      try {
+        const socket = initializeSocket(user._id);
+        socket.on('connect_error', (error: Error) => {
+          console.error('Socket connection error:', error);
+          setSocketError('Failed to connect to real-time updates. The page will still work, but updates may be delayed.');
+        });
 
-      return () => {
-        socket.off('assignment:update');
-      };
+        socket.on('assignment:update', () => {
+          queryClient.invalidateQueries({ queryKey: ['assignments', currentTab] });
+        });
+
+        return () => {
+          socket.off('assignment:update');
+          socket.off('connect_error');
+        };
+      } catch (error) {
+        console.error('Error initializing socket:', error);
+        setSocketError('Failed to initialize real-time updates. The page will still work, but updates may be delayed.');
+      }
     }
   }, [user, currentTab, queryClient]);
 
-  const { data: assignments = [], isLoading, error } = useQuery({
+  const { data: assignments = [], isLoading, error } = useQuery<Assignment[], ApiError>({
     queryKey: ['assignments', currentTab],
     queryFn: () => AssignmentService.getMentorAssignments(currentTab),
+    retry: 1
   });
 
   if (isLoading) {
@@ -60,40 +70,45 @@ export const MentorAssignmentsPage = () => {
   if (error) {
     return (
       <div className="text-center text-red-600 p-4">
-        Error loading assignments. Please try again later.
+        <p className="mb-2">Error loading assignments. Please try again later.</p>
+        <p className="text-sm text-gray-600">
+          {error.response?.data?.message || 'An unexpected error occurred'}
+        </p>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {socketError && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">{socketError}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">My Assignments</h1>
         <div className="flex space-x-4">
-          <button
-            className={`px-4 py-2 rounded ${
-              currentTab === 'active' ? 'bg-blue-600 text-white' : 'bg-gray-200'
-            }`}
-            onClick={() => setCurrentTab('active')}
-          >
-            Active
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${
-              currentTab === 'future' ? 'bg-blue-600 text-white' : 'bg-gray-200'
-            }`}
-            onClick={() => setCurrentTab('future')}
-          >
-            Future
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${
-              currentTab === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-200'
-            }`}
-            onClick={() => setCurrentTab('completed')}
-          >
-            Completed
-          </button>
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              className={`px-4 py-2 rounded ${
+                currentTab === tab.key ? 'bg-blue-600 text-white' : 'bg-gray-200'
+              }`}
+              onClick={() => setCurrentTab(tab.key as TabKey)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 

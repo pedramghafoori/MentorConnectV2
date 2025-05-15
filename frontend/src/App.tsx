@@ -1,70 +1,64 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { PrivateRoute } from './components/PrivateRoute';
-import { LoginPage } from './pages/auth/LoginPage';
-import { RegisterPage } from './pages/auth/RegisterPage';
-import { MentorAssignmentsPage } from './pages/assignment/MentorAssignmentsPage';
-import { MenteeAssignmentsPage } from './pages/assignment/MenteeAssignmentsPage';
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
+import { MenteeAssignmentsPage } from './pages/MenteeAssignmentsPage';
 import { AssignmentCollaborationPage } from './pages/assignment/AssignmentCollaborationPage';
-import { SettingsPage } from './pages/settings/SettingsPage';
-import { Layout } from './components/Layout';
+import SettingsPage from './pages/Settings/SettingsPage';
+import ProfilePage from './pages/Profile/ProfilePage';
+import Dashboard from './pages/Dashboard/Dashboard';
+import HomePage from './pages/Home/HomePage';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import TermsPage from './pages/Legal/TermsPage';
+import MentorAgreementPage from './pages/Legal/MentorAgreementPage';
+import MyCourses from './pages/Dashboard/mentor/MyCourses';
+import TestPager1 from './pages/TestPager1';
+import ForumHome from './pages/forum/ForumHome';
+import ThreadPage from './pages/forum/ThreadPage';
+import AskQuestionPage from './pages/forum/AskQuestionPage';
+import { AssignmentsPage } from './pages/AssignmentsPage';
+import MobileBottomNav from './components/MobileBottomNav';
 
-function App() {
+const App = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) return null; // Optionally show a spinner here
+
   return (
-    <Router>
-      <AuthProvider>
-        <Layout>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Navbar />
+        <main className="flex-grow">
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/assignments/:id/*"
-              element={
-                <PrivateRoute>
-                  <AssignmentCollaborationPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/assignments"
-              element={
-                <PrivateRoute>
-                  <MentorAssignmentsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/my-assignments"
-              element={
-                <PrivateRoute>
-                  <MenteeAssignmentsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <PrivateRoute>
-                  <SettingsPage />
-                </PrivateRoute>
-              }
-            />
-            {/* Catch-all route for debugging */}
-            <Route
-              path="*"
-              element={
-                <div className="p-4">
-                  <h1 className="text-2xl font-bold text-red-500">404 - Route Not Found</h1>
-                  <p className="mt-2">Current path: {window.location.pathname}</p>
-                </div>
-              }
-            />
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/mentor-agreement" element={<MentorAgreementPage />} />
+            <Route path="/testpager1" element={<TestPager1 />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/forum" element={<ForumHome />} />
+            <Route path="/forum/:slug" element={<ThreadPage />} />
+
+            {/* Protected Routes */}
+            <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/" />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+            <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
+            <Route path="/courses/my-courses" element={user ? <MyCourses /> : <Navigate to="/" />} />
+            <Route path="/courses/edit/:courseId" element={user ? <MyCourses /> : <Navigate to="/" />} />
+            <Route path="/assignments/:id" element={user ? <AssignmentCollaborationPage /> : <Navigate to="/" />} />
+            <Route path="/assignments" element={user ? <AssignmentsPage /> : <Navigate to="/" />} />
+            <Route path="/forum/ask" element={user ? <AskQuestionPage /> : <Navigate to="/" />} />
           </Routes>
-        </Layout>
-      </AuthProvider>
-    </Router>
+        </main>
+        <MobileBottomNav />
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
-}
+};
 
 export default App; 

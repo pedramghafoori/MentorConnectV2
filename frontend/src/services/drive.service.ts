@@ -56,9 +56,10 @@ export class DriveService {
   // Check if user has connected Google Drive
   static async isDriveConnected(): Promise<boolean> {
     try {
-      const response = await api.get('/me');
+      const response = await api.get('/auth/me');
       return !!response.data.googleDrive?.refreshToken;
     } catch (error) {
+      console.error('Error checking Drive connection:', error);
       return false;
     }
   }

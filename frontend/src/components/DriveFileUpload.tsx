@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DriveService } from '../services/drive.service';
 import { useAuth } from '../context/AuthContext';
 
@@ -24,9 +24,15 @@ export const DriveFileUpload: React.FC<DriveFileUploadProps> = ({
   const [isDriveConnected, setIsDriveConnected] = useState<boolean | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
+  const checkIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     checkDriveConnection();
+    return () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+      }
+    };
   }, []);
 
   const checkDriveConnection = async () => {
@@ -45,16 +51,22 @@ export const DriveFileUpload: React.FC<DriveFileUploadProps> = ({
       window.open(authUrl, '_blank', 'width=600,height=600');
       
       // Poll for connection status
-      const checkInterval = setInterval(async () => {
+      checkIntervalRef.current = setInterval(async () => {
         const connected = await DriveService.isDriveConnected();
         if (connected) {
           setIsDriveConnected(true);
-          clearInterval(checkInterval);
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current);
+          }
         }
       }, 2000);
 
       // Clear interval after 5 minutes
-      setTimeout(() => clearInterval(checkInterval), 5 * 60 * 1000);
+      setTimeout(() => {
+        if (checkIntervalRef.current) {
+          clearInterval(checkIntervalRef.current);
+        }
+      }, 5 * 60 * 1000);
     } catch (error) {
       console.error('Error connecting to Drive:', error);
       onError?.('Failed to connect to Google Drive');

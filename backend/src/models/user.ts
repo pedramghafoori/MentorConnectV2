@@ -20,13 +20,7 @@ export interface IUser extends Document {
   showConnections?: boolean;
   isDummy?: boolean;
   dummyBatch?: string;
- //preferredNoticeDays?: number;
-//prepRequirements?: string[];
-//expectedMenteeInvolvement?: string;
-//prepSupportFee?: number;
-//feeCurrency?: string;
   cancellationPolicyHours?: number;
- //maxApprentices?: number;
   languages?: string[];
   workplaces?: string[];
   collectsHST?: boolean;
@@ -49,6 +43,13 @@ export interface IUser extends Document {
   hasExaminerCourse?: boolean;
   hasTrainerCourse?: boolean;
   stripeAccountId?: string;
+  googleDrive?: {
+    refreshToken: string;
+    accessToken: string;
+    accessTokenExpiry: Date;
+    driveFolderId?: string;
+    connectedAt: Date;
+  };
 }
 
 const certificationSchema = new Schema({
@@ -135,41 +136,6 @@ const userSchema = new Schema<IUser>({
     type: Boolean,
     default: true
   },
-  //preferredNoticeDays: {
-  //  type: Number,
-  //  default: 7,
-  //  min: 1,
-  //  max: 90
-  //},
-  //prepRequirements: {
-    //type: [String],
-    //default: [],
-    //validate: {
-      //validator: function(arr: string[]) {
-        //return arr.every(val => ALLOWED_PREP_REQUIREMENTS.includes(val));
-      //},
-      //message: 'Invalid prep requirement value.'
-    //}
-  //},
-  //expectedMenteeInvolvement: {
-    //type: String,
-    //enum: ['', 'full-course', 'exam-only'],
-    //default: ''
-  //},
-  //prepSupportFee: {
-    //type: Number,
-    //min: 0
-  //},
-  //feeCurrency: {
-    //type: String,
-    //default: 'CAD'
-  //},
-  //maxApprentices: {
-    //type: Number,
-    //default: 1,
-    //min: 1,
-    //max: 10
-  //},
   cancellationPolicyHours: {
     type: Number,
     default: 48,
@@ -234,6 +200,13 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: false,
   },
+  googleDrive: {
+    refreshToken: { type: String },
+    accessToken: { type: String },
+    accessTokenExpiry: { type: Date },
+    driveFolderId: { type: String },
+    connectedAt: { type: Date }
+  }
 }, {
   timestamps: true
 });

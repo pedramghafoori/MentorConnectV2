@@ -20,6 +20,26 @@ export interface IAssignment extends Document {
   status: 'PENDING' | 'ACCEPTED' | 'ACTIVE' | 'COMPLETED' | 'REJECTED' | 'CANCELED' | 'CHARGED';
   createdAt: Date;
   updatedAt: Date;
+  collaboration: {
+    lessonPlanReview: {
+      driveFileId?: string;
+      notes?: string;
+      completed: boolean;
+      lastUpdatedAt?: Date;
+    };
+    examPlanReview: {
+      driveFileId?: string;
+      notes?: string;
+      completed: boolean;
+      lastUpdatedAt?: Date;
+    };
+    dayOfPreparation: {
+      driveFileId?: string;
+      notes?: string;
+      completed: boolean;
+      lastUpdatedAt?: Date;
+    };
+  };
 }
 
 const assignmentSchema = new Schema<IAssignment>({
@@ -43,6 +63,26 @@ const assignmentSchema = new Schema<IAssignment>({
     type: String,
     enum: ['PENDING', 'ACCEPTED', 'ACTIVE', 'COMPLETED', 'REJECTED', 'CANCELED', 'CHARGED'],
     default: 'PENDING'
+  },
+  collaboration: {
+    lessonPlanReview: {
+      driveFileId: { type: String },
+      notes: { type: String },
+      completed: { type: Boolean, default: false },
+      lastUpdatedAt: { type: Date }
+    },
+    examPlanReview: {
+      driveFileId: { type: String },
+      notes: { type: String },
+      completed: { type: Boolean, default: false },
+      lastUpdatedAt: { type: Date }
+    },
+    dayOfPreparation: {
+      driveFileId: { type: String },
+      notes: { type: String },
+      completed: { type: Boolean, default: false },
+      lastUpdatedAt: { type: Date }
+    }
   }
 }, { timestamps: true });
 

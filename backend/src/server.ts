@@ -18,7 +18,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { Assignment } from './models/assignment.js';
 import { AssignmentMessage } from './models/assignmentMessage.js';
-import driveRoutes from './routes/drive.js';
+import driveRoutes from './routes/drive.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

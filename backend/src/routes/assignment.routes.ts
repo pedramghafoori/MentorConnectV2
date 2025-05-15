@@ -4,8 +4,12 @@ import { authenticateToken } from '../middleware/auth.js';
 import validateRequest from '../middleware/validateRequest.js';
 import { z } from 'zod';
 import { Assignment } from '../models/assignment.js';
+import collaborationRoutes from './assignmentCollaboration.routes.js';
 
 const router = Router();
+
+// Mount collaboration routes
+router.use('/:id/collaboration', collaborationRoutes);
 
 // Create assignment
 router.post(

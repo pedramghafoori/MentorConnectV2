@@ -17,6 +17,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
   const socket = getSocket();
 
   useEffect(() => {
+    if (!socket) {
+      setError('Chat is not available. Please try refreshing the page.');
+      return;
+    }
+
     // Join assignment room
     socket.emit('joinAssignment', assignmentId);
 
@@ -44,7 +49,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !socket) return;
 
     socket.emit('chat:message', {
       assignmentId,
@@ -53,6 +58,14 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
 
     setNewMessage('');
   };
+
+  if (!socket) {
+    return (
+      <div className="flex flex-col h-[600px] bg-white rounded-lg shadow p-4">
+        <div className="text-red-500">Chat is not available. Please try refreshing the page.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[600px] bg-white rounded-lg shadow">

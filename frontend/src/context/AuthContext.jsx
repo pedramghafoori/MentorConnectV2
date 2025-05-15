@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../lib/api';
 import { getProfile } from '../features/profile/getProfile';
+import { initializeSocket } from '../services/socket';
 
 const AuthContext = createContext();
 
@@ -25,6 +26,10 @@ export function AuthProvider({ children }) {
         // After basic auth check, fetch full profile
         setUser(response.data);
         await fetchFullUserProfile();
+        // Initialize socket if user is authenticated
+        if (response.data?._id) {
+          initializeSocket(response.data._id);
+        }
       } catch (error) {
         setUser(null);
       } finally {
@@ -41,6 +46,10 @@ export function AuthProvider({ children }) {
       setUser(response.data.user);
       // After registration, fetch full profile
       await fetchFullUserProfile();
+      // Initialize socket after registration
+      if (response.data.user?._id) {
+        initializeSocket(response.data.user._id);
+      }
       return response.data;
     } catch (error) {
       throw error;
@@ -53,6 +62,10 @@ export function AuthProvider({ children }) {
       setUser(response.data.user);
       // After login, fetch full profile
       await fetchFullUserProfile();
+      // Initialize socket after login
+      if (response.data.user?._id) {
+        initializeSocket(response.data.user._id);
+      }
       if (onSuccess) onSuccess();
       return response.data;
     } catch (error) {

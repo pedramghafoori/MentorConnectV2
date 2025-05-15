@@ -1,4 +1,14 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+
+// Add type declarations for toast functionality
+declare global {
+  interface Window {
+    toast?: (message: string, options?: { type: string }) => void;
+    ReactToastify?: {
+      toast: (message: string, options?: { type: string }) => void;
+    };
+  }
+}
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
@@ -12,7 +22,7 @@ const api: AxiosInstance = axios.create({
 
 // Add request interceptor to include token in headers
 api.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
+  (config: InternalAxiosRequestConfig) => {
     // The token will be automatically included in the cookie
     // due to withCredentials: true
     return config;

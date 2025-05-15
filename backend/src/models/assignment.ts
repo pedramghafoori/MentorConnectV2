@@ -23,21 +23,30 @@ export interface IAssignment extends Document {
   collaboration: {
     lessonPlanReview: {
       driveFileId?: string;
+      webViewLink?: string;
       notes?: string;
       completed: boolean;
       lastUpdatedAt?: Date;
+      completedAt?: string;
+      completedBy?: string;
     };
     examPlanReview: {
       driveFileId?: string;
+      webViewLink?: string;
       notes?: string;
       completed: boolean;
       lastUpdatedAt?: Date;
+      completedAt?: string;
+      completedBy?: string;
     };
     dayOfPreparation: {
       driveFileId?: string;
+      webViewLink?: string;
       notes?: string;
       completed: boolean;
       lastUpdatedAt?: Date;
+      completedAt?: string;
+      completedBy?: string;
     };
   };
 }
@@ -67,21 +76,30 @@ const assignmentSchema = new Schema<IAssignment>({
   collaboration: {
     lessonPlanReview: {
       driveFileId: { type: String },
+      webViewLink: { type: String },
       notes: { type: String },
       completed: { type: Boolean, default: false },
-      lastUpdatedAt: { type: Date }
+      lastUpdatedAt: { type: Date },
+      completedAt: { type: String },
+      completedBy: { type: String }
     },
     examPlanReview: {
       driveFileId: { type: String },
+      webViewLink: { type: String },
       notes: { type: String },
       completed: { type: Boolean, default: false },
-      lastUpdatedAt: { type: Date }
+      lastUpdatedAt: { type: Date },
+      completedAt: { type: String },
+      completedBy: { type: String }
     },
     dayOfPreparation: {
       driveFileId: { type: String },
+      webViewLink: { type: String },
       notes: { type: String },
       completed: { type: Boolean, default: false },
-      lastUpdatedAt: { type: Date }
+      lastUpdatedAt: { type: Date },
+      completedAt: { type: String },
+      completedBy: { type: String }
     }
   }
 }, { timestamps: true });

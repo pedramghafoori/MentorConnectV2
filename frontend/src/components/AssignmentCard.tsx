@@ -1,45 +1,57 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Assignment } from '../services/assignment.service';
-import '../styles/assignments.css';
+import { Assignment } from '../models/assignment';
 
 interface AssignmentCardProps {
   assignment: Assignment;
 }
 
-const StatusBadge = ({ status }: { status: string }) => {
-  const statusClass = `status-badge status-badge-${status.toLowerCase()}`;
-
-  return (
-    <span className={statusClass}>
-      {status}
-    </span>
-  );
-};
-
-export const AssignmentCard = ({ assignment }: AssignmentCardProps) => {
-  const { menteeId, startDate, status } = assignment;
+export const AssignmentCard: React.FC<AssignmentCardProps> = ({ assignment }) => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/assignments/${assignment._id}`);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'IN_PROGRESS':
+        return 'bg-blue-100 text-blue-800';
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div
-      onClick={() => navigate(`/mentor/assignments/${assignment._id}`)}
-      className="assignment-card"
+      onClick={handleClick}
+      className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
     >
-      <div className="assignment-card-content">
-        <img
-          src={menteeId.avatarUrl || '/default-avatar.png'}
-          alt={`${menteeId.firstName} ${menteeId.lastName}`}
-          className="assignment-card-avatar"
-        />
-        <div className="assignment-card-info">
-          <h3 className="assignment-card-name">
-            {menteeId.firstName} {menteeId.lastName}
-          </h3>
-          <p className="assignment-card-date">
-            Start Date: {new Date(startDate).toLocaleDateString()}
-          </p>
-          <StatusBadge status={status} />
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          {assignment.title}
+        </h3>
+        <span
+          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+            assignment.status
+          )}`}
+        >
+          {assignment.status}
+        </span>
+      </div>
+      <p className="text-gray-600 mb-4">{assignment.description}</p>
+      <div className="flex justify-between items-center text-sm text-gray-500">
+        <div>
+          <span className="font-medium">Mentee:</span>{' '}
+          {assignment.mentee.firstName} {assignment.mentee.lastName}
+        </div>
+        <div>
+          <span className="font-medium">Created:</span>{' '}
+          {new Date(assignment.createdAt).toLocaleDateString()}
         </div>
       </div>
     </div>

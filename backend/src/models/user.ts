@@ -47,7 +47,7 @@ export interface IUser extends Document {
     refreshToken: string;
     accessToken: string;
     accessTokenExpiry: Date;
-    driveFolderId?: string;
+    driveFolderId: string;
     connectedAt: Date;
   };
 }

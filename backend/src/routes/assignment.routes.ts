@@ -5,6 +5,7 @@ import validateRequest from '../middleware/validateRequest.js';
 import { z } from 'zod';
 import { Assignment } from '../models/assignment.js';
 import collaborationRoutes from './assignmentCollaboration.routes.js';
+import { checkAssignmentAccess } from '../middleware/assignmentAccess.js';
 
 const router = Router();
 
@@ -165,27 +166,44 @@ router.get(
   }
 );
 
-// Get assignment by ID
-router.get(
-  '/:id',
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const assignment = await Assignment.findById(req.params.id)
-        .populate('menteeId', 'firstName lastName avatarUrl')
-        .populate('mentorId', 'firstName lastName avatarUrl');
-      
-      if (!assignment) {
-        return res.status(404).json({ message: 'Assignment not found' });
-      }
-      
-      res.json(assignment);
-    } catch (error) {
-      console.error('Error fetching assignment:', error);
-      res.status(500).json({ message: 'Error fetching assignment' });
+// Get all assignments (admin only)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    if (req.user?.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Unauthorized' });
     }
+
+    const assignments = await Assignment.find()
+      .populate('mentorId', 'firstName lastName email')
+      .populate('menteeId', 'firstName lastName email')
+      .populate('opportunityId', 'title description')
+      .sort({ createdAt: -1 });
+
+    res.json(assignments);
+  } catch (error) {
+    console.error('Error fetching assignments:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-);
+});
+
+// Get assignment by ID
+router.get('/:id', authenticateToken, checkAssignmentAccess, async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id)
+      .populate('mentorId', 'firstName lastName email')
+      .populate('menteeId', 'firstName lastName email')
+      .populate('opportunityId', 'title description');
+
+    if (!assignment) {
+      return res.status(404).json({ message: 'Assignment not found' });
+    }
+
+    res.json(assignment);
+  } catch (error) {
+    console.error('Error fetching assignment:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // Accept assignment
 router.post(

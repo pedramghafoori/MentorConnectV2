@@ -16,6 +16,9 @@ import stripeRoutes from './routes/stripe.routes.js';
 import waiverRoutes from './routes/waiverRoutes.js';
 import http from 'http';
 import { Server } from 'socket.io';
+import { Assignment } from './models/assignment.js';
+import { AssignmentMessage } from './models/assignmentMessage.js';
+import driveRoutes from './routes/drive.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -73,6 +76,8 @@ app.use('/api/upload', uploadRoutes);
 
 app.use('/api/lss', lssRoutes);
 
+app.use('/api/drive', driveRoutes);
+
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
@@ -108,23 +113,129 @@ export const io = new Server(server, {
 const userSockets: Map<string, string> = new Map();
 
 io.on('connection', (socket) => {
-
-  
   // Get userId from auth object
   const userId = socket.handshake.auth.userId;
   if (userId) {
     userSockets.set(userId, socket.id);
     (socket as any).userId = userId;
-
-  } else {
-
   }
+
+  // Handle joining assignment room
+  socket.on('joinAssignment', async (assignmentId: string) => {
+    try {
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        socket.emit('error', { message: 'Assignment not found' });
+        return;
+      }
+
+      // Check if user has access to this assignment
+      if (
+        assignment.mentorId.toString() === userId ||
+        assignment.menteeId.toString() === userId ||
+        (socket as any).role === 'ADMIN'
+      ) {
+        const roomName = `assignment:${assignmentId}`;
+        socket.join(roomName);
+        socket.emit('joinedAssignment', { assignmentId });
+      } else {
+        socket.emit('error', { message: 'Unauthorized to access this assignment' });
+      }
+    } catch (error) {
+      console.error('Error joining assignment room:', error);
+      socket.emit('error', { message: 'Error joining assignment room' });
+    }
+  });
+
+  // Handle chat messages
+  socket.on('chat:message', async ({ assignmentId, message }) => {
+    try {
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        socket.emit('error', { message: 'Assignment not found' });
+        return;
+      }
+
+      // Verify sender has access
+      if (
+        assignment.mentorId.toString() === userId ||
+        assignment.menteeId.toString() === userId ||
+        (socket as any).role === 'ADMIN'
+      ) {
+        // Create message in database
+        const newMessage = await AssignmentMessage.create({
+          assignmentId,
+          senderId: userId,
+          message
+        });
+
+        // Emit to room
+        io.to(`assignment:${assignmentId}`).emit('chat:message', {
+          _id: newMessage._id,
+          assignmentId,
+          senderId: userId,
+          message,
+          createdAt: newMessage.createdAt
+        });
+      } else {
+        socket.emit('error', { message: 'Unauthorized to send messages' });
+      }
+    } catch (error) {
+      console.error('Error handling chat message:', error);
+      socket.emit('error', { message: 'Error sending message' });
+    }
+  });
+
+  // Handle collaboration updates
+  socket.on('collaboration:update', async ({ assignmentId, taskType, completed }) => {
+    try {
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        socket.emit('error', { message: 'Assignment not found' });
+        return;
+      }
+
+      // Verify user has access
+      if (
+        assignment.mentorId.toString() === userId ||
+        assignment.menteeId.toString() === userId ||
+        (socket as any).role === 'ADMIN'
+      ) {
+        // Update task status
+        const taskField = taskType === 'day-of-prep' ? 'dayOfPreparation' : 
+                         taskType === 'exam-plan' ? 'examPlanReview' : 'lessonPlanReview';
+
+        const updatedAssignment = await Assignment.findByIdAndUpdate(
+          assignmentId,
+          {
+            $set: {
+              [`collaboration.${taskField}.completed`]: completed,
+              [`collaboration.${taskField}.lastUpdatedAt`]: new Date()
+            }
+          },
+          { new: true }
+        );
+
+        // Emit update to room
+        io.to(`assignment:${assignmentId}`).emit('collaboration:update', {
+          assignmentId,
+          taskType,
+          completed,
+          lastUpdatedAt: updatedAssignment?.collaboration[taskField].lastUpdatedAt
+        });
+      } else {
+        socket.emit('error', { message: 'Unauthorized to update collaboration' });
+      }
+    } catch (error) {
+      console.error('Error handling collaboration update:', error);
+      socket.emit('error', { message: 'Error updating collaboration' });
+    }
+  });
 
   socket.on('disconnect', () => {
     const userId = (socket as any).userId;
     if (userId) {
       userSockets.delete(userId);
-
     }
   });
 });
@@ -141,4 +252,4 @@ const PORT = process.env.PORT || 4000;
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-}); 
+});

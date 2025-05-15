@@ -6,25 +6,20 @@ import { getSocket } from '../utils/socket';
 export class AssignmentCollaborationService {
   static async getAssignmentById(id: string): Promise<Assignment> {
     console.log('AssignmentCollaborationService.getAssignmentById called with ID:', id);
-    try {
-      const response = await api.get(`/assignments/${id}`);
-      console.log('API response:', response);
-      return response.data;
-    } catch (error) {
-      console.error('Error in getAssignmentById:', error);
-      throw error;
-    }
+    const response = await api.get(`/assignment-collaboration/${id}`);
+    console.log('API response:', response);
+    return response.data;
   }
 
   // Fetch messages for an assignment
   static async getMessages(assignmentId: string): Promise<AssignmentMessage[]> {
-    const response = await api.get(`/assignments/${assignmentId}/messages`);
+    const response = await api.get(`/assignment-collaboration/${assignmentId}/messages`);
     return response.data;
   }
 
   // Send a message
   static async sendMessage(assignmentId: string, message: string): Promise<AssignmentMessage> {
-    const response = await api.post(`/assignments/${assignmentId}/messages`, { message });
+    const response = await api.post(`/assignment-collaboration/${assignmentId}/messages`, { message });
     return response.data;
   }
 
@@ -99,12 +94,12 @@ export class AssignmentCollaborationService {
   static async updateAssignmentFile(
     assignmentId: string,
     section: 'lessonPlanReview' | 'examPlanReview' | 'dayOfPreparation',
-    driveFileId: string,
+    fileId: string,
     webViewLink: string
   ): Promise<Assignment> {
-    const response = await api.patch(`/assignments/${assignmentId}/files`, {
+    const response = await api.patch(`/assignment-collaboration/${assignmentId}/file`, {
       section,
-      driveFileId,
+      fileId,
       webViewLink
     });
     return response.data;

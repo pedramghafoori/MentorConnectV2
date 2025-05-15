@@ -1,6 +1,16 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
+// Get the base URL without any path
+const getBaseUrl = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+    return `${urlObj.protocol}//${urlObj.host}`;
+  } catch {
+    return 'http://localhost:4000';
+  }
+};
+
+const SOCKET_URL = getBaseUrl(import.meta.env.VITE_API_URL || 'http://localhost:4000/api');
 
 console.log('Socket URL:', SOCKET_URL);
 
@@ -13,6 +23,7 @@ export const getSocket = (): Socket => {
       auth: {
         token: localStorage.getItem('token'),
       },
+      transports: ['websocket', 'polling'],
     });
 
     socket.on('connect_error', (error) => {

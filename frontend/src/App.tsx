@@ -19,18 +19,18 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route
-              path="/assignments"
+              path="/assignments/:id/*"
               element={
                 <PrivateRoute>
-                  <MentorAssignmentsPage />
+                  <AssignmentCollaborationPage />
                 </PrivateRoute>
               }
             />
             <Route
-              path="/assignments/:id"
+              path="/assignments"
               element={
                 <PrivateRoute>
-                  <AssignmentCollaborationPage />
+                  <MentorAssignmentsPage />
                 </PrivateRoute>
               }
             />
@@ -48,6 +48,16 @@ function App() {
                 <PrivateRoute>
                   <SettingsPage />
                 </PrivateRoute>
+              }
+            />
+            {/* Catch-all route for debugging */}
+            <Route
+              path="*"
+              element={
+                <div className="p-4">
+                  <h1 className="text-2xl font-bold text-red-500">404 - Route Not Found</h1>
+                  <p className="mt-2">Current path: {window.location.pathname}</p>
+                </div>
               }
             />
           </Routes>

@@ -1,36 +1,40 @@
+// frontend/src/services/socket.ts
 import { io, Socket } from 'socket.io-client';
+
+const SOCKET_URL =
+  // Vite / modern
+  (import.meta as any).env?.VITE_SOCKET_URL ||
+  // Create‑React‑App legacy
+  (process as any).env?.REACT_APP_SOCKET_URL ||
+  // Fallback
+  'http://localhost:4000';
 
 let socket: Socket | null = null;
 
-export const initializeSocket = (userId: string): void => {
-  const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
-  
-  socket = io(socketUrl, {
-    auth: {
-      userId
-    }
+/**
+ * Initialise the global Socket.IO client.
+ * Call this once after login, passing the JWT userId.
+ */
+export const initializeSocket = (userId: string): Socket => {
+  if (socket) return socket; // already initialised
+
+  socket = io(SOCKET_URL, {
+    path: '/socket.io',
+    transports: ['websocket'],
+    auth: { userId },
   });
 
-  socket.on('connect', () => {
-    console.log('Socket connected');
-  });
+  socket.on('connect', () => console.log('Socket connected'));
+  socket.on('disconnect', () => console.log('Socket disconnected'));
+  socket.on('error', (err) => console.error('Socket error:', err));
 
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected');
-  });
-
-  socket.on('error', (error) => {
-    console.error('Socket error:', error);
-  });
-};
-
-export const getSocket = (): Socket | null => {
   return socket;
 };
 
+export const getSocket = (): Socket | null => socket;
+
 export const disconnectSocket = (): void => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-}; 
+  if (!socket) return;
+  socket.disconnect();
+  socket = null;
+};

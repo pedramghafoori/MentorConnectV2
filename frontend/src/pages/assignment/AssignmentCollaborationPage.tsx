@@ -17,27 +17,46 @@ export const AssignmentCollaborationPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('AssignmentCollaborationPage render:', {
+    id,
+    user,
+    isAuthenticated: !!user,
+    currentUrl: window.location.href
+  });
+
   useEffect(() => {
-    if (!id) {
-      navigate('/assignments');
+    console.log('AssignmentCollaborationPage useEffect triggered:', {
+      id,
+      user,
+      isAuthenticated: !!user,
+      currentUrl: window.location.href
+    });
+
+    if (!user) {
+      console.log('No user found, redirecting to home');
+      navigate('/');
       return;
     }
 
     const fetchAssignment = async () => {
       try {
-        const data = await AssignmentCollaborationService.getAssignmentById(id);
+        console.log('Fetching assignment with ID:', id);
+        const data = await AssignmentCollaborationService.getAssignmentById(id!);
+        console.log('Assignment data received:', data);
         setAssignment(data);
+        setLoading(false);
       } catch (err) {
-        setError('Failed to load assignment');
         console.error('Error fetching assignment:', err);
-      } finally {
+        setError('Failed to load assignment');
         setLoading(false);
       }
     };
 
     const fetchMessages = async () => {
       try {
+        console.log('Fetching messages for assignment:', id);
         const data = await AssignmentCollaborationService.getMessages(id);
+        console.log('Fetched messages:', data);
         setMessages(data);
       } catch (err) {
         console.error('Error fetching messages:', err);
@@ -46,7 +65,7 @@ export const AssignmentCollaborationPage: React.FC = () => {
 
     fetchAssignment();
     fetchMessages();
-  }, [id, navigate]);
+  }, [id, user, navigate]);
 
   const handleFileUploaded = async (
     fileId: string,

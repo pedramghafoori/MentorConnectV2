@@ -1,12 +1,19 @@
-import { api } from '../utils/api';
+import api from '../lib/api';
 import { Assignment } from '../models/assignment';
 import { AssignmentMessage } from '../models/assignmentMessage';
 import { getSocket } from '../utils/socket';
 
 export class AssignmentCollaborationService {
   static async getAssignmentById(id: string): Promise<Assignment> {
-    const response = await api.get(`/assignments/${id}`);
-    return response.data;
+    console.log('AssignmentCollaborationService.getAssignmentById called with ID:', id);
+    try {
+      const response = await api.get(`/assignments/${id}`);
+      console.log('API response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getAssignmentById:', error);
+      throw error;
+    }
   }
 
   // Fetch messages for an assignment

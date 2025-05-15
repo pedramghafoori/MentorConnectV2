@@ -5,6 +5,7 @@ import { AssignmentService, Assignment } from '../services/assignment.service';
 import { MenteeAssignmentCard } from '../components/MenteeAssignmentCard';
 import { Spinner } from '../components/Spinner';
 import { initializeSocket } from '../services/socket';
+import { Socket } from 'socket.io-client';
 import '../styles/assignments.css';
 
 const TABS = [
@@ -24,9 +25,13 @@ export const MenteeAssignmentsPage = () => {
   useEffect(() => {
     if (user) {
       try {
-        const socket = initializeSocket(user._id);
+        const socket: Socket | undefined = initializeSocket(user._id);
+        if (!socket) {
+          console.warn('Socket initialization failed');
+          return;
+        }
         
-        socket.on('connect_error', (error) => {
+        socket.on('connect_error', (error: Error) => {
           console.error('Socket connection error:', error);
           setSocketError('Failed to connect to real-time updates. The page will still work, but updates may be delayed.');
         });
@@ -36,8 +41,10 @@ export const MenteeAssignmentsPage = () => {
         });
 
         return () => {
-          socket.off('assignment:update');
-          socket.off('connect_error');
+          if (socket) {
+            socket.off('assignment:update');
+            socket.off('connect_error');
+          }
         };
       } catch (error) {
         console.error('Error initializing socket:', error);

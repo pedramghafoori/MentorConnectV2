@@ -16,6 +16,7 @@ import AskQuestionPage from './pages/forum/AskQuestionPage';
 import { MentorAssignmentsPage } from './pages/MentorAssignmentsPage';
 import { MenteeAssignmentsPage } from './pages/MenteeAssignmentsPage';
 import { AssignmentsPage } from './pages/AssignmentsPage';
+import { AssignmentCollaborationPage } from './pages/assignment/AssignmentCollaborationPage';
 import MobileBottomNav from './components/MobileBottomNav';
 
 const App = () => {
@@ -44,6 +45,7 @@ const App = () => {
             <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/" />} />
             <Route path="/courses/my-courses" element={user ? <MyCourses /> : <Navigate to="/" />} />
             <Route path="/courses/edit/:courseId" element={user ? <MyCourses /> : <Navigate to="/" />} />
+            <Route path="/assignments/:id" element={user ? <AssignmentCollaborationPage /> : <Navigate to="/" />} />
             <Route path="/assignments" element={user ? <AssignmentsPage /> : <Navigate to="/" />} />
             <Route path="/forum/ask" element={user ? <AskQuestionPage /> : <Navigate to="/" />} />
           </Routes>

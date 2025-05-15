@@ -32,7 +32,7 @@ export const MenteeAssignmentCard = ({ assignment }: AssignmentCardProps) => {
 
   return (
     <div
-      onClick={() => navigate(`/mentee/assignments/${assignment._id}`)}
+      onClick={() => navigate(`/assignments/${assignment._id}`)}
       className="assignment-card"
     >
       <div className="assignment-card-content">

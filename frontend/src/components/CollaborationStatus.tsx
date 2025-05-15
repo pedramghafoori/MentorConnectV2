@@ -3,12 +3,17 @@ import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../services/socket';
 import { AssignmentCollaborationService } from '../services/assignmentCollaboration.service';
 
+interface SectionStatus {
+  completed: boolean;
+  lastUpdatedAt?: string;
+}
+
 interface CollaborationStatusProps {
   assignmentId: string;
   initialStatus: {
-    lessonPlanReview: { completed: boolean; lastUpdatedAt: string };
-    examPlanReview: { completed: boolean; lastUpdatedAt: string };
-    dayOfPreparation: { completed: boolean; lastUpdatedAt: string };
+    lessonPlanReview: SectionStatus;
+    examPlanReview: SectionStatus;
+    dayOfPreparation: SectionStatus;
   };
 }
 
@@ -22,6 +27,8 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
   const socket = getSocket();
 
   useEffect(() => {
+    if (!socket) return;
+
     // Join assignment room
     AssignmentCollaborationService.joinAssignmentRoom(assignmentId);
 
@@ -97,7 +104,9 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
               <h3 className="font-medium">{label}</h3>
               <p className="text-sm text-gray-600">{description}</p>
               <p className="text-xs text-gray-500 mt-1">
-                Last updated: {new Date(status[key as keyof typeof status].lastUpdatedAt).toLocaleString()}
+                {status[key as keyof typeof status].lastUpdatedAt
+                  ? `Last updated: ${new Date(status[key as keyof typeof status].lastUpdatedAt || '').toLocaleString()}`
+                  : 'Last updated: N/A'}
               </p>
             </div>
             <div className="flex items-center space-x-4">

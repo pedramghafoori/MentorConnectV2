@@ -24,9 +24,7 @@ const hasAssignmentAccess = async (userId: string, assignmentId: string, isAdmin
 // Get assignment details
 router.get('/:id', checkAssignmentAccess, async (req, res) => {
   try {
-    const assignment = await Assignment.findById(req.params.id)
-      .populate('mentorId', 'firstName lastName email')
-      .populate('menteeId', 'firstName lastName email');
+    const assignment = await AssignmentCollaborationService.getAssignmentDetails(req.params.id);
 
     if (!assignment) {
       return res.status(404).json({ message: 'Assignment not found' });
@@ -42,10 +40,7 @@ router.get('/:id', checkAssignmentAccess, async (req, res) => {
 // Get messages for an assignment
 router.get('/:id/messages', checkAssignmentAccess, async (req, res) => {
   try {
-    const messages = await AssignmentMessage.find({ assignmentId: req.params.id })
-      .populate('senderId', 'firstName lastName role')
-      .sort({ createdAt: 1 });
-
+    const messages = await AssignmentCollaborationService.getMessages(req.params.id);
     res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -64,22 +59,8 @@ router.post('/:id/messages', checkAssignmentAccess, async (req, res) => {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    const newMessage = new AssignmentMessage({
-      assignmentId,
-      senderId,
-      message
-    });
-
-    await newMessage.save();
-
-    // Populate sender info for the socket event
-    const populatedMessage = await AssignmentMessage.findById(newMessage._id)
-      .populate('senderId', 'firstName lastName role');
-
-    // Emit socket event for real-time updates
-    io.to(assignmentId).emit('chat:message', populatedMessage);
-
-    res.status(201).json(populatedMessage);
+    const newMessage = await AssignmentCollaborationService.sendMessage(assignmentId, senderId, message);
+    res.status(201).json(newMessage);
   } catch (error) {
     console.error('Error sending message:', error);
     res.status(500).json({ message: 'Error sending message' });
@@ -116,26 +97,14 @@ router.patch('/:id/files', checkAssignmentAccess, async (req, res) => {
       return res.status(400).json({ message: 'Invalid section type' });
     }
 
-    // Update the file information
-    const typedSection = section as CollaborationSection;
-    assignment.collaboration[typedSection] = {
-      ...assignment.collaboration[typedSection],
+    const updatedAssignment = await AssignmentCollaborationService.updateFile(
+      assignmentId,
+      section as CollaborationSection,
       driveFileId,
       webViewLink
-    };
+    );
 
-    await assignment.save();
-
-    // Emit socket event for real-time updates
-    io.to(assignmentId).emit('collaboration:update', {
-      section,
-      driveFileId,
-      webViewLink,
-      updatedBy: userId,
-      isAdmin
-    });
-
-    res.json(assignment);
+    res.json(updatedAssignment);
   } catch (error) {
     console.error('Error updating assignment file:', error);
     res.status(500).json({ message: 'Error updating assignment file' });
@@ -171,31 +140,14 @@ router.patch('/:id/tasks', checkAssignmentAccess, async (req, res) => {
       return res.status(400).json({ message: 'Invalid task type' });
     }
 
-    // Update the task status
-    const typedTaskType = taskType as CollaborationSection;
-    assignment.collaboration[typedTaskType] = {
-      ...assignment.collaboration[typedTaskType],
+    const updatedAssignment = await AssignmentCollaborationService.updateTaskStatus(
+      assignmentId,
+      taskType as CollaborationSection,
       completed,
-      completedAt: completed ? new Date().toISOString() : undefined,
-      completedBy: completed ? userId : undefined
-    };
+      userId
+    );
 
-    await assignment.save();
-
-    // Log admin action if applicable
-    if (isAdmin) {
-      console.log(`Admin ${userId} marked ${taskType} as ${completed ? 'completed' : 'incomplete'} for assignment ${assignmentId}`);
-    }
-
-    // Emit socket event for real-time updates
-    io.to(assignmentId).emit('collaboration:update', {
-      taskType,
-      completed,
-      updatedBy: userId,
-      isAdmin
-    });
-
-    res.json(assignment);
+    res.json(updatedAssignment);
   } catch (error) {
     console.error('Error updating task status:', error);
     res.status(500).json({ message: 'Error updating task status' });

@@ -85,17 +85,18 @@ export const AssignmentCollaborationPage: React.FC = () => {
   }
 
   const isMentor = user?.role === 'MENTOR';
-  const counterpartEmail = isMentor ? assignment.mentee?.email : assignment.mentor?.email;
+  const counterpart = isMentor ? assignment.menteeId : assignment.mentorId;
+  const counterpartName = `${counterpart.firstName} ${counterpart.lastName}`;
+  const counterpartEmail = counterpart.email;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">
-          Assignment: {assignment.title}
+          Assignment: {assignment.opportunityId.title}
         </h1>
         <p className="text-gray-600">
-          {isMentor ? 'Mentee' : 'Mentor'}: {isMentor ? assignment.mentee?.firstName : assignment.mentor?.firstName}{' '}
-          {isMentor ? assignment.mentee?.lastName : assignment.mentor?.lastName}
+          {isMentor ? 'Mentee' : 'Mentor'}: {counterpartName}
         </p>
       </div>
 
@@ -105,9 +106,9 @@ export const AssignmentCollaborationPage: React.FC = () => {
         <CollaborationStatus
           assignmentId={id!}
           initialStatus={{
-            lessonPlanReview: assignment.collaboration.lessonPlanReview,
-            examPlanReview: assignment.collaboration.examPlanReview,
-            dayOfPreparation: assignment.collaboration.dayOfPreparation
+            lessonPlanReview: assignment.lessonPlanReview,
+            examPlanReview: assignment.examPlanReview,
+            dayOfPreparation: assignment.dayOfPreparation
           }}
         />
       </div>
@@ -118,7 +119,7 @@ export const AssignmentCollaborationPage: React.FC = () => {
           {/* Lesson Plan Section */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Lesson Plan Review</h2>
-            {!assignment.collaboration.lessonPlanReview.driveFileId ? (
+            {!assignment.lessonPlanReview.driveFileId ? (
               <DriveFileUpload
                 assignmentId={id}
                 section="lessonPlanReview"
@@ -132,14 +133,14 @@ export const AssignmentCollaborationPage: React.FC = () => {
             ) : (
               <div>
                 <a
-                  href={assignment.collaboration.lessonPlanReview.webViewLink}
+                  href={assignment.lessonPlanReview.webViewLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
                 >
                   View Lesson Plan
                 </a>
-                {isMentor && !assignment.collaboration.lessonPlanReview.completed && (
+                {isMentor && !assignment.lessonPlanReview.completed && (
                   <button
                     onClick={() =>
                       AssignmentCollaborationService.updateTaskStatus(
@@ -160,7 +161,7 @@ export const AssignmentCollaborationPage: React.FC = () => {
           {/* Exam Plan Section */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Exam Plan Review</h2>
-            {!assignment.collaboration.examPlanReview.driveFileId ? (
+            {!assignment.examPlanReview.driveFileId ? (
               <DriveFileUpload
                 assignmentId={id}
                 section="examPlanReview"
@@ -174,14 +175,14 @@ export const AssignmentCollaborationPage: React.FC = () => {
             ) : (
               <div>
                 <a
-                  href={assignment.collaboration.examPlanReview.webViewLink}
+                  href={assignment.examPlanReview.webViewLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
                 >
                   View Exam Plan
                 </a>
-                {isMentor && !assignment.collaboration.examPlanReview.completed && (
+                {isMentor && !assignment.examPlanReview.completed && (
                   <button
                     onClick={() =>
                       AssignmentCollaborationService.updateTaskStatus(
@@ -202,7 +203,7 @@ export const AssignmentCollaborationPage: React.FC = () => {
           {/* Day of Preparation Section */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Day of Preparation</h2>
-            {!assignment.collaboration.dayOfPreparation.driveFileId ? (
+            {!assignment.dayOfPreparation.driveFileId ? (
               <DriveFileUpload
                 assignmentId={id}
                 section="dayOfPreparation"
@@ -215,14 +216,14 @@ export const AssignmentCollaborationPage: React.FC = () => {
             ) : (
               <div>
                 <a
-                  href={assignment.collaboration.dayOfPreparation.webViewLink}
+                  href={assignment.dayOfPreparation.webViewLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
                 >
                   View Preparation Notes
                 </a>
-                {isMentor && !assignment.collaboration.dayOfPreparation.completed && (
+                {isMentor && !assignment.dayOfPreparation.completed && (
                   <button
                     onClick={() =>
                       AssignmentCollaborationService.updateTaskStatus(

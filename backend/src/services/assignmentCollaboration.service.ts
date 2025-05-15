@@ -10,8 +10,6 @@ interface CollaborationTask {
   notes?: string;
   completed: boolean;
   lastUpdatedAt?: Date;
-  completedAt?: string;
-  completedBy?: string;
 }
 
 export class AssignmentCollaborationService {
@@ -19,7 +17,8 @@ export class AssignmentCollaborationService {
   static async getAssignmentDetails(assignmentId: string) {
     return Assignment.findById(assignmentId)
       .populate('mentorId', 'firstName lastName email')
-      .populate('menteeId', 'firstName lastName email');
+      .populate('menteeId', 'firstName lastName email')
+      .populate('opportunityId');
   }
 
   // Get messages for an assignment
@@ -63,13 +62,13 @@ export class AssignmentCollaborationService {
 
     // Update the file information
     const updatedTask = {
-      ...assignment.collaboration[section],
+      ...assignment[section],
       driveFileId,
       webViewLink,
       lastUpdatedAt: new Date()
     };
 
-    assignment.collaboration[section] = updatedTask;
+    assignment[section] = updatedTask;
     await assignment.save();
 
     // Emit socket event for real-time updates
@@ -96,14 +95,12 @@ export class AssignmentCollaborationService {
 
     // Update the task status
     const updatedTask = {
-      ...assignment.collaboration[taskType],
+      ...assignment[taskType],
       completed,
-      lastUpdatedAt: new Date(),
-      completedAt: completed ? new Date().toISOString() : undefined,
-      completedBy: completed ? userId : undefined
+      lastUpdatedAt: new Date()
     };
 
-    assignment.collaboration[taskType] = updatedTask;
+    assignment[taskType] = updatedTask;
     await assignment.save();
 
     // Emit socket event for real-time updates

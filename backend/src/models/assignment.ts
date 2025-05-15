@@ -1,5 +1,21 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+const collaborationFields = {
+  driveFileId: { type: String },
+  webViewLink: { type: String },
+  notes: { type: String },
+  completed: { type: Boolean, default: false },
+  lastUpdatedAt: { type: Date },
+};
+
+export interface ICollabSection {
+  driveFileId?: string;
+  webViewLink?: string;
+  notes?: string;
+  completed: boolean;
+  lastUpdatedAt?: Date;
+}
+
 export interface IAssignment extends Document {
   menteeId: mongoose.Types.ObjectId;
   opportunityId: mongoose.Types.ObjectId;
@@ -20,35 +36,9 @@ export interface IAssignment extends Document {
   status: 'PENDING' | 'ACCEPTED' | 'ACTIVE' | 'COMPLETED' | 'REJECTED' | 'CANCELED' | 'CHARGED';
   createdAt: Date;
   updatedAt: Date;
-  collaboration: {
-    lessonPlanReview: {
-      driveFileId?: string;
-      webViewLink?: string;
-      notes?: string;
-      completed: boolean;
-      lastUpdatedAt?: Date;
-      completedAt?: string;
-      completedBy?: string;
-    };
-    examPlanReview: {
-      driveFileId?: string;
-      webViewLink?: string;
-      notes?: string;
-      completed: boolean;
-      lastUpdatedAt?: Date;
-      completedAt?: string;
-      completedBy?: string;
-    };
-    dayOfPreparation: {
-      driveFileId?: string;
-      webViewLink?: string;
-      notes?: string;
-      completed: boolean;
-      lastUpdatedAt?: Date;
-      completedAt?: string;
-      completedBy?: string;
-    };
-  };
+  lessonPlanReview: ICollabSection;
+  examPlanReview: ICollabSection;
+  dayOfPreparation: ICollabSection;
 }
 
 const assignmentSchema = new Schema<IAssignment>({
@@ -73,35 +63,9 @@ const assignmentSchema = new Schema<IAssignment>({
     enum: ['PENDING', 'ACCEPTED', 'ACTIVE', 'COMPLETED', 'REJECTED', 'CANCELED', 'CHARGED'],
     default: 'PENDING'
   },
-  collaboration: {
-    lessonPlanReview: {
-      driveFileId: { type: String },
-      webViewLink: { type: String },
-      notes: { type: String },
-      completed: { type: Boolean, default: false },
-      lastUpdatedAt: { type: Date },
-      completedAt: { type: String },
-      completedBy: { type: String }
-    },
-    examPlanReview: {
-      driveFileId: { type: String },
-      webViewLink: { type: String },
-      notes: { type: String },
-      completed: { type: Boolean, default: false },
-      lastUpdatedAt: { type: Date },
-      completedAt: { type: String },
-      completedBy: { type: String }
-    },
-    dayOfPreparation: {
-      driveFileId: { type: String },
-      webViewLink: { type: String },
-      notes: { type: String },
-      completed: { type: Boolean, default: false },
-      lastUpdatedAt: { type: Date },
-      completedAt: { type: String },
-      completedBy: { type: String }
-    }
-  }
+  lessonPlanReview: collaborationFields,
+  examPlanReview: collaborationFields,
+  dayOfPreparation: collaborationFields
 }, { timestamps: true });
 
 // Indexes for efficient querying

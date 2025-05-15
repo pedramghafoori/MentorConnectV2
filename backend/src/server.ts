@@ -19,6 +19,8 @@ import { Server } from 'socket.io';
 import { Assignment } from './models/assignment.js';
 import { AssignmentMessage } from './models/assignmentMessage.js';
 import driveRoutes from './routes/drive.routes.js';
+import { AssignmentCollaborationService } from './services/assignmentCollaboration.service.js';
+import { CollaborationSection } from './models/collaborationSection.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -148,7 +150,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle chat messages
-  socket.on('chat:message', async ({ assignmentId, message }) => {
+  socket.on('chat:message', async ({ assignmentId, message }: { assignmentId: string; message: string }) => {
     try {
       const assignment = await Assignment.findById(assignmentId);
       if (!assignment) {
@@ -162,21 +164,15 @@ io.on('connection', (socket) => {
         assignment.menteeId.toString() === userId ||
         (socket as any).role === 'ADMIN'
       ) {
-        // Create message in database
-        const newMessage = await AssignmentMessage.create({
+        // Create message using service
+        const newMessage = await AssignmentCollaborationService.sendMessage(
           assignmentId,
-          senderId: userId,
+          userId,
           message
-        });
+        );
 
         // Emit to room
-        io.to(`assignment:${assignmentId}`).emit('chat:message', {
-          _id: newMessage._id,
-          assignmentId,
-          senderId: userId,
-          message,
-          createdAt: newMessage.createdAt
-        });
+        io.to(`assignment:${assignmentId}`).emit('chat:message', newMessage);
       } else {
         socket.emit('error', { message: 'Unauthorized to send messages' });
       }
@@ -187,7 +183,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle collaboration updates
-  socket.on('collaboration:update', async ({ assignmentId, taskType, completed }) => {
+  socket.on('collaboration:update', async ({ assignmentId, taskType, completed }: { assignmentId: string; taskType: CollaborationSection; completed: boolean }) => {
     try {
       const assignment = await Assignment.findById(assignmentId);
       if (!assignment) {
@@ -201,19 +197,12 @@ io.on('connection', (socket) => {
         assignment.menteeId.toString() === userId ||
         (socket as any).role === 'ADMIN'
       ) {
-        // Update task status
-        const taskField = taskType === 'day-of-prep' ? 'dayOfPreparation' : 
-                         taskType === 'exam-plan' ? 'examPlanReview' : 'lessonPlanReview';
-
-        const updatedAssignment = await Assignment.findByIdAndUpdate(
+        // Update task status using service
+        const updatedAssignment = await AssignmentCollaborationService.updateTaskStatus(
           assignmentId,
-          {
-            $set: {
-              [`collaboration.${taskField}.completed`]: completed,
-              [`collaboration.${taskField}.lastUpdatedAt`]: new Date()
-            }
-          },
-          { new: true }
+          taskType,
+          completed,
+          userId
         );
 
         // Emit update to room
@@ -221,7 +210,7 @@ io.on('connection', (socket) => {
           assignmentId,
           taskType,
           completed,
-          lastUpdatedAt: updatedAssignment?.collaboration[taskField].lastUpdatedAt
+          lastUpdatedAt: updatedAssignment[taskType as keyof typeof updatedAssignment].lastUpdatedAt
         });
       } else {
         socket.emit('error', { message: 'Unauthorized to update collaboration' });

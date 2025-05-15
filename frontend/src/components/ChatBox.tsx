@@ -23,7 +23,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
     }
 
     // Join assignment room
-    socket.emit('joinAssignment', { assignmentId });
+    socket.emit('joinAssignment', assignmentId);
 
     // Listen for new messages
     socket.on('chat:message', (message: AssignmentMessage) => {

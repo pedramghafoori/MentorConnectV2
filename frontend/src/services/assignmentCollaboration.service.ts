@@ -18,13 +18,13 @@ export class AssignmentCollaborationService {
 
   // Fetch messages for an assignment
   static async getMessages(assignmentId: string): Promise<AssignmentMessage[]> {
-    const response = await api.get(`/assignments/${assignmentId}/collaboration/${assignmentId}/messages`);
+    const response = await api.get(`/assignments/${assignmentId}/messages`);
     return response.data;
   }
 
   // Send a message
   static async sendMessage(assignmentId: string, message: string): Promise<AssignmentMessage> {
-    const response = await api.post(`/assignments/${assignmentId}/collaboration/${assignmentId}/messages`, { message });
+    const response = await api.post(`/assignments/${assignmentId}/messages`, { message });
     return response.data;
   }
 

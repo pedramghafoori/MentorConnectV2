@@ -21,52 +21,15 @@ export const DriveFileUpload: React.FC<DriveFileUploadProps> = ({
   buttonText = 'Upload File',
   className = ''
 }) => {
-  const [isDriveConnected, setIsDriveConnected] = useState<boolean | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
+  const isDriveConnected = !!(user?.googleDrive?.googleAccountId && user?.googleDrive?.googleAccountEmail);
+  const [isUploading, setIsUploading] = useState(false);
   const checkIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
-
-  useEffect(() => {
-    checkDriveConnection();
-    return () => {
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-      }
-    };
-  }, []);
-
-  const checkDriveConnection = async () => {
-    try {
-      const connected = await DriveService.isDriveConnected();
-      setIsDriveConnected(connected);
-    } catch (error) {
-      console.error('Error checking Drive connection:', error);
-      setIsDriveConnected(false);
-    }
-  };
 
   const handleConnectDrive = async () => {
     try {
       const authUrl = await DriveService.getAuthUrl();
       window.open(authUrl, '_blank', 'width=600,height=600');
-      
-      // Poll for connection status
-      checkIntervalRef.current = setInterval(async () => {
-        const connected = await DriveService.isDriveConnected();
-        if (connected) {
-          setIsDriveConnected(true);
-          if (checkIntervalRef.current) {
-            clearInterval(checkIntervalRef.current);
-          }
-        }
-      }, 2000);
-
-      // Clear interval after 5 minutes
-      setTimeout(() => {
-        if (checkIntervalRef.current) {
-          clearInterval(checkIntervalRef.current);
-        }
-      }, 5 * 60 * 1000);
     } catch (error) {
       console.error('Error connecting to Drive:', error);
       onError?.('Failed to connect to Google Drive');
@@ -93,10 +56,6 @@ export const DriveFileUpload: React.FC<DriveFileUploadProps> = ({
       setIsUploading(false);
     }
   };
-
-  if (isDriveConnected === null) {
-    return <div>Checking Drive connection...</div>;
-  }
 
   if (!isDriveConnected) {
     return (
@@ -128,4 +87,4 @@ export const DriveFileUpload: React.FC<DriveFileUploadProps> = ({
       </label>
     </div>
   );
-}; 
+};

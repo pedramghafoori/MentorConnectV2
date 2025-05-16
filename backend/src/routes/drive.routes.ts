@@ -49,6 +49,7 @@ router.get('/callback', async (req, res) => {
     // Get user info
     const drive = google.drive({ version: 'v3', auth: oauth2Client });
     const userInfo = await drive.about.get({ fields: 'user' });
+    console.log('[Drive OAuth] Google user info:', userInfo.data.user);
 
     // Create or update app folder
     const folderName = 'MentorConnect Files';
@@ -69,14 +70,22 @@ router.get('/callback', async (req, res) => {
       folderId = folder.data.id;
     }
 
-    // Update user with tokens and folder ID
-    await User.findByIdAndUpdate(state, {
+    // Extract Google account ID and email
+    const googleAccountId = userInfo.data.user?.permissionId || null;
+    const googleAccountEmail = userInfo.data.user?.emailAddress || null;
+    console.log('[Drive OAuth] Extracted googleAccountId:', googleAccountId, 'googleAccountEmail:', googleAccountEmail);
+
+    // Update user with tokens, folder ID, and Google account info
+    const updateResult = await User.findByIdAndUpdate(state, {
       'googleDrive.refreshToken': tokens.refresh_token,
       'googleDrive.accessToken': tokens.access_token,
       'googleDrive.accessTokenExpiry': new Date(tokens.expiry_date!),
       'googleDrive.driveFolderId': folderId,
-      'googleDrive.connectedAt': new Date()
-    });
+      'googleDrive.connectedAt': new Date(),
+      'googleDrive.googleAccountId': googleAccountId,
+      'googleDrive.googleAccountEmail': googleAccountEmail
+    }, { new: true });
+    console.log('[Drive OAuth] User update result:', updateResult);
 
     // Redirect to frontend with success
     res.redirect(`${process.env.FRONTEND_URL}/settings?drive=connected`);

@@ -96,7 +96,6 @@ export default function SettingsPage() {
   const [waiverStatus, setWaiverStatus] = useState({ hasSigned: false, signedAt: null, waiverId: null });
   const [waiverLoading, setWaiverLoading] = useState(false);
   const [waiverError, setWaiverError] = useState(null);
-  const [isDriveConnected, setIsDriveConnected] = useState(null);
   const [driveLoading, setDriveLoading] = useState(false);
   const [driveError, setDriveError] = useState(null);
   const [driveSuccess, setDriveSuccess] = useState(false);
@@ -197,50 +196,6 @@ export default function SettingsPage() {
         .finally(() => setWaiverLoading(false));
     }
   }, [user]);
-
-  useEffect(() => {
-    checkDriveConnection();
-  }, []);
-
-  const checkDriveConnection = async () => {
-    try {
-      const connected = await DriveService.isDriveConnected();
-      setIsDriveConnected(connected);
-    } catch (error) {
-      console.error('Error checking Drive connection:', error);
-      setIsDriveConnected(false);
-    }
-  };
-
-  const handleConnectDrive = async () => {
-    try {
-      setDriveLoading(true);
-      setDriveError(null);
-      const authUrl = await DriveService.getAuthUrl();
-      window.open(authUrl, '_blank', 'width=600,height=600');
-      
-      // Poll for connection status
-      const checkInterval = setInterval(async () => {
-        const connected = await DriveService.isDriveConnected();
-        if (connected) {
-          setIsDriveConnected(true);
-          setDriveSuccess(true);
-          clearInterval(checkInterval);
-          setTimeout(() => setDriveSuccess(false), 3000);
-        }
-      }, 2000);
-
-      // Clear interval after 5 minutes
-      setTimeout(() => {
-        clearInterval(checkInterval);
-      }, 5 * 60 * 1000);
-    } catch (error) {
-      console.error('Error connecting to Drive:', error);
-      setDriveError('Failed to connect to Google Drive');
-    } finally {
-      setDriveLoading(false);
-    }
-  };
 
   const allowTwoApprentices = fullUserData?.role === 'MENTOR'
     && ratingSummary.count >= 5
@@ -509,6 +464,23 @@ export default function SettingsPage() {
     }
   };
 
+  // Add this after fullUserData is available
+  const isDriveConnected = !!(fullUserData?.googleDrive?.googleAccountId && fullUserData?.googleDrive?.googleAccountEmail);
+
+  const handleConnectDrive = async () => {
+    try {
+      setDriveLoading(true);
+      setDriveError(null);
+      const authUrl = await DriveService.getAuthUrl();
+      window.open(authUrl, '_blank', 'width=600,height=600');
+    } catch (error) {
+      console.error('Error connecting to Drive:', error);
+      setDriveError('Failed to connect to Google Drive');
+    } finally {
+      setDriveLoading(false);
+    }
+  };
+
   if (!user) {
     return <div>Loading user data...</div>;
   }
@@ -698,7 +670,7 @@ export default function SettingsPage() {
                         <div>Checking Drive connection...</div>
                       ) : isDriveConnected ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-green-600">✓ Connected to Google Drive</span>
+                          <span className="text-green-600">✓ Connected to Google Drive as {fullUserData.googleDrive.googleAccountEmail}</span>
                           <button
                             onClick={handleConnectDrive}
                             className="text-sm text-gray-500 hover:text-gray-700"
@@ -1081,7 +1053,7 @@ export default function SettingsPage() {
                         <div>Checking Drive connection...</div>
                       ) : isDriveConnected ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-green-600">✓ Connected to Google Drive</span>
+                          <span className="text-green-600">✓ Connected to Google Drive as {fullUserData.googleDrive.googleAccountEmail}</span>
                           <button
                             onClick={handleConnectDrive}
                             className="text-sm text-gray-500 hover:text-gray-700"

@@ -49,6 +49,8 @@ export interface IUser extends Document {
     accessTokenExpiry: Date;
     driveFolderId: string;
     connectedAt: Date;
+    googleAccountId: string;
+    googleAccountEmail: string;
   };
 }
 
@@ -205,7 +207,9 @@ const userSchema = new Schema<IUser>({
     accessToken: { type: String },
     accessTokenExpiry: { type: Date },
     driveFolderId: { type: String },
-    connectedAt: { type: Date }
+    connectedAt: { type: Date },
+    googleAccountId: { type: String },
+    googleAccountEmail: { type: String }
   }
 }, {
   timestamps: true

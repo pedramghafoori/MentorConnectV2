@@ -32,20 +32,20 @@ export const MentorAssignmentsPage = () => {
   useEffect(() => {
     if (user) {
       try {
-        const socket = initializeSocket(user._id);
+      const socket = initializeSocket(user._id);
         socket.on('connect_error', (error: Error) => {
           console.error('Socket connection error:', error);
           setSocketError('Failed to connect to real-time updates. The page will still work, but updates may be delayed.');
         });
 
-        socket.on('assignment:update', () => {
-          queryClient.invalidateQueries({ queryKey: ['assignments', currentTab] });
-        });
+      socket.on('assignment:update', () => {
+        queryClient.invalidateQueries({ queryKey: ['assignments', currentTab] });
+      });
 
-        return () => {
-          socket.off('assignment:update');
+      return () => {
+        socket.off('assignment:update');
           socket.off('connect_error');
-        };
+      };
       } catch (error) {
         console.error('Error initializing socket:', error);
         setSocketError('Failed to initialize real-time updates. The page will still work, but updates may be delayed.');
@@ -99,15 +99,15 @@ export const MentorAssignmentsPage = () => {
         <h1 className="text-2xl font-bold">My Assignments</h1>
         <div className="flex space-x-4">
           {TABS.map((tab) => (
-            <button
+          <button
               key={tab.key}
-              className={`px-4 py-2 rounded ${
+            className={`px-4 py-2 rounded ${
                 currentTab === tab.key ? 'bg-blue-600 text-white' : 'bg-gray-200'
-              }`}
+            }`}
               onClick={() => setCurrentTab(tab.key as TabKey)}
-            >
+          >
               {tab.label}
-            </button>
+          </button>
           ))}
         </div>
       </div>

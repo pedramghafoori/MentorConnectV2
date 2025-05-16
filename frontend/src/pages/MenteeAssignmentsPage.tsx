@@ -42,8 +42,8 @@ export const MenteeAssignmentsPage = () => {
 
         return () => {
           if (socket) {
-            socket.off('assignment:update');
-            socket.off('connect_error');
+          socket.off('assignment:update');
+          socket.off('connect_error');
           }
         };
       } catch (error) {

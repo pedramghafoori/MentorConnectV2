@@ -43,7 +43,7 @@ export const AssignmentCard: React.FC<AssignmentCardProps> = ({ assignment }) =>
         <div className="assignment-card-info">
           <h3 className="assignment-card-name">
             {assignment.menteeId.firstName} {assignment.menteeId.lastName}
-          </h3>
+        </h3>
           <p className="assignment-card-date">
             Start Date: {new Date(assignment.startDate).toLocaleDateString()}
           </p>

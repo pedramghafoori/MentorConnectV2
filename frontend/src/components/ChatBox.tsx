@@ -14,18 +14,54 @@ interface TypingUser {
   firstName: string;
 }
 
+// Extend AssignmentMessage to include readBy (array of user IDs)
+type AssignmentMessageWithRead = AssignmentMessage & { readBy?: string[] };
+
 export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages = [] }) => {
-  const [messages, setMessages] = useState<AssignmentMessage[]>(initialMessages);
+  const [messages, setMessages] = useState<AssignmentMessageWithRead[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [usersTyping, setUsersTyping] = useState<TypingUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const socketRef = useRef<ReturnType<typeof getSocket>>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Focus/blur detection for read receipts
+  useEffect(() => {
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = () => setIsFocused(false);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  // Emit read receipts when focused and there are unread messages
+  useEffect(() => {
+    if (!user?._id || !isFocused) return;
+    const unreadMessageIds = messages
+      .filter(msg => {
+        // senderId can be string or object
+        let senderId: string | undefined = undefined;
+        if (typeof msg.senderId === 'object' && msg.senderId !== null && '_id' in msg.senderId) {
+          senderId = (msg.senderId as { _id: string })._id;
+        } else if (typeof msg.senderId === 'string') {
+          senderId = msg.senderId;
+        }
+        return senderId !== user._id && !(msg.readBy || []).includes(user._id);
+      })
+      .map(msg => msg._id);
+    if (unreadMessageIds.length > 0) {
+      socketRef.current?.emit('message:read', { assignmentId, messageIds: unreadMessageIds, userId: user._id });
+    }
+  }, [messages, user?._id, isFocused, assignmentId]);
 
   const loadMessages = async (retryCount = 0) => {
     try {
@@ -62,7 +98,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
       return;
     }
     socket.emit('joinAssignment', assignmentId);
-    socket.on('chat:message', (message: AssignmentMessage) => {
+    socket.on('chat:message', (message: AssignmentMessageWithRead) => {
       setMessages(prev => [...prev, message]);
     });
     socket.on('error', ({ message }) => {
@@ -88,6 +124,16 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
     socket.on('stopTyping', ({ userId }) => {
       setUsersTyping(prev => prev.filter(u => u.userId !== userId));
     });
+    // Read receipts listener
+    socket.on('message:read', ({ messageIds, userId }) => {
+      setMessages(prev =>
+        prev.map(msg =>
+          messageIds.includes(msg._id)
+            ? { ...msg, readBy: [...(msg.readBy || []), userId] }
+            : msg
+        )
+      );
+    });
     return () => {
       socket.off('chat:message');
       socket.off('error');
@@ -95,6 +141,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
       socket.off('disconnect');
       socket.off('typing');
       socket.off('stopTyping');
+      socket.off('message:read');
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
       }
@@ -141,6 +188,22 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
     );
   }
 
+  // Find the other user's ID for read receipts
+  const getOtherUserId = () => {
+    if (messages.length === 0 || !user?._id) return undefined;
+    for (const msg of messages) {
+      let senderId: string | undefined = undefined;
+      if (typeof msg.senderId === 'object' && msg.senderId !== null && '_id' in msg.senderId) {
+        senderId = (msg.senderId as { _id: string })._id;
+      } else if (typeof msg.senderId === 'string') {
+        senderId = msg.senderId;
+      }
+      if (senderId && senderId !== user._id) return senderId;
+    }
+    return undefined;
+  };
+  const otherUserId = getOtherUserId();
+
   return (
     <div className="flex flex-col h-[600px] bg-gray-100 rounded-lg shadow">
       {/* Messages container */}
@@ -176,12 +239,18 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
                   }`}
                 >
                   <p className="text-sm">{message.message}</p>
-                  <p className={`text-xs mt-1 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
-                    {new Date(message.createdAt).toLocaleTimeString([], { 
-                      hour: '2-digit', 
-                      minute: '2-digit'
-                    })}
-                  </p>
+                  <div className="flex items-center mt-1">
+                    <p className={`text-xs ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                      {new Date(message.createdAt).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit'
+                      })}
+                    </p>
+                    {/* Read receipt for sent messages */}
+                    {isOwnMessage && otherUserId && message.readBy?.includes(otherUserId) && (
+                      <span className="ml-2 text-xs text-green-500">Read</span>
+                    )}
+                  </div>
                 </div>
               </div>
             );

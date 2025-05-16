@@ -233,6 +233,20 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle read receipts
+  socket.on('message:read', async ({ assignmentId, messageIds, userId }) => {
+    if (!assignmentId || !Array.isArray(messageIds) || !userId) return;
+    try {
+      await AssignmentMessage.updateMany(
+        { _id: { $in: messageIds } },
+        { $addToSet: { readBy: userId } }
+      );
+      io.to(`assignment:${assignmentId}`).emit('message:read', { messageIds, userId });
+    } catch (err) {
+      console.error('Error updating read receipts:', err);
+    }
+  });
+
   socket.on('disconnect', () => {
     const userId = (socket as any).userId;
     if (userId) {

@@ -15,11 +15,13 @@ import CertificationManager from '../../components/Admin/CertificationManager';
 import WaiverModal from '../../components/WaiverModal/WaiverModal';
 import { format } from 'date-fns';
 import { SignedWaivers } from '../../components/SignedWaivers/SignedWaivers';
+import { DriveService } from '../../services/drive.service';
 
 const menuItems = [
   // { key: 'mentor', label: 'Mentor Preferences' },
   { key: 'privacy', label: 'Privacy' },
   { key: 'tax', label: 'Tax and Payout' },
+  { key: 'connections', label: 'Connections' },
   { key: 'account', label: 'Account Settings' },
   { key: 'certification', label: 'Certification Management' },
   { key: 'agreements', label: 'Agreements' },
@@ -94,6 +96,10 @@ export default function SettingsPage() {
   const [waiverStatus, setWaiverStatus] = useState({ hasSigned: false, signedAt: null, waiverId: null });
   const [waiverLoading, setWaiverLoading] = useState(false);
   const [waiverError, setWaiverError] = useState(null);
+  const [isDriveConnected, setIsDriveConnected] = useState(null);
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveError, setDriveError] = useState(null);
+  const [driveSuccess, setDriveSuccess] = useState(false);
 
   const isMobile = useIsMobile();
 
@@ -191,6 +197,50 @@ export default function SettingsPage() {
         .finally(() => setWaiverLoading(false));
     }
   }, [user]);
+
+  useEffect(() => {
+    checkDriveConnection();
+  }, []);
+
+  const checkDriveConnection = async () => {
+    try {
+      const connected = await DriveService.isDriveConnected();
+      setIsDriveConnected(connected);
+    } catch (error) {
+      console.error('Error checking Drive connection:', error);
+      setIsDriveConnected(false);
+    }
+  };
+
+  const handleConnectDrive = async () => {
+    try {
+      setDriveLoading(true);
+      setDriveError(null);
+      const authUrl = await DriveService.getAuthUrl();
+      window.open(authUrl, '_blank', 'width=600,height=600');
+      
+      // Poll for connection status
+      const checkInterval = setInterval(async () => {
+        const connected = await DriveService.isDriveConnected();
+        if (connected) {
+          setIsDriveConnected(true);
+          setDriveSuccess(true);
+          clearInterval(checkInterval);
+          setTimeout(() => setDriveSuccess(false), 3000);
+        }
+      }, 2000);
+
+      // Clear interval after 5 minutes
+      setTimeout(() => {
+        clearInterval(checkInterval);
+      }, 5 * 60 * 1000);
+    } catch (error) {
+      console.error('Error connecting to Drive:', error);
+      setDriveError('Failed to connect to Google Drive');
+    } finally {
+      setDriveLoading(false);
+    }
+  };
 
   const allowTwoApprentices = fullUserData?.role === 'MENTOR'
     && ratingSummary.count >= 5
@@ -503,191 +553,8 @@ export default function SettingsPage() {
         <main style={{ flex: 1, padding: '2.5rem 3rem' }}>
           {isMobile ? (
             <>
-              {/* Mentor Preferences */}
-              {selected === 'mentor' || isMobile ? (
-                <section className="settings-section-mentor settings-section">
-                  {/* Commenting out sections for commented fields */}
-                  {/*
-                  <div className="settings-subsection">
-                    <h3 className="settings-subsection-title">Scheduling</h3>
-                    <div className="settings-fee-input-row">
-                      <label className="font-medium text-base mb-1" htmlFor="noticeDays">
-                        How many days' notice do you need before mentoring?
-                      </label>
-                      <div className="settings-input-spinner-row">
-                        <button
-                          type="button"
-                          className="settings-spinner-btn"
-                          onClick={() => setNoticeDays(prev => Math.max(1, prev - 1))}
-                          tabIndex={-1}
-                        >−</button>
-                        <input
-                          id="noticeDays"
-                          type="number"
-                          min={1}
-                          max={90}
-                          value={noticeDays}
-                          onChange={e => setNoticeDays(Number(e.target.value))}
-                          className="settings-input-number"
-                        />
-                        <button
-                          type="button"
-                          className="settings-spinner-btn"
-                          onClick={() => setNoticeDays(prev => Math.min(90, prev + 1))}
-                          tabIndex={-1}
-                        >+</button>
-                      </div>
-                      <button
-                        onClick={handleNoticeSave}
-                        disabled={noticeLoading}
-                        className="settings-fee-save-btn px-5 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
-                      >
-                        {noticeLoading ? 'Saving...' : 'Save'}
-                      </button>
-                      {noticeError && <div className="text-red-500 text-sm mt-1">{noticeError}</div>}
-                      {noticeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                    </div>
-                  </div>
-                  <div className="settings-subsection">
-                    <h3 className="settings-subsection-title">Preparation</h3>
-                    <div>
-                      <div className="font-medium text-base mb-2">What mentee must prepare</div>
-                      <div className="flex flex-wrap gap-2 settings-group-spacing">
-                        {PREP_OPTIONS.map(opt => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            className={`px-3 py-1 rounded-full border text-sm font-semibold transition-colors duration-150 ${prepRequirements.includes(opt.value)
-                              ? 'bg-[#d33] text-white border-[#d33] shadow'
-                              : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
-                            onClick={() => {
-                              const newReqs = prepRequirements.includes(opt.value)
-                                ? prepRequirements.filter(v => v !== opt.value)
-                                : [...prepRequirements, opt.value];
-                              handlePrepChange(newReqs);
-                            }}
-                            disabled={prepLoading}
-                          >
-                            {opt.label}
-                            {prepLoading && prepRequirements.includes(opt.value) && (
-                              <span className="ml-2 animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full align-middle"></span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {prepError && <div className="text-red-500 text-sm mt-1">{prepError}</div>}
-                      {prepSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                    </div>
-                    <div>
-                      <div className="font-medium text-base mb-2">Expected mentee involvement</div>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {INVOLVEMENT_OPTIONS.map(opt => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            className={`px-3 py-1 rounded-full border text-sm font-semibold transition-colors duration-150 ${expectedMenteeInvolvement === opt.value
-                              ? 'bg-[#d33] text-white border-[#d33] shadow'
-                              : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
-                            onClick={() => handleInvolvementChange(opt.value)}
-                            disabled={involvementLoading}
-                          >
-                            {opt.label}
-                            {involvementLoading && expectedMenteeInvolvement === opt.value && (
-                              <span className="ml-2 animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full align-middle"></span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {involvementError && <div className="text-red-500 text-sm mt-1">{involvementError}</div>}
-                      {involvementSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                    </div>
-                  </div>
-                  <div className="settings-subsection">
-                    <h3 className="settings-subsection-title">Fees & Capacity</h3>
-                    <div className="settings-fee-list">
-                      <div className="settings-fee-group">
-                        <div className="font-medium text-base mb-2">Additional mentor fee (optional)</div>
-                        <div className="settings-supporting-text">Covers pre-course reviews & comms</div>
-                        <div className="settings-fee-input-row">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              pattern="^\\d*(\\.\\d{0,2})?$"
-                              value={prepSupportFee}
-                              onChange={e => {
-                                const val = e.target.value;
-                                if (/^\d*(\.\d{0,2})?$/.test(val) || val === "") {
-                                  setPrepSupportFee(val);
-                                }
-                              }}
-                              className="block w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
-                              style={{ fontSize: '1.1rem' }}
-                              disabled={feeLoading}
-                            />
-                            <span>CAD</span>
-                          </div>
-                          <button
-                            onClick={handlePrepSupportFeeSave}
-                            disabled={feeLoading}
-                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                          >
-                            {feeLoading ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                        {feeError && <div className="text-red-500 text-sm mt-1">{feeError}</div>}
-                        {feeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                      </div>
-                      <div className="settings-fee-group">
-                        <div className="font-medium text-base mb-2">How many apprentices can you handle at once?</div>
-                        {!allowTwoApprentices ? (
-                          <p className="text-red-500 text-sm mt-1">
-                            To set more than 1 participant, you need at least 5 reviews and a minimum rating of 4.5+.
-                          </p>
-                        ) : (
-                        <div className="settings-fee-input-row">
-                          <div className="settings-input-spinner-row">
-                            <button
-                              type="button"
-                              className="settings-spinner-btn"
-                              onClick={() => setMaxApprentices(prev => Math.max(1, prev - 1))}
-                              tabIndex={-1}
-                            >−</button>
-                            <input
-                              type="number"
-                              min={1}
-                              max={2}
-                              value={maxApprentices}
-                              onChange={e => setMaxApprentices(Number(e.target.value))}
-                              className="settings-input-number"
-                            />
-                            <button
-                              type="button"
-                              className="settings-spinner-btn"
-                              onClick={() => setMaxApprentices(prev => Math.min(2, prev + 1))}
-                              tabIndex={-1}
-                            >+</button>
-                          </div>
-                          <button
-                            onClick={handleMaxApprenticesSave}
-                            disabled={!allowTwoApprentices || maxApprenticesLoading}
-                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                          >
-                            {maxApprenticesLoading ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                        )}
-                        {maxApprenticesError && <div className="text-red-500 text-sm mt-1">{maxApprenticesError}</div>}
-                        {maxApprenticesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                      </div>
-                    </div>
-                  </div>
-                  */}
-                </section>
-              ) : null}
-              <hr className="settings-section-divider" />
-              {/* Privacy */}
-              {selected === 'privacy' || isMobile ? (
+              {/* Privacy Section */}
+              {(selected === 'privacy' || isMobile) && (
                 <section className="settings-section-privacy settings-section">
                   <h2 className="settings-section-title">Privacy</h2>
                   <div className="settings-subsection">
@@ -737,10 +604,10 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </section>
-              ) : null}
-              <hr className="settings-section-divider" />
-              {/* Tax and Payout */}
-              {selected === 'tax' || isMobile ? (
+              )}
+
+              {/* Tax Section */}
+              {(selected === 'tax' || isMobile) && (
                 <section className="settings-section-tax settings-section">
                   <h2 className="settings-section-title">Tax and Payout</h2>
                   <div className="settings-subsection">
@@ -816,10 +683,82 @@ export default function SettingsPage() {
                     </div>
                   )}
                 </section>
-              ) : null}
-              <hr className="settings-section-divider" />
-              {/* Account Settings */}
-              {selected === 'account' || isMobile ? (
+              )}
+
+              {/* Connections Section */}
+              {(selected === 'connections' || isMobile) && (
+                <section className="settings-section-connections settings-section">
+                  <h2 className="settings-section-title">Connections</h2>
+                  
+                  {/* Google Drive Connection */}
+                  <div className="settings-subsection">
+                    <h3 className="settings-subsection-title">Google Drive Integration</h3>
+                    <div className="flex flex-col gap-2 max-w-md">
+                      {isDriveConnected === null ? (
+                        <div>Checking Drive connection...</div>
+                      ) : isDriveConnected ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600">✓ Connected to Google Drive</span>
+                          <button
+                            onClick={handleConnectDrive}
+                            className="text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            Reconnect
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          <p className="text-gray-600">
+                            Connect your Google Drive to enable file sharing and collaboration features.
+                          </p>
+                          <button
+                            onClick={handleConnectDrive}
+                            disabled={driveLoading}
+                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                          >
+                            {driveLoading ? 'Connecting...' : 'Connect Google Drive'}
+                          </button>
+                        </div>
+                      )}
+                      {driveError && <div className="text-red-500 text-sm mt-1">{driveError}</div>}
+                      {driveSuccess && <div className="text-green-600 text-sm mt-1">Successfully connected to Google Drive!</div>}
+                    </div>
+                  </div>
+
+                  {/* Stripe Connection */}
+                  {fullUserData?.role === 'MENTOR' && (
+                    <div className="settings-subsection">
+                      <h3 className="settings-subsection-title">Stripe Integration</h3>
+                      <div className="flex flex-col gap-4 max-w-md">
+                        {fullUserData?.stripeAccountId ? (
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-success">Payouts enabled</span>
+                            <span className="text-sm text-gray-600">Your Stripe account is connected</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm text-gray-600">
+                              Connect your Stripe account to receive payouts for your mentoring sessions.
+                            </p>
+                            <button
+                              onClick={handleEnablePayouts}
+                              disabled={isLoading}
+                              className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                            >
+                              {isLoading ? 'Processing...' : 'Enable payouts'}
+                            </button>
+                            {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
+                            {success && <div className="text-green-600 text-sm mt-1">{success}</div>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* Account Settings Section */}
+              {(selected === 'account' || isMobile) && (
                 <section className="settings-section-account settings-section">
                   <h2 className="settings-section-title">Account Settings</h2>
                   <div className="settings-subsection">
@@ -938,54 +877,53 @@ export default function SettingsPage() {
                   </div>
                   <AccountDangerZone />
                 </section>
-              ) : null}
-              <hr className="settings-section-divider" />
-              {/* Agreements */}
-              {selected === 'agreements' || isMobile ? (
+              )}
+
+              {/* Agreements Section */}
+              {(selected === 'agreements' || isMobile) && (
                 <section className="settings-section-agreements settings-section">
                   <h2 className="settings-section-title">Agreements</h2>
                   <div className="settings-subsection">
                     <h3 className="settings-subsection-title">Mentor Agreement</h3>
-                    {waiverLoading ? (
-                      <div>Loading waiver status...</div>
-                    ) : waiverStatus.hasSigned ? (
-                      <div className="flex flex-col gap-3">
-                        <div className="badge badge-success w-fit">Signed on {waiverStatus.signedAt ? format(new Date(waiverStatus.signedAt), 'MMMM d, yyyy') : ''}</div>
-                        <button
-                          className="btn btn-primary w-fit"
-                          onClick={handleDownloadWaiver}
-                        >
-                          Download Signed Agreement
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-4 max-w-2xl">
-                        <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap" style={{ maxHeight: 300, overflowY: 'auto' }}>
-                          {/* Show a preview or the full waiver text here. For now, just a placeholder. */}
-                          Please review and sign the Mentor Agreement to continue using the platform as a mentor.
+                    <div className="flex flex-col gap-4 max-w-2xl">
+                      {waiverStatus?.signed ? (
+                        <div className="flex flex-col gap-4">
+                          <div className="badge badge-success w-fit">Signed on {waiverStatus.signedAt ? format(new Date(waiverStatus.signedAt), 'MMMM d, yyyy') : ''}</div>
+                          <button
+                            className="btn btn-primary w-fit"
+                            onClick={handleDownloadWaiver}
+                          >
+                            Download Signed Agreement
+                          </button>
                         </div>
-                        <button
-                          className="btn btn-primary w-fit"
-                          onClick={() => setShowWaiverModal(true)}
-                        >
-                          Agree and Sign
-                        </button>
-                      </div>
-                    )}
-                    <WaiverModal
-                      isOpen={showWaiverModal}
-                      onClose={() => setShowWaiverModal(false)}
-                      onSigned={handleWaiverSigned}
-                    />
-                    {waiverError && <div className="alert alert-error mt-2">{waiverError}</div>}
-                  </div>
-                  {/* Show all signed waivers below mentor agreement */}
-                  <div className="settings-subsection mt-8">
-                    <SignedWaivers />
+                      ) : (
+                        <div className="flex flex-col gap-4 max-w-2xl">
+                          <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap" style={{ maxHeight: 300, overflowY: 'auto' }}>
+                            Please review and sign the Mentor Agreement to continue using the platform as a mentor.
+                          </div>
+                          <button
+                            className="btn btn-primary w-fit"
+                            onClick={() => setShowWaiverModal(true)}
+                          >
+                            Agree and Sign
+                          </button>
+                        </div>
+                      )}
+                      <WaiverModal
+                        isOpen={showWaiverModal}
+                        onClose={() => setShowWaiverModal(false)}
+                        onSigned={handleWaiverSigned}
+                      />
+                      {waiverError && <div className="alert alert-error mt-2">{waiverError}</div>}
+                    </div>
+                    <div className="settings-subsection mt-8">
+                      <SignedWaivers />
+                    </div>
                   </div>
                 </section>
-              ) : null}
-              {/* Certification Management (developer only) */}
+              )}
+
+              {/* Certification Management Section (developer only) */}
               {isDeveloper && (
                 <>
                   <hr className="settings-section-divider" />
@@ -998,6 +936,7 @@ export default function SettingsPage() {
             </>
           ) : (
             <>
+              {/* Privacy Section */}
               {selected === 'privacy' && (
                 <section className="settings-section-privacy settings-section">
                   <h2 className="settings-section-title">Privacy</h2>
@@ -1049,235 +988,8 @@ export default function SettingsPage() {
                   </div>
                 </section>
               )}
-              {selected === 'certification' && isDeveloper && (
-                <section className="settings-section settings-section">
-                  <h2 className="settings-section-title">Certification Management</h2>
-                  <CertificationManager />
-                </section>
-              )}
-              {selected === 'mentor' && (
-                <section className="settings-section-mentor settings-section">
-                  {/* Commenting out sections for commented fields */}
-                  {/*
-                  <div className="settings-subsection">
-                    <h3 className="settings-subsection-title">Scheduling</h3>
-                    <div className="settings-fee-input-row">
-                      <label className="font-medium text-base mb-1" htmlFor="noticeDays">
-                        How many days' notice do you need before mentoring?
-                      </label>
-                      <div className="settings-input-spinner-row">
-                        <button
-                          type="button"
-                          className="settings-spinner-btn"
-                          onClick={() => setNoticeDays(prev => Math.max(1, prev - 1))}
-                          tabIndex={-1}
-                        >−</button>
-                        <input
-                          id="noticeDays"
-                          type="number"
-                          min={1}
-                          max={90}
-                          value={noticeDays}
-                          onChange={e => setNoticeDays(Number(e.target.value))}
-                          className="settings-input-number"
-                        />
-                        <button
-                          type="button"
-                          className="settings-spinner-btn"
-                          onClick={() => setNoticeDays(prev => Math.min(90, prev + 1))}
-                          tabIndex={-1}
-                        >+</button>
-                      </div>
-                      <button
-                        onClick={handleNoticeSave}
-                        disabled={noticeLoading}
-                        className="settings-fee-save-btn px-5 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
-                      >
-                        {noticeLoading ? 'Saving...' : 'Save'}
-                      </button>
-                      {noticeError && <div className="text-red-500 text-sm mt-1">{noticeError}</div>}
-                      {noticeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                    </div>
-                  </div>
-                  <div className="settings-subsection">
-                    <h3 className="settings-subsection-title">Preparation</h3>
-                    <div>
-                      <div className="font-medium text-base mb-2">What mentee must prepare</div>
-                      <div className="flex flex-wrap gap-2 settings-group-spacing">
-                        {PREP_OPTIONS.map(opt => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            className={`px-3 py-1 rounded-full border text-sm font-semibold transition-colors duration-150 ${prepRequirements.includes(opt.value)
-                              ? 'bg-[#d33] text-white border-[#d33] shadow'
-                              : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
-                            onClick={() => {
-                              const newReqs = prepRequirements.includes(opt.value)
-                                ? prepRequirements.filter(v => v !== opt.value)
-                                : [...prepRequirements, opt.value];
-                              handlePrepChange(newReqs);
-                            }}
-                            disabled={prepLoading}
-                          >
-                            {opt.label}
-                            {prepLoading && prepRequirements.includes(opt.value) && (
-                              <span className="ml-2 animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full align-middle"></span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {prepError && <div className="text-red-500 text-sm mt-1">{prepError}</div>}
-                      {prepSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                    </div>
-                    <div>
-                      <div className="font-medium text-base mb-2">Expected mentee involvement</div>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {INVOLVEMENT_OPTIONS.map(opt => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            className={`px-3 py-1 rounded-full border text-sm font-semibold transition-colors duration-150 ${expectedMenteeInvolvement === opt.value
-                              ? 'bg-[#d33] text-white border-[#d33] shadow'
-                              : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
-                            onClick={() => handleInvolvementChange(opt.value)}
-                            disabled={involvementLoading}
-                          >
-                            {opt.label}
-                            {involvementLoading && expectedMenteeInvolvement === opt.value && (
-                              <span className="ml-2 animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full align-middle"></span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {involvementError && <div className="text-red-500 text-sm mt-1">{involvementError}</div>}
-                      {involvementSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                    </div>
-                  </div>
-                  <div className="settings-subsection">
-                    <h3 className="settings-subsection-title">Fees & Capacity</h3>
-                    <div className="settings-fee-list">
-                      <div className="settings-fee-group">
-                        <div className="font-medium text-base mb-2">Additional mentor fee (optional)</div>
-                        <div className="settings-supporting-text">Covers pre-course reviews & comms</div>
-                        <div className="settings-fee-input-row">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              pattern="^\\d*(\\.\\d{0,2})?$"
-                              value={prepSupportFee}
-                              onChange={e => {
-                                const val = e.target.value;
-                                if (/^\d*(\.\d{0,2})?$/.test(val) || val === "") {
-                                  setPrepSupportFee(val);
-                                }
-                              }}
-                              className="block w-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-[#d33] focus:border-[#d33] text-lg"
-                              style={{ fontSize: '1.1rem' }}
-                              disabled={feeLoading}
-                            />
-                            <span>CAD</span>
-                          </div>
-                          <button
-                            onClick={handlePrepSupportFeeSave}
-                            disabled={feeLoading}
-                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                          >
-                            {feeLoading ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                        {feeError && <div className="text-red-500 text-sm mt-1">{feeError}</div>}
-                        {feeSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                      </div>
-                      <div className="settings-fee-group">
-                        <div className="font-medium text-base mb-2">How late can a mentee cancel and still get a refund?</div>
-                        <div className="settings-supporting-text">
-                          Free cancellation up to {cancellationPolicyHours} h before start
-                        </div>
-                        <div className="settings-fee-input-row">
-                          <div className="flex items-center gap-2">
-                            <div className="settings-input-spinner-row">
-                              <button
-                                type="button"
-                                className="settings-spinner-btn"
-                                onClick={() => setCancellationPolicyHours(prev => Math.max(1, prev - 1))}
-                                tabIndex={-1}
-                              >−</button>
-                              <input
-                                type="number"
-                                min={1}
-                                max={168}
-                                value={cancellationPolicyHours}
-                                onChange={e => setCancellationPolicyHours(Number(e.target.value))}
-                                className="settings-input-number"
-                              />
-                              <button
-                                type="button"
-                                className="settings-spinner-btn"
-                                onClick={() => setCancellationPolicyHours(prev => Math.min(168, prev + 1))}
-                                tabIndex={-1}
-                              >+</button>
-                            </div>
-                            <span>hours</span>
-                          </div>
-                          <button
-                            onClick={handleCancellationPolicySave}
-                            disabled={cancellationLoading}
-                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                          >
-                            {cancellationLoading ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                        {cancellationError && <div className="text-red-500 text-sm mt-1">{cancellationError}</div>}
-                        {cancellationSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                      </div>
-                      <div className="settings-fee-group">
-                        <div className="font-medium text-base mb-2">How many apprentices can you handle at once?</div>
-                        {!allowTwoApprentices ? (
-                          <p className="text-red-500 text-sm mt-1">
-                            To set more than 1 participant, you need at least 5 reviews and a minimum rating of 4.5+.
-                          </p>
-                        ) : (
-                        <div className="settings-fee-input-row">
-                          <div className="settings-input-spinner-row">
-                            <button
-                              type="button"
-                              className="settings-spinner-btn"
-                              onClick={() => setMaxApprentices(prev => Math.max(1, prev - 1))}
-                              tabIndex={-1}
-                            >−</button>
-                            <input
-                              type="number"
-                              min={1}
-                              max={2}
-                              value={maxApprentices}
-                              onChange={e => setMaxApprentices(Number(e.target.value))}
-                              className="settings-input-number"
-                            />
-                            <button
-                              type="button"
-                              className="settings-spinner-btn"
-                              onClick={() => setMaxApprentices(prev => Math.min(2, prev + 1))}
-                              tabIndex={-1}
-                            >+</button>
-                          </div>
-                          <button
-                            onClick={handleMaxApprenticesSave}
-                            disabled={!allowTwoApprentices || maxApprenticesLoading}
-                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60"
-                          >
-                            {maxApprenticesLoading ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                        )}
-                        {maxApprenticesError && <div className="text-red-500 text-sm mt-1">{maxApprenticesError}</div>}
-                        {maxApprenticesSuccess && <div className="text-green-600 text-sm mt-1">Saved!</div>}
-                      </div>
-                    </div>
-                  </div>
-                  */}
-                </section>
-              )}
+
+              {/* Tax Section */}
               {selected === 'tax' && (
                 <section className="settings-section-tax settings-section">
                   <h2 className="settings-section-title">Tax and Payout</h2>
@@ -1355,6 +1067,80 @@ export default function SettingsPage() {
                   )}
                 </section>
               )}
+
+              {/* Connections Section */}
+              {selected === 'connections' && (
+                <section className="settings-section-connections settings-section">
+                  <h2 className="settings-section-title">Connections</h2>
+                  
+                  {/* Google Drive Connection */}
+                  <div className="settings-subsection">
+                    <h3 className="settings-subsection-title">Google Drive Integration</h3>
+                    <div className="flex flex-col gap-2 max-w-md">
+                      {isDriveConnected === null ? (
+                        <div>Checking Drive connection...</div>
+                      ) : isDriveConnected ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600">✓ Connected to Google Drive</span>
+                          <button
+                            onClick={handleConnectDrive}
+                            className="text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            Reconnect
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          <p className="text-gray-600">
+                            Connect your Google Drive to enable file sharing and collaboration features.
+                          </p>
+                          <button
+                            onClick={handleConnectDrive}
+                            disabled={driveLoading}
+                            className="settings-fee-save-btn px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                          >
+                            {driveLoading ? 'Connecting...' : 'Connect Google Drive'}
+                          </button>
+                        </div>
+                      )}
+                      {driveError && <div className="text-red-500 text-sm mt-1">{driveError}</div>}
+                      {driveSuccess && <div className="text-green-600 text-sm mt-1">Successfully connected to Google Drive!</div>}
+                    </div>
+                  </div>
+
+                  {/* Stripe Connection */}
+                  {fullUserData?.role === 'MENTOR' && (
+                    <div className="settings-subsection">
+                      <h3 className="settings-subsection-title">Stripe Integration</h3>
+                      <div className="flex flex-col gap-4 max-w-md">
+                        {fullUserData?.stripeAccountId ? (
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-success">Payouts enabled</span>
+                            <span className="text-sm text-gray-600">Your Stripe account is connected</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm text-gray-600">
+                              Connect your Stripe account to receive payouts for your mentoring sessions.
+                            </p>
+                            <button
+                              onClick={handleEnablePayouts}
+                              disabled={isLoading}
+                              className="px-4 py-2 rounded-full bg-[#d33] text-white font-semibold hover:bg-[#b32] transition disabled:opacity-60 w-fit"
+                            >
+                              {isLoading ? 'Processing...' : 'Enable payouts'}
+                            </button>
+                            {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
+                            {success && <div className="text-green-600 text-sm mt-1">{success}</div>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* Account Settings Section */}
               {selected === 'account' && (
                 <section className="settings-section-account settings-section">
                   <h2 className="settings-section-title">Account Settings</h2>
@@ -1475,48 +1261,56 @@ export default function SettingsPage() {
                   <AccountDangerZone />
                 </section>
               )}
+
+              {/* Agreements Section */}
               {selected === 'agreements' && (
                 <section className="settings-section-agreements settings-section">
                   <h2 className="settings-section-title">Agreements</h2>
                   <div className="settings-subsection">
                     <h3 className="settings-subsection-title">Mentor Agreement</h3>
-                    {waiverLoading ? (
-                      <div>Loading waiver status...</div>
-                    ) : waiverStatus.hasSigned ? (
-                      <div className="flex flex-col gap-3">
-                        <div className="badge badge-success w-fit">Signed on {waiverStatus.signedAt ? format(new Date(waiverStatus.signedAt), 'MMMM d, yyyy') : ''}</div>
-                        <button
-                          className="btn btn-primary w-fit"
-                          onClick={handleDownloadWaiver}
-                        >
-                          Download Signed Agreement
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-4 max-w-2xl">
-                        <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap" style={{ maxHeight: 300, overflowY: 'auto' }}>
-                          {/* Show a preview or the full waiver text here. For now, just a placeholder. */}
-                          Please review and sign the Mentor Agreement to continue using the platform as a mentor.
+                    <div className="flex flex-col gap-4 max-w-2xl">
+                      {waiverStatus?.signed ? (
+                        <div className="flex flex-col gap-4">
+                          <div className="badge badge-success w-fit">Signed on {waiverStatus.signedAt ? format(new Date(waiverStatus.signedAt), 'MMMM d, yyyy') : ''}</div>
+                          <button
+                            className="btn btn-primary w-fit"
+                            onClick={handleDownloadWaiver}
+                          >
+                            Download Signed Agreement
+                          </button>
                         </div>
-                        <button
-                          className="btn btn-primary w-fit"
-                          onClick={() => setShowWaiverModal(true)}
-                        >
-                          Agree and Sign
-                        </button>
-                      </div>
-                    )}
-                    <WaiverModal
-                      isOpen={showWaiverModal}
-                      onClose={() => setShowWaiverModal(false)}
-                      onSigned={handleWaiverSigned}
-                    />
-                    {waiverError && <div className="alert alert-error mt-2">{waiverError}</div>}
+                      ) : (
+                        <div className="flex flex-col gap-4 max-w-2xl">
+                          <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap" style={{ maxHeight: 300, overflowY: 'auto' }}>
+                            Please review and sign the Mentor Agreement to continue using the platform as a mentor.
+                          </div>
+                          <button
+                            className="btn btn-primary w-fit"
+                            onClick={() => setShowWaiverModal(true)}
+                          >
+                            Agree and Sign
+                          </button>
+                        </div>
+                      )}
+                      <WaiverModal
+                        isOpen={showWaiverModal}
+                        onClose={() => setShowWaiverModal(false)}
+                        onSigned={handleWaiverSigned}
+                      />
+                      {waiverError && <div className="alert alert-error mt-2">{waiverError}</div>}
+                    </div>
+                    <div className="settings-subsection mt-8">
+                      <SignedWaivers />
+                    </div>
                   </div>
-                  {/* Show all signed waivers below mentor agreement */}
-                  <div className="settings-subsection mt-8">
-                    <SignedWaivers />
-                  </div>
+                </section>
+              )}
+
+              {/* Certification Management Section (developer only) */}
+              {isDeveloper && selected === 'certification' && (
+                <section className="settings-section settings-section">
+                  <h2 className="settings-section-title">Certification Management</h2>
+                  <CertificationManager />
                 </section>
               )}
             </>

@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { updateNoticeDays, updatePrepRequirements, updateExpectedInvolvement, updatePrepSupportFee, updateCancellationWindow } from '../controllers/mentorPreferences.js';
+// import { updateNoticeDays, updatePrepRequirements, updateExpectedInvolvement, updatePrepSupportFee, updateCancellationWindow } from '../controllers/mentorPreferences.js';
+import { updateCancellationWindow } from '../controllers/mentorPreferences.js';
 
 const router = Router();
 
@@ -19,16 +20,16 @@ router.get('/mentees', (req, res) => {
 });
 
 // Update preferred notice days
-router.put('/notice-days', updateNoticeDays);
+// router.put('/notice-days', updateNoticeDays);
 
 // Update prep requirements
-router.put('/prep-requirements', updatePrepRequirements);
+// router.put('/prep-requirements', updatePrepRequirements);
 
 // Update expected mentee involvement
-router.put('/expected-involvement', updateExpectedInvolvement);
+// router.put('/expected-involvement', updateExpectedInvolvement);
 
 // Update prep support fee
-router.put('/prep-support-fee', updatePrepSupportFee);
+// router.put('/prep-support-fee', updatePrepSupportFee);
 
 // Update cancellation window
 router.put('/cancellation-window', updateCancellationWindow);

@@ -24,6 +24,9 @@ export const initializeSocket = (userId: string): Socket => {
     socket = null;
   }
 
+  // Determine if we're in production
+  const isProduction = window.location.protocol === 'https:';
+  
   socket = io(SOCKET_URL, {
     path: '/socket.io',
     transports: ['websocket'],
@@ -31,6 +34,8 @@ export const initializeSocket = (userId: string): Socket => {
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
+    secure: isProduction, // Enable secure connection in production
+    rejectUnauthorized: isProduction, // Reject unauthorized connections in production
   });
 
   socket.on('connect', () => console.log('Socket connected'));

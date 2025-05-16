@@ -78,6 +78,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      gaxios:
+        specifier: ^6.7.1
+        version: 6.7.1
       googleapis:
         specifier: ^148.0.0
         version: 148.0.0

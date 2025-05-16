@@ -17,7 +17,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const socketRef = useRef<ReturnType<typeof getSocket>>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadMessages = async (retryCount = 0) => {
     try {

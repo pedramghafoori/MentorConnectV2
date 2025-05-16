@@ -16,12 +16,21 @@ let socket: Socket | null = null;
  * Call this once after login, passing the JWT userId.
  */
 export const initializeSocket = (userId: string): Socket => {
-  if (socket) return socket; // already initialised
+  if (socket?.connected) return socket; // return if already connected
+
+  // If socket exists but is disconnected, disconnect it first
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 
   socket = io(SOCKET_URL, {
     path: '/socket.io',
     transports: ['websocket'],
     auth: { userId },
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
   });
 
   socket.on('connect', () => console.log('Socket connected'));
@@ -31,7 +40,9 @@ export const initializeSocket = (userId: string): Socket => {
   return socket;
 };
 
-export const getSocket = (): Socket | null => socket;
+export const getSocket = (): Socket | null => {
+  return socket;
+};
 
 export const disconnectSocket = (): void => {
   if (!socket) return;

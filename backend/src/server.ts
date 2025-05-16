@@ -221,6 +221,18 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle typing indicator
+  socket.on('typing', ({ assignmentId, userId, firstName }) => {
+    if (assignmentId && userId && firstName) {
+      socket.to(`assignment:${assignmentId}`).emit('typing', { userId, firstName });
+    }
+  });
+  socket.on('stopTyping', ({ assignmentId, userId, firstName }) => {
+    if (assignmentId && userId && firstName) {
+      socket.to(`assignment:${assignmentId}`).emit('stopTyping', { userId, firstName });
+    }
+  });
+
   socket.on('disconnect', () => {
     const userId = (socket as any).userId;
     if (userId) {

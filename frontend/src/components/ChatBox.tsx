@@ -9,12 +9,20 @@ interface ChatBoxProps {
   initialMessages?: AssignmentMessage[];
 }
 
+interface TypingUser {
+  userId: string;
+  firstName: string;
+}
+
 export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages = [] }) => {
   const [messages, setMessages] = useState<AssignmentMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [usersTyping, setUsersTyping] = useState<TypingUser[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const socketRef = useRef<ReturnType<typeof getSocket>>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -28,10 +36,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
     } catch (err) {
       console.error('Error loading messages:', err);
       setError('Failed to load messages');
-      
-      // Retry up to 3 times with exponential backoff
       if (retryCount < 3) {
-        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        const delay = Math.pow(2, retryCount) * 1000;
         retryTimeoutRef.current = setTimeout(() => {
           loadMessages(retryCount + 1);
         }, delay);
@@ -46,73 +52,85 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
       setError('Please log in to use chat');
       return;
     }
-
-    // Load messages on mount
     loadMessages();
-
-    // Initialize socket if not already connected
     if (!socketRef.current?.connected) {
       socketRef.current = initializeSocket(user._id);
     }
-
     const socket = socketRef.current;
     if (!socket) {
       setError('Chat is not available. Please try refreshing the page.');
       return;
     }
-
-    // Join assignment room
     socket.emit('joinAssignment', assignmentId);
-
-    // Listen for new messages
     socket.on('chat:message', (message: AssignmentMessage) => {
       setMessages(prev => [...prev, message]);
     });
-
-    // Listen for errors
     socket.on('error', ({ message }) => {
       setError(message);
       setTimeout(() => setError(null), 5000);
     });
-
-    // Handle reconnection
     socket.on('connect', () => {
       setError(null);
       socket.emit('joinAssignment', assignmentId);
-      // Reload messages on reconnection
       loadMessages();
     });
-
     socket.on('disconnect', () => {
       setError('Connection lost. Attempting to reconnect...');
     });
-
+    // Typing indicator listeners
+    socket.on('typing', ({ userId, firstName }) => {
+      if (userId !== user?._id && firstName) {
+        setUsersTyping(prev =>
+          prev.some(u => u.userId === userId) ? prev : [...prev, { userId, firstName }]
+        );
+      }
+    });
+    socket.on('stopTyping', ({ userId }) => {
+      setUsersTyping(prev => prev.filter(u => u.userId !== userId));
+    });
     return () => {
       socket.off('chat:message');
       socket.off('error');
       socket.off('connect');
       socket.off('disconnect');
+      socket.off('typing');
+      socket.off('stopTyping');
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
+      }
+      if (typingTimeout.current) {
+        clearTimeout(typingTimeout.current);
       }
     };
   }, [assignmentId, user?._id]);
 
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    if (!isTyping) {
+      setIsTyping(true);
+      socketRef.current?.emit('typing', { assignmentId, userId: user?._id, firstName: user?.firstName });
+    }
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      setIsTyping(false);
+      socketRef.current?.emit('stopTyping', { assignmentId, userId: user?._id, firstName: user?.firstName });
+    }, 1500);
+  };
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !socketRef.current?.connected) return;
-
     socketRef.current.emit('chat:message', {
       assignmentId,
       message: newMessage.trim()
     });
-
     setNewMessage('');
+    setIsTyping(false);
+    socketRef.current?.emit('stopTyping', { assignmentId, userId: user?._id, firstName: user?.firstName });
   };
 
   if (!socketRef.current?.connected) {
@@ -137,7 +155,6 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
           </div>
         ) : (
           messages.map((message) => {
-            // Type guard for senderId
             let messageSenderId: string | undefined = undefined;
             if (typeof message.senderId === 'object' && message.senderId !== null && '_id' in message.senderId) {
               messageSenderId = (message.senderId as { _id: string })._id;
@@ -146,10 +163,6 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
             }
             const currentUserId = user?._id;
             const isOwnMessage = messageSenderId === currentUserId;
-
-            // Debug log
-            console.log('messageSenderId:', messageSenderId, 'currentUserId:', currentUserId, 'isOwnMessage:', isOwnMessage, 'message:', message);
-
             return (
               <div
                 key={message._id}
@@ -176,21 +189,25 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
         )}
         <div ref={messagesEndRef} />
       </div>
-
+      {/* Typing indicator */}
+      {usersTyping.length > 0 && (
+        <div className="px-4 py-2 text-sm text-gray-500">
+          {usersTyping.map(u => u.firstName).join(', ')}{usersTyping.length === 1 ? ' is typing...' : ' are typing...'}
+        </div>
+      )}
       {/* Error message */}
       {error && (
         <div className="px-4 py-2 bg-red-100 text-red-700 text-sm">
           {error}
         </div>
       )}
-
       {/* Message input */}
       <form onSubmit={handleSendMessage} className="p-4 bg-white border-t">
         <div className="flex space-x-2">
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

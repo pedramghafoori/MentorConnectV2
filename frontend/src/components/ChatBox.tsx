@@ -137,7 +137,19 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ assignmentId, initialMessages 
           </div>
         ) : (
           messages.map((message) => {
-            const isOwnMessage = message.senderId === user?._id;
+            // Type guard for senderId
+            let messageSenderId: string | undefined = undefined;
+            if (typeof message.senderId === 'object' && message.senderId !== null && '_id' in message.senderId) {
+              messageSenderId = (message.senderId as { _id: string })._id;
+            } else if (typeof message.senderId === 'string') {
+              messageSenderId = message.senderId;
+            }
+            const currentUserId = user?._id;
+            const isOwnMessage = messageSenderId === currentUserId;
+
+            // Debug log
+            console.log('messageSenderId:', messageSenderId, 'currentUserId:', currentUserId, 'isOwnMessage:', isOwnMessage, 'message:', message);
+
             return (
               <div
                 key={message._id}
